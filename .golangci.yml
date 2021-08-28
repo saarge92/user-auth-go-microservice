@@ -1,0 +1,73 @@
+# Look at nice examples here:
+# https://sourcegraph.com/github.com/palletone/go-palletone/-/blob/.golangci.yml
+# https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+
+linters:
+  target: internal/...
+  disable-all: true
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - structcheck
+    - varcheck
+    - ineffassign
+    - deadcode
+    - typecheck
+    - bodyclose
+    - golint
+    - stylecheck
+    - gosec
+    - interfacer
+    - unconvert
+    - dupl
+    - goconst
+    - gocyclo
+    - gocognit
+    - gofmt
+    - depguard
+    - misspell
+    - lll
+    - dogsled
+    - nakedret
+    - prealloc
+    - scopelint
+    - gocritic
+    - funlen
+    - whitespace
+
+linters-settings:
+  gofmt:
+    # simplify code: gofmt with `-s` option, true by default
+    simplify: true
+  funlen:
+    lines: 100
+    statements: 60
+  goconst:
+    # minimal length of string constant, 3 by default
+    min-len: 100
+    # minimal occurrences count to trigger, 3 by default
+    min-occurrences: 5
+
+issues:
+  exclude-rules:
+    - linters:
+        - gosec
+      # 401 - Detect the usage of DES, RC4, MD5 or SHA1
+      # 505 - Import blocklist: crypto/sha1
+      text: "G[401,505]"
+
+    - path: internal/app/provider/*
+      linters:
+        - funlen
+    - path: internal/app/repository/payment.go
+      linters:
+        - funlen
+        - gocognit
+    - path: internal/app/report/*
+      linters:
+        - dupl
+        - funlen
+        - gocognit
