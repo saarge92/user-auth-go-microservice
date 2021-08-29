@@ -2,8 +2,10 @@ package main
 
 import (
 	"go-user-microservice/internal/config"
+	repositoriesInterface "go-user-microservice/internal/interfaces/repositories"
 	"go-user-microservice/internal/providers"
 	"go-user-microservice/internal/repositories"
+	"go-user-microservice/internal/services"
 	"go.uber.org/dig"
 	"log"
 )
@@ -36,6 +38,10 @@ func (s *Server) initContainer() error {
 		func(connProvider *providers.ConnectionProvider) *repositories.UserRepository {
 			return repositories.NewUserRepository(connProvider.GetCoreConnection())
 		})
+	e = s.Container.Provide(func(userRepo *repositories.UserRepository) *services.UserService {
+		var userRepositoryInterface repositoriesInterface.UserRepository = userRepo
+		return services.NewUserService(&userRepositoryInterface)
+	})
 	if e != nil {
 		return e
 	}
