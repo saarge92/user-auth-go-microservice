@@ -1,5 +1,5 @@
 syntax = 'proto3';
-package user.microservice;
+package protobuf.user;
 
 option go_package = "protobuf/user";
 
