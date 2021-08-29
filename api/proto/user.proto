@@ -1,0 +1,18 @@
+syntax = 'proto3';
+package user.microservice;
+
+option go_package = "protobuf/user";
+
+service UserService{
+  rpc Signup(SignUpMessage) returns(SignUpResponse);
+}
+
+message SignUpMessage{
+  string login = 1;
+  string password = 2;
+  string name = 3;
+}
+
+message SignUpResponse{
+  int32 id = 1;
+}
