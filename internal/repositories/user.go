@@ -10,6 +10,10 @@ type UserRepository struct {
 	db *sqlx.DB
 }
 
+func NewUserRepository(db *sqlx.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
 func (r *UserRepository) Create(user *entites.User) error {
 	now := time.Now()
 	user.CreatedAt = now
