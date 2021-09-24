@@ -8,6 +8,7 @@ require (
 	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	go.uber.org/dig v1.12.0 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	google.golang.org/grpc v1.40.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )

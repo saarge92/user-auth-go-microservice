@@ -2,7 +2,7 @@ package main
 
 import (
 	"go-user-microservice/internal/config"
-	repositoriesInterface "go-user-microservice/internal/interfaces/repositories"
+	repositoriesInterface "go-user-microservice/internal/contracts/repositories"
 	"go-user-microservice/internal/providers"
 	"go-user-microservice/internal/repositories"
 	"go-user-microservice/internal/services"
@@ -40,7 +40,7 @@ func (s *Server) initContainer() error {
 		})
 	e = s.Container.Provide(func(userRepo *repositories.UserRepository) *services.UserService {
 		var userRepositoryInterface repositoriesInterface.UserRepository = userRepo
-		return services.NewUserService(&userRepositoryInterface)
+		return services.NewUserService(userRepositoryInterface)
 	})
 	if e != nil {
 		return e
