@@ -39,6 +39,7 @@ func (s *UserService) SignUp(form *forms.SignUp, chanResp chan<- interface{}) (*
 	user.Login = form.Login
 	user.Name = form.Name
 	if e = s.userRepository.Create(user); e != nil {
+		chanResp <- nil
 		return nil, e
 	}
 	chanResp <- nil

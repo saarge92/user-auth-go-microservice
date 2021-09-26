@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +16,6 @@ func main() {
 	if e := server.Start(); e != nil {
 		log.Fatal(e)
 	}
-	fmt.Println("Microservice has been launched")
 }
 
 func specifyLogger() {

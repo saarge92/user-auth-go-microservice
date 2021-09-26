@@ -8,17 +8,23 @@ import (
 	"go-user-microservice/pkg/protobuf/user"
 )
 
-type User struct {
-	UserService *services.UserService
+type UserGrpcServer struct {
+	userService *services.UserService
 }
 
-func (s *User) Signup(_ context.Context, in *user.SignUpMessage) (*user.SignUpResponse, error) {
+func NewUserGrpcServer(userService *services.UserService) *UserGrpcServer {
+	return &UserGrpcServer{
+		userService: userService,
+	}
+}
+
+func (s *UserGrpcServer) Signup(_ context.Context, in *user.SignUpMessage) (*user.SignUpResponse, error) {
 	form := &forms.SignUp{SignUpMessage: in}
 	channelResponse := make(chan interface{})
 	var userResponse *entites.User
 	var errorResponse error
 	go func() {
-		userResponse, errorResponse = s.UserService.SignUp(form, channelResponse)
+		userResponse, errorResponse = s.userService.SignUp(form, channelResponse)
 	}()
 	<-channelResponse
 	if errorResponse != nil {

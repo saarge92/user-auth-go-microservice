@@ -22,7 +22,7 @@ func (r *UserRepository) Create(user *entites.User) error {
 				VALUES (:name, :login, :password, :created_at, :updated_at)`
 	result, e := r.db.NamedExec(query, user)
 	if e != nil {
-		return nil
+		return e
 	}
 	user.ID = lastInsertID(result)
 	return nil

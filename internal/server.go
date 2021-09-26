@@ -1,13 +1,19 @@
 package main
 
 import (
+	"fmt"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/config"
-	repositoriesInterface "go-user-microservice/internal/contracts/repositories"
 	"go-user-microservice/internal/providers"
+	"go-user-microservice/internal/providers/functions"
 	"go-user-microservice/internal/repositories"
-	"go-user-microservice/internal/services"
+	"go-user-microservice/internal/server"
+	"go-user-microservice/pkg/protobuf/user"
 	"go.uber.org/dig"
-	"log"
+	"google.golang.org/grpc"
+	"net"
 )
 
 type Server struct {
@@ -15,12 +21,12 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	server := &Server{}
-	e := server.initContainer()
+	mainServer := &Server{}
+	e := mainServer.initContainer()
 	if e != nil {
 		log.Fatal(e)
 	}
-	return server
+	return mainServer
 }
 
 func (s *Server) initContainer() error {
@@ -29,19 +35,26 @@ func (s *Server) initContainer() error {
 		return config.NewConfig()
 	})
 	if e != nil {
-		return nil
+		return e
 	}
 	e = s.Container.Provide(func(config *config.Config) *providers.ConnectionProvider {
 		return providers.NewConnectionProvider(config)
 	})
+	if e != nil {
+		return e
+	}
 	e = s.Container.Provide(
 		func(connProvider *providers.ConnectionProvider) *repositories.UserRepository {
 			return repositories.NewUserRepository(connProvider.GetCoreConnection())
 		})
-	e = s.Container.Provide(func(userRepo *repositories.UserRepository) *services.UserService {
-		var userRepositoryInterface repositoriesInterface.UserRepository = userRepo
-		return services.NewUserService(userRepositoryInterface)
-	})
+	if e != nil {
+		return e
+	}
+	e = functions.ProvideUserRepositories(s.Container)
+	if e != nil {
+		return e
+	}
+	e = functions.ProvideGrpcServers(s.Container)
 	if e != nil {
 		return e
 	}
@@ -49,5 +62,30 @@ func (s *Server) initContainer() error {
 }
 
 func (s *Server) Start() error {
-	return nil
+	serv := grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
+		),
+	)
+	var userGrpcServer *server.UserGrpcServer
+	var configuration *config.Config
+	e := s.Container.Invoke(func(userServer *server.UserGrpcServer) {
+		userGrpcServer = userServer
+	})
+	if e != nil {
+		return e
+	}
+	e = s.Container.Invoke(func(config *config.Config) {
+		configuration = config
+	})
+	if e != nil {
+		return e
+	}
+	user.RegisterUserServiceServer(serv, userGrpcServer)
+	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", configuration.GrpcPort))
+	if e != nil {
+		return e
+	}
+	log.Debug("User microservice server running on port", configuration.GrpcPort)
+	return serv.Serve(listener)
 }
