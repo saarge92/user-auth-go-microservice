@@ -30,5 +30,5 @@ func (s *UserGrpcServer) Signup(_ context.Context, in *user.SignUpMessage) (*use
 	if errorResponse != nil {
 		return nil, errorResponse
 	}
-	return nil, nil
+	return &user.SignUpResponse{Id: userResponse.ID}, nil
 }

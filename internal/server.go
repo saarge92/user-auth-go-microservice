@@ -50,7 +50,7 @@ func (s *Server) initContainer() error {
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideUserRepositories(s.Container)
+	e = functions.ProvideUserServices(s.Container)
 	if e != nil {
 		return e
 	}

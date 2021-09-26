@@ -11,7 +11,7 @@ type ConnectionProvider struct {
 }
 
 func NewConnectionProvider(config *config.Config) *ConnectionProvider {
-	coreConn, e := sqlx.Connect("mysql", config.CoreDatabaseUrl)
+	coreConn, e := sqlx.Connect("mysql", config.CoreDatabaseURL)
 	if e != nil {
 		log.Fatal(e)
 	}

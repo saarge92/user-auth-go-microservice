@@ -7,7 +7,7 @@ import (
 	"go.uber.org/dig"
 )
 
-func ProvideUserRepositories(container *dig.Container) error {
+func ProvideUserServices(container *dig.Container) error {
 	e := container.Provide(func(userRepo *repositories.UserRepository) *services.UserService {
 		var userRepositoryInterface repositoriesInterface.UserRepository = userRepo
 		return services.NewUserService(userRepositoryInterface)
