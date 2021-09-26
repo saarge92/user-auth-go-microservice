@@ -26,7 +26,7 @@ func NewUserService(
 }
 
 func (s *UserService) SignUp(form *forms.SignUp, chanResp chan<- interface{}) (*entites.User, error) {
-	userExist, e := s.userRemoteServices.CheckRemoteUser(1)
+	userExist, e := s.userRemoteServices.CheckRemoteUser(form.Inn)
 	if e != nil {
 		chanResp <- e
 		return nil, e

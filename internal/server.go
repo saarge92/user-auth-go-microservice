@@ -6,9 +6,7 @@ import (
 	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/config"
-	"go-user-microservice/internal/providers"
 	"go-user-microservice/internal/providers/functions"
-	"go-user-microservice/internal/repositories"
 	"go-user-microservice/internal/server"
 	"go-user-microservice/pkg/protobuf/user"
 	"go.uber.org/dig"
@@ -17,7 +15,7 @@ import (
 )
 
 type Server struct {
-	Container *dig.Container
+	container *dig.Container
 }
 
 func NewServer() *Server {
@@ -30,31 +28,24 @@ func NewServer() *Server {
 }
 
 func (s *Server) initContainer() error {
-	s.Container = dig.New()
-	e := s.Container.Provide(func() *config.Config {
-		return config.NewConfig()
-	})
+	s.container = dig.New()
+	e := functions.ProvideConfig(s.container)
 	if e != nil {
 		return e
 	}
-	e = s.Container.Provide(func(config *config.Config) *providers.ConnectionProvider {
-		return providers.NewConnectionProvider(config)
-	})
+	e = functions.ProvideConnections(s.container)
 	if e != nil {
 		return e
 	}
-	e = s.Container.Provide(
-		func(connProvider *providers.ConnectionProvider) *repositories.UserRepository {
-			return repositories.NewUserRepository(connProvider.GetCoreConnection())
-		})
+	e = functions.ProvideRepositories(s.container)
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideUserServices(s.Container)
+	e = functions.ProvideUserServices(s.container)
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideGrpcServers(s.Container)
+	e = functions.ProvideGrpcServers(s.container)
 	if e != nil {
 		return e
 	}
@@ -69,13 +60,13 @@ func (s *Server) Start() error {
 	)
 	var userGrpcServer *server.UserGrpcServer
 	var configuration *config.Config
-	e := s.Container.Invoke(func(userServer *server.UserGrpcServer) {
+	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
 		userGrpcServer = userServer
 	})
 	if e != nil {
 		return e
 	}
-	e = s.Container.Invoke(func(config *config.Config) {
+	e = s.container.Invoke(func(config *config.Config) {
 		configuration = config
 	})
 	if e != nil {
@@ -88,4 +79,8 @@ func (s *Server) Start() error {
 	}
 	log.Debug("User microservice server running on port", configuration.GrpcPort)
 	return serv.Serve(listener)
+}
+
+func (s *Server) GetDIContainer() *dig.Container {
+	return s.container
 }

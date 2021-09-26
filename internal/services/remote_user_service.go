@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"go-user-microservice/internal/config"
-	"io"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 )
 
 type RemoteUserService struct {
@@ -21,8 +23,8 @@ func NewRemoteUserService(config *config.Config) *RemoteUserService {
 	}
 }
 
-func (s *RemoteUserService) CheckRemoteUser(inn uint64) (bool, error) {
-	baseUrl := s.config.RemoteUserURL + "/findById/party"
+func (s *RemoteUserService) CheckRemoteUser(inn uint64) (r bool, e error) {
+	baseURL := s.config.RemoteUserURL + "/4_1/rs/findById/party"
 	token := "Token " + s.config.AuthUserRemoteKey
 	postBody, e := json.Marshal(map[string]interface{}{
 		"query": inn,
@@ -31,25 +33,43 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint64) (bool, error) {
 	if e != nil {
 		return false, e
 	}
-	request := &http.Request{
-		Header: http.Header{
-			"Authorization": []string{token},
-			"Accept":        []string{"application/json"},
-		},
-		RequestURI: baseUrl,
-		Body:       ioutil.NopCloser(bufferPostBody),
-	}
-	response, e := s.httpClient.Do(request)
+	baseRequestURL, e := url.Parse(baseURL)
 	if e != nil {
 		return false, e
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			return
+	request := &http.Request{
+		Method: "POST",
+		Header: http.Header{
+			"Authorization": []string{token},
+			"Accept":        []string{"application/json"},
+			"Content-Type":  []string{"application/json"},
+		},
+		URL:  baseRequestURL,
+		Body: ioutil.NopCloser(bufferPostBody),
+	}
+	response, e := s.httpClient.Do(request)
+	defer func() {
+		if response != nil {
+			e = response.Body.Close()
+			if e != nil {
+				return
+			}
 		}
-	}(response.Body)
+	}()
+	if e != nil {
+		return false, e
+	}
+	if response == nil {
+		return false, nil
+	}
+	if response.StatusCode == http.StatusBadRequest {
+		errorResponse := status.Error(codes.PermissionDenied, "")
+		return false, errorResponse
+	}
 	responseBody, e := ioutil.ReadAll(response.Body)
+	if e != nil {
+		return false, e
+	}
 	var responseMap map[string]interface{}
 	e = json.Unmarshal(responseBody, &responseMap)
 	if e != nil {
