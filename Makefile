@@ -10,6 +10,6 @@ migrateup:
 	migrate -path scripts/migrations -database "mysql://user:pass@(localhost:3311)/user-platform?charset=utf8&parseTime=true" \
  	-verbose up
 
-migrtedown:
+migratedown:
 	migrate -path scripts/migrations -database "mysql://user:pass@(localhost:3311)/user-platform?charset=utf8&parseTime=true" \
 	-verbose down
