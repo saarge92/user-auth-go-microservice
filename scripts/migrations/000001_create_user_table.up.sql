@@ -7,5 +7,5 @@ CREATE table users
     created_at TIMESTAMP    NOT NULL,
     updated_at TIMESTAMP    NOT NULL,
     deleted_at TIMESTAMP    NULL,
-    is_banned  boolean DEFAULT TRUE
+    is_banned  boolean DEFAULT FALSE
 );

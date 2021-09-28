@@ -5,7 +5,10 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"go-user-microservice/internal/entites"
 	"go-user-microservice/pkg/protobuf/user"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"regexp"
+	"strconv"
 )
 
 type SignUp struct {
@@ -23,14 +26,24 @@ func NewSignUpForm(
 }
 
 func (f *SignUp) Validate() error {
-	//emailPattern := "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?" +
-	//	"(?:\\\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-	innPattern := fmt.Sprintf(`\S{%d}$`, entites.InnLength)
-	namePattern := fmt.Sprintf(`\S{%d,%d}$`, entites.NameLengthMin, entites.NameLengthMax)
+	emailPattern := "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$"
+	innPattern := fmt.Sprintf(`^\d{%d}$`, entites.InnLength)
+	sliceErrorMessages := map[string]string{
+		emailPattern: "Should contain email address",
+		innPattern:   "Should contain 10 digits exactly",
+	}
 	return validation.ValidateStruct(f,
 		validation.Field(
 			&f.Login,
 			validation.Required,
+			validation.By(func(value interface{}) error {
+				loginValue := value.(string)
+				e := validation.Validate(loginValue, validation.Match(regexp.MustCompile(emailPattern)))
+				if e != nil {
+					return status.Error(codes.InvalidArgument, sliceErrorMessages[emailPattern])
+				}
+				return nil
+			}),
 			validation.By(f.userExistRule)),
 		validation.Field(
 			&f.Password,
@@ -40,10 +53,19 @@ func (f *SignUp) Validate() error {
 		validation.Field(
 			&f.Inn,
 			validation.Required,
-			validation.Match(regexp.MustCompile(innPattern)),
+			validation.By(func(value interface{}) error {
+				intValue := value.(uint64)
+				stringValue := strconv.Itoa(int(intValue))
+				e := validation.Validate(stringValue, validation.Match(regexp.MustCompile(innPattern)))
+				if e != nil {
+					return status.Error(codes.InvalidArgument, sliceErrorMessages[innPattern])
+				}
+				return nil
+			}),
 		),
 		validation.Field(&f.Name,
 			validation.Required,
-			validation.Match(regexp.MustCompile(namePattern))),
+			validation.Length(2, 120),
+		),
 	)
 }

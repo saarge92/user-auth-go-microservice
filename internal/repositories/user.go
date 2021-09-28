@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/entites"
 	"time"
@@ -46,6 +47,9 @@ func (r *UserRepository) UserExist(login string) (bool, error) {
 	var user = &entites.User{}
 	e := r.db.Get(user, query, login)
 	if e != nil {
+		if e == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, e
 	}
 	return true, nil
