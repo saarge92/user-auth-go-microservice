@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"go-user-microservice/internal/entites"
 	"go-user-microservice/internal/forms/builders"
 	"go-user-microservice/internal/services"
@@ -52,4 +53,16 @@ func (s *UserGrpcServer) Signup(
 		Id:    userResponse.ID,
 		Token: token,
 	}, nil
+}
+
+func (s *UserGrpcServer) VerifyToken(
+	_ context.Context,
+	request *user.VerifyMessage,
+) (*user.VerifyMessageResponse, error) {
+	userPayload, e := s.jwtService.VerifyAndReturnPayloadToken(request.Token)
+	fmt.Println(userPayload)
+	if e != nil {
+		return nil, e
+	}
+	return nil, nil
 }

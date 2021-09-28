@@ -5,6 +5,7 @@ option go_package = "protobuf/user";
 
 service UserService{
   rpc Signup(SignUpMessage) returns(SignUpResponse);
+  rpc VerifyToken(VerifyMessage) returns(VerifyMessageResponse);
 }
 
 message SignUpMessage{
@@ -17,4 +18,20 @@ message SignUpMessage{
 message SignUpResponse{
   int32 id = 1;
   string token = 2;
+}
+
+message VerifyMessage{
+  string token = 1;
+}
+
+message VerifyMessageResponse{
+  oneof response{
+    bool is_valid = 1;
+    UserMessageResponse user = 2;
+  }
+}
+
+message UserMessageResponse{
+  string login = 1;
+  repeated string roles = 2;
 }

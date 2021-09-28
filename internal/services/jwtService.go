@@ -1,9 +1,11 @@
 package services
 
 import (
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"go-user-microservice/internal/config"
 	"go-user-microservice/internal/dto"
+	"go-user-microservice/internal/entites/dictionary"
 	"time"
 )
 
@@ -26,7 +28,7 @@ func (s *JwtService) CreateToken(userName string) (string, error) {
 			Issuer:    s.config.JwtAudience,
 		},
 		UserName: userName,
-		Roles:    []string{"User"},
+		Roles:    []string{string(dictionary.UserRole)},
 	}
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	stringToken, e := jwtToken.SignedString([]byte(s.config.JwtKey))
@@ -34,4 +36,18 @@ func (s *JwtService) CreateToken(userName string) (string, error) {
 		return "", e
 	}
 	return stringToken, nil
+}
+
+func (s *JwtService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad, error) {
+	jwtToken, e := jwt.ParseWithClaims(token, &dto.UserPayLoad{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return []byte(s.config.JwtKey), nil
+	})
+	if e != nil {
+		return nil, e
+	}
+	payloadClaims := jwtToken.Claims.(*dto.UserPayLoad)
+	return payloadClaims, nil
 }
