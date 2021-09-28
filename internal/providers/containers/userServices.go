@@ -28,5 +28,12 @@ func ProvideUserServices(container *dig.Container) error {
 	if e != nil {
 		return e
 	}
+	e = container.Provide(
+		func(config *config.Config) *services.JwtService {
+			return services.NewJwtService(config)
+		})
+	if e != nil {
+		return e
+	}
 	return nil
 }

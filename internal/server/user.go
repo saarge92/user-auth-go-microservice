@@ -10,16 +10,19 @@ import (
 
 type UserGrpcServer struct {
 	userService     *services.UserService
+	jwtService      *services.JwtService
 	userFormBuilder *builders.UserFormBuilder
 }
 
 func NewUserGrpcServer(
 	userService *services.UserService,
 	userFormBuilder *builders.UserFormBuilder,
+	jwtService *services.JwtService,
 ) *UserGrpcServer {
 	return &UserGrpcServer{
 		userService:     userService,
 		userFormBuilder: userFormBuilder,
+		jwtService:      jwtService,
 	}
 }
 
@@ -41,5 +44,12 @@ func (s *UserGrpcServer) Signup(
 	if errorResponse != nil {
 		return nil, errorResponse
 	}
-	return &user.SignUpResponse{Id: userResponse.ID}, nil
+	token, e := s.jwtService.CreateToken(userResponse.Login)
+	if e != nil {
+		return nil, e
+	}
+	return &user.SignUpResponse{
+		Id:    userResponse.ID,
+		Token: token,
+	}, nil
 }

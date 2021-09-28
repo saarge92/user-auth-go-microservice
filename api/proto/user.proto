@@ -16,4 +16,5 @@ message SignUpMessage{
 
 message SignUpResponse{
   int32 id = 1;
+  string token = 2;
 }

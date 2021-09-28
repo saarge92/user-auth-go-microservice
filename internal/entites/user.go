@@ -6,9 +6,7 @@ import (
 )
 
 const (
-	InnLength     int = 10
-	NameLengthMin     = 2
-	NameLengthMax     = 120
+	InnLength int = 10
 )
 
 type User struct {

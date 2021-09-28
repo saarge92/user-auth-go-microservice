@@ -11,8 +11,9 @@ func ProvideGrpcServers(container *dig.Container) error {
 	e := container.Provide(
 		func(userService *services.UserService,
 			userFormBuilder *builders.UserFormBuilder,
+			jwtService *services.JwtService,
 		) *server.UserGrpcServer {
-			return server.NewUserGrpcServer(userService, userFormBuilder)
+			return server.NewUserGrpcServer(userService, userFormBuilder, jwtService)
 		})
 	if e != nil {
 		return e
