@@ -1,4 +1,4 @@
-package functions
+package containers
 
 import (
 	"go-user-microservice/internal/providers"

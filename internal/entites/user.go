@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+const (
+	InnLength     int = 10
+	NameLengthMin     = 2
+	NameLengthMax     = 120
+)
+
 type User struct {
 	ID        int32        `db:"id"`
 	Login     string       `db:"login"`

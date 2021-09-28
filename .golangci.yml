@@ -62,6 +62,6 @@ issues:
     - path: internal/providers/*
       linters:
         - funlen
-    - path: internal/providers/functions/*
+    - path: internal/providers/containers/*
       linters:
         - gocritic

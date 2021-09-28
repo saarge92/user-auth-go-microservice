@@ -6,7 +6,7 @@ import (
 	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/config"
-	"go-user-microservice/internal/providers/functions"
+	"go-user-microservice/internal/providers/containers"
 	"go-user-microservice/internal/server"
 	"go-user-microservice/pkg/protobuf/user"
 	"go.uber.org/dig"
@@ -29,23 +29,27 @@ func NewServer() *Server {
 
 func (s *Server) initContainer() error {
 	s.container = dig.New()
-	e := functions.ProvideConfig(s.container)
+	e := containers.ProvideConfig(s.container)
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideConnections(s.container)
+	e = containers.ProvideConnections(s.container)
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideRepositories(s.container)
+	e = containers.ProvideRepositories(s.container)
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideUserServices(s.container)
+	e = containers.ProvideUserServices(s.container)
 	if e != nil {
 		return e
 	}
-	e = functions.ProvideGrpcServers(s.container)
+	e = containers.ProvideForms(s.container)
+	if e != nil {
+		return e
+	}
+	e = containers.ProvideGrpcServers(s.container)
 	if e != nil {
 		return e
 	}

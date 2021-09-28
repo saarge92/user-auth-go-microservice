@@ -40,3 +40,13 @@ func (r *UserRepository) Update(user *entites.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) UserExist(login string) (bool, error) {
+	query := `SELECT * from users where users.login = ?`
+	var user = &entites.User{}
+	e := r.db.Get(user, query, login)
+	if e != nil {
+		return false, e
+	}
+	return true, nil
+}
