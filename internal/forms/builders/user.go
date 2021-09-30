@@ -21,3 +21,7 @@ func (b *UserFormBuilder) Signup(request *user.SignUpMessage) *forms.SignUp {
 	userExistRule := functions.UserAlReadyExists(b.userRepository)
 	return forms.NewSignUpForm(request, userExistRule)
 }
+
+func (b *UserFormBuilder) SignIn(request *user.SignInMessage) *forms.SignIn {
+	return &forms.SignIn{SignInMessage: request}
+}

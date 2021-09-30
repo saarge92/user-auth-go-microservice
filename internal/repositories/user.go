@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/entites"
+	"go-user-microservice/internal/errors"
 	"time"
 )
 
@@ -53,4 +54,16 @@ func (r *UserRepository) UserExist(login string) (bool, error) {
 		return false, e
 	}
 	return true, nil
+}
+
+func (r *UserRepository) GetUser(login string) (*entites.User, error) {
+	query := `SELECT * FROM users where users.login = ?`
+	var user = &entites.User{}
+	if e := r.db.Get(user, query, login); e != nil {
+		if e == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.CustomDatabaseError(e)
+	}
+	return user, nil
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"go-user-microservice/internal/entites"
 	"go-user-microservice/internal/forms/builders"
 	"go-user-microservice/internal/services"
@@ -60,9 +59,38 @@ func (s *UserGrpcServer) VerifyToken(
 	request *user.VerifyMessage,
 ) (*user.VerifyMessageResponse, error) {
 	userPayload, e := s.jwtService.VerifyAndReturnPayloadToken(request.Token)
-	fmt.Println(userPayload)
 	if e != nil {
 		return nil, e
 	}
-	return nil, nil
+	return &user.VerifyMessageResponse{
+		User: &user.UserMessageResponse{
+			Login: userPayload.UserName,
+			Roles: nil,
+		},
+	}, nil
+}
+
+func (s *UserGrpcServer) SignIn(
+	_ context.Context,
+	request *user.SignInMessage,
+) (*user.SignInResponse, error) {
+	form := s.userFormBuilder.SignIn(request)
+	signInChan := make(chan interface{})
+	var signInError error
+	var userResponse *entites.User
+	go func() {
+		userResponse, signInError = s.userService.SignIn(form, signInChan)
+	}()
+	<-signInChan
+	if signInError != nil {
+		return nil, signInError
+	}
+	token, e := s.jwtService.CreateToken(userResponse.Login)
+	if e != nil {
+		return nil, e
+	}
+	return &user.SignInResponse{
+		Id:    uint64(userResponse.ID),
+		Token: token,
+	}, nil
 }

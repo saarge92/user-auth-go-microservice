@@ -6,6 +6,9 @@ import (
 	"go-user-microservice/internal/config"
 	"go-user-microservice/internal/dto"
 	"go-user-microservice/internal/entites/dictionary"
+	"go-user-microservice/internal/errorlists"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -46,7 +49,7 @@ func (s *JwtService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad
 		return []byte(s.config.JwtKey), nil
 	})
 	if e != nil {
-		return nil, e
+		return nil, status.Error(codes.InvalidArgument, errorlists.UserNotFound)
 	}
 	payloadClaims := jwtToken.Claims.(*dto.UserPayLoad)
 	return payloadClaims, nil
