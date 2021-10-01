@@ -17,7 +17,21 @@ func UserAlReadyExists(userRepository repositories.UserRepository) validation.Ru
 			return errors.DatabaseError(e)
 		}
 		if exist {
-			return status.Error(codes.AlreadyExists, errorlists.RemoteServerBadAuthorization)
+			return status.Error(codes.AlreadyExists, errorlists.UserEmailAlreadyExist)
+		}
+		return nil
+	}
+}
+
+func UserWithInnAlreadyExists(userRepository repositories.UserRepository) validation.RuleFunc {
+	return func(value interface{}) error {
+		inn := value.(uint32)
+		exist, e := userRepository.UserByInnExist(inn)
+		if e != nil {
+			return e
+		}
+		if exist {
+			return status.Error(codes.AlreadyExists, errorlists.UserInnAlreadyExist)
 		}
 		return nil
 	}

@@ -14,14 +14,18 @@ import (
 type SignUp struct {
 	*user.SignUpMessage
 	userExistRule validation.RuleFunc
+	userInnRule   validation.RuleFunc
 }
 
 func NewSignUpForm(
 	request *user.SignUpMessage,
-	userExistRule validation.RuleFunc) *SignUp {
+	userExistRule validation.RuleFunc,
+	userInnRule validation.RuleFunc,
+) *SignUp {
 	return &SignUp{
 		request,
 		userExistRule,
+		userInnRule,
 	}
 }
 
@@ -54,7 +58,7 @@ func (f *SignUp) Validate() error {
 			&f.Inn,
 			validation.Required,
 			validation.By(func(value interface{}) error {
-				intValue := value.(uint64)
+				intValue := value.(uint32)
 				stringValue := strconv.Itoa(int(intValue))
 				e := validation.Validate(stringValue, validation.Match(regexp.MustCompile(innPattern)))
 				if e != nil {
@@ -62,6 +66,7 @@ func (f *SignUp) Validate() error {
 				}
 				return nil
 			}),
+			validation.By(f.userInnRule),
 		),
 		validation.Field(&f.Name,
 			validation.Required,

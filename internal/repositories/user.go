@@ -20,8 +20,8 @@ func (r *UserRepository) Create(user *entites.User) error {
 	now := time.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now
-	query := `INSERT INTO users (name, login, password, created_at, updated_at)
-				VALUES (:name, :login, :password, :created_at, :updated_at)`
+	query := `INSERT INTO users (name, login, inn, password, created_at, updated_at)
+				VALUES (:name, :login, :inn, :password, :created_at, :updated_at)`
 	result, e := r.db.NamedExec(query, user)
 	if e != nil {
 		return e
@@ -34,7 +34,7 @@ func (r *UserRepository) Update(user *entites.User) error {
 	now := time.Now()
 	user.UpdatedAt = now
 	query := `UPDATE users SET
-				login = :login, password = :password, name = :name,
+				login = :login, password = :password, name = :name, inn = :inn,
 				created_at = :created_at, updated_at = :updated_at, is_banned = :is_banned`
 	_, e := r.db.NamedExec(query, user)
 	if e != nil {
@@ -66,4 +66,16 @@ func (r *UserRepository) GetUser(login string) (*entites.User, error) {
 		return nil, errors.DatabaseError(e)
 	}
 	return user, nil
+}
+
+func (r *UserRepository) UserByInnExist(inn uint32) (bool, error) {
+	query := `SELECT * FROM users where users.inn = ?`
+	user := &entites.User{}
+	if e := r.db.Get(user, query, inn); e != nil {
+		if e == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, errors.DatabaseError(e)
+	}
+	return true, nil
 }

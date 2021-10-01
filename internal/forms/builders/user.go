@@ -19,7 +19,8 @@ func NewUserFormBuilder(userRepository repositories.UserRepository) *UserFormBui
 
 func (b *UserFormBuilder) Signup(request *user.SignUpMessage) *forms.SignUp {
 	userExistRule := functions.UserAlReadyExists(b.userRepository)
-	return forms.NewSignUpForm(request, userExistRule)
+	userInnRule := functions.UserWithInnAlreadyExists(b.userRepository)
+	return forms.NewSignUpForm(request, userExistRule, userInnRule)
 }
 
 func (b *UserFormBuilder) SignIn(request *user.SignInMessage) *forms.SignIn {
