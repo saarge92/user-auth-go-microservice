@@ -14,7 +14,7 @@ func UserAlReadyExists(userRepository repositories.UserRepository) validation.Ru
 		email := value.(string)
 		exist, e := userRepository.UserExist(email)
 		if e != nil {
-			return errors.CustomDatabaseError(e)
+			return errors.DatabaseError(e)
 		}
 		if exist {
 			return status.Error(codes.AlreadyExists, errorlists.RemoteServerBadAuthorization)

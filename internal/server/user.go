@@ -58,13 +58,14 @@ func (s *UserGrpcServer) VerifyToken(
 	_ context.Context,
 	request *user.VerifyMessage,
 ) (*user.VerifyMessageResponse, error) {
-	userPayload, e := s.jwtService.VerifyAndReturnPayloadToken(request.Token)
+	userPayload, userEntity, e := s.jwtService.VerifyAndReturnPayloadToken(request.Token)
 	if e != nil {
 		return nil, e
 	}
 	return &user.VerifyMessageResponse{
 		User: &user.UserMessageResponse{
 			Login: userPayload.UserName,
+			Id:    uint64(userEntity.ID),
 			Roles: nil,
 		},
 	}, nil

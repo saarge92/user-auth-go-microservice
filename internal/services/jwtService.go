@@ -4,8 +4,9 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"go-user-microservice/internal/config"
+	"go-user-microservice/internal/contracts/repositories"
 	"go-user-microservice/internal/dto"
-	"go-user-microservice/internal/entites/dictionary"
+	"go-user-microservice/internal/entites"
 	"go-user-microservice/internal/errorlists"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,11 +14,18 @@ import (
 )
 
 type JwtService struct {
-	config *config.Config
+	config         *config.Config
+	userRepository repositories.UserRepository
 }
 
-func NewJwtService(config *config.Config) *JwtService {
-	return &JwtService{config: config}
+func NewJwtService(
+	config *config.Config,
+	userRepository repositories.UserRepository,
+) *JwtService {
+	return &JwtService{
+		config:         config,
+		userRepository: userRepository,
+	}
 }
 
 func (s *JwtService) CreateToken(userName string) (string, error) {
@@ -31,7 +39,6 @@ func (s *JwtService) CreateToken(userName string) (string, error) {
 			Issuer:    s.config.JwtAudience,
 		},
 		UserName: userName,
-		Roles:    []string{string(dictionary.UserRole)},
 	}
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	stringToken, e := jwtToken.SignedString([]byte(s.config.JwtKey))
@@ -41,7 +48,7 @@ func (s *JwtService) CreateToken(userName string) (string, error) {
 	return stringToken, nil
 }
 
-func (s *JwtService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad, error) {
+func (s *JwtService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad, *entites.User, error) {
 	jwtToken, e := jwt.ParseWithClaims(token, &dto.UserPayLoad{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -49,8 +56,35 @@ func (s *JwtService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad
 		return []byte(s.config.JwtKey), nil
 	})
 	if e != nil {
-		return nil, status.Error(codes.InvalidArgument, errorlists.UserNotFound)
+		return nil, nil, status.Error(codes.InvalidArgument, errorlists.TokenInvalid)
 	}
 	payloadClaims := jwtToken.Claims.(*dto.UserPayLoad)
-	return payloadClaims, nil
+	user, e := s.checkClaims(payloadClaims)
+	if e != nil {
+		return nil, nil, e
+	}
+
+	return payloadClaims, user, nil
+}
+
+func (s *JwtService) checkClaims(claims *dto.UserPayLoad) (*entites.User, error) {
+	tokenInvalidError := status.Error(codes.InvalidArgument, errorlists.TokenInvalid)
+	login := claims.UserName
+	user, e := s.userRepository.GetUser(login)
+	if e != nil {
+		return nil, e
+	}
+	if user == nil {
+		return nil, tokenInvalidError
+	}
+
+	now := time.Now()
+	if claims.ExpiresAt < now.Unix() {
+		return nil, tokenInvalidError
+	}
+	if claims.Issuer != s.config.JwtAudience {
+		return nil, tokenInvalidError
+	}
+
+	return user, nil
 }

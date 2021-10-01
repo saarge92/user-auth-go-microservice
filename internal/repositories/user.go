@@ -51,7 +51,7 @@ func (r *UserRepository) UserExist(login string) (bool, error) {
 		if e == sql.ErrNoRows {
 			return false, nil
 		}
-		return false, e
+		return false, errors.DatabaseError(e)
 	}
 	return true, nil
 }
@@ -63,7 +63,7 @@ func (r *UserRepository) GetUser(login string) (*entites.User, error) {
 		if e == sql.ErrNoRows {
 			return nil, nil
 		}
-		return nil, errors.CustomDatabaseError(e)
+		return nil, errors.DatabaseError(e)
 	}
 	return user, nil
 }

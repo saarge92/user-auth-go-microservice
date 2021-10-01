@@ -30,8 +30,9 @@ message VerifyMessageResponse{
 }
 
 message UserMessageResponse{
-  string login = 1;
-  repeated string roles = 2;
+  uint64 id = 1;
+  string login = 2;
+  repeated string roles = 3;
 }
 
 message SignInMessage{
