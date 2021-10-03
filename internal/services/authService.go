@@ -25,16 +25,14 @@ func (s *AuthService) SignUp(
 	f *forms.SignUp, chanResp chan<- interface{},
 ) (*entites.User, string, error) {
 	user, e := s.UserService.SignUp(f)
+	defer close(chanResp)
 	if e != nil {
-		chanResp <- e
 		return nil, "", e
 	}
 	token, e := s.JwtService.CreateToken(user.Login)
 	if e != nil {
-		chanResp <- e
 		return nil, "", e
 	}
-	chanResp <- nil
 	return user, token, nil
 }
 
@@ -42,16 +40,14 @@ func (s *AuthService) SignIn(
 	f *forms.SignIn, chanResp chan<- interface{},
 ) (*entites.User, string, error) {
 	user, e := s.UserService.SignIn(f)
+	defer close(chanResp)
 	if e != nil {
-		chanResp <- e
 		return nil, "", e
 	}
 	token, e := s.JwtService.CreateToken(user.Login)
 	if e != nil {
-		chanResp <- e
 		return nil, "", e
 	}
-	chanResp <- nil
 	return user, token, nil
 }
 

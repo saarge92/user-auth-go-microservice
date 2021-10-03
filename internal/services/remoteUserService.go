@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"go-user-microservice/internal/config"
+	"go-user-microservice/internal/errorlists"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io/ioutil"
@@ -29,10 +30,10 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint32) (r bool, e error) {
 	postBody, e := json.Marshal(map[string]interface{}{
 		"query": inn,
 	})
-	bufferPostBody := bytes.NewBuffer(postBody)
 	if e != nil {
 		return false, e
 	}
+	bufferPostBody := bytes.NewBuffer(postBody)
 	baseRequestURL, e := url.Parse(baseURL)
 	if e != nil {
 		return false, e
@@ -50,9 +51,9 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint32) (r bool, e error) {
 	response, e := s.httpClient.Do(request)
 	defer func() {
 		if response != nil {
-			e = response.Body.Close()
-			if e != nil {
-				return
+			bodyErrorResponse := response.Body.Close()
+			if bodyErrorResponse != nil && e != nil {
+				e = bodyErrorResponse
 			}
 		}
 	}()
@@ -63,7 +64,7 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint32) (r bool, e error) {
 		return false, nil
 	}
 	if response.StatusCode == http.StatusBadRequest {
-		errorResponse := status.Error(codes.PermissionDenied, "")
+		errorResponse := status.Error(codes.PermissionDenied, errorlists.RemoteServerBadAuthorization)
 		return false, errorResponse
 	}
 	responseBody, e := ioutil.ReadAll(response.Body)
@@ -75,5 +76,18 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint32) (r bool, e error) {
 	if e != nil {
 		return false, e
 	}
+	if isVerified := s.verifyResponse(responseMap); !isVerified {
+		return false, status.Error(codes.NotFound, errorlists.NoInnDataRemote)
+	}
 	return true, nil
+}
+
+func (s *RemoteUserService) verifyResponse(responseMap map[string]interface{}) bool {
+	if _, ok := responseMap["suggestions"]; !ok {
+		return false
+	}
+	if sizeResponse := len(responseMap["suggestions"].([]interface{})); sizeResponse == 0 {
+		return false
+	}
+	return true
 }

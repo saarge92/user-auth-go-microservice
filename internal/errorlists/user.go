@@ -7,4 +7,5 @@ const (
 	TokenInvalid                 = "token is invalid"
 	UserEmailAlreadyExist        = "user already exist"
 	UserInnAlreadyExist          = "user inn already exists"
+	NoInnDataRemote              = "inn data not found"
 )
