@@ -26,7 +26,7 @@ func (r *UserRepository) Create(user *entites.User) error {
 	if e != nil {
 		return e
 	}
-	user.ID = lastInsertID(result)
+	user.ID = uint64(lastInsertID(result))
 	return nil
 }
 

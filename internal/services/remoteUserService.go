@@ -24,7 +24,7 @@ func NewRemoteUserService(config *config.Config) *RemoteUserService {
 	}
 }
 
-func (s *RemoteUserService) CheckRemoteUser(inn uint32) (r bool, e error) {
+func (s *RemoteUserService) CheckRemoteUser(inn uint64) (r bool, e error) {
 	baseURL := s.config.RemoteUserURL + "/4_1/rs/findById/party"
 	token := "Token " + s.config.AuthUserRemoteKey
 	postBody, e := json.Marshal(map[string]interface{}{

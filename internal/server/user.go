@@ -59,7 +59,7 @@ func (s *UserGrpcServer) VerifyToken(
 	return &user.VerifyMessageResponse{
 		User: &user.UserMessageResponse{
 			Login: userPayload.UserName,
-			Id:    uint64(userEntity.ID),
+			Id:    userEntity.ID,
 			Roles: nil,
 		},
 	}, nil
@@ -82,7 +82,7 @@ func (s *UserGrpcServer) SignIn(
 		return nil, signInError
 	}
 	return &user.SignInResponse{
-		Id:    uint64(userResponse.ID),
+		Id:    userResponse.ID,
 		Token: token,
 	}, nil
 }
