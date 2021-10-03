@@ -9,20 +9,17 @@ import (
 )
 
 type UserGrpcServer struct {
-	userService     *services.UserService
-	jwtService      *services.JwtService
+	authService     *services.AuthService
 	userFormBuilder *builders.UserFormBuilder
 }
 
 func NewUserGrpcServer(
-	userService *services.UserService,
 	userFormBuilder *builders.UserFormBuilder,
-	jwtService *services.JwtService,
+	authService *services.AuthService,
 ) *UserGrpcServer {
 	return &UserGrpcServer{
-		userService:     userService,
 		userFormBuilder: userFormBuilder,
-		jwtService:      jwtService,
+		authService:     authService,
 	}
 }
 
@@ -36,21 +33,18 @@ func (s *UserGrpcServer) Signup(
 	}
 	channelResponse := make(chan interface{})
 	var userResponse *entites.User
+	var tokenResponse string
 	var errorResponse error
 	go func() {
-		userResponse, errorResponse = s.userService.SignUp(form, channelResponse)
+		userResponse, tokenResponse, errorResponse = s.authService.SignUp(form, channelResponse)
 	}()
 	<-channelResponse
 	if errorResponse != nil {
 		return nil, errorResponse
 	}
-	token, e := s.jwtService.CreateToken(userResponse.Login)
-	if e != nil {
-		return nil, e
-	}
 	return &user.SignUpResponse{
 		Id:    userResponse.ID,
-		Token: token,
+		Token: tokenResponse,
 	}, nil
 }
 
@@ -58,7 +52,7 @@ func (s *UserGrpcServer) VerifyToken(
 	_ context.Context,
 	request *user.VerifyMessage,
 ) (*user.VerifyMessageResponse, error) {
-	userPayload, userEntity, e := s.jwtService.VerifyAndReturnPayloadToken(request.Token)
+	userPayload, userEntity, e := s.authService.VerifyAndReturnPayloadToken(request.Token)
 	if e != nil {
 		return nil, e
 	}
@@ -79,16 +73,13 @@ func (s *UserGrpcServer) SignIn(
 	signInChan := make(chan interface{})
 	var signInError error
 	var userResponse *entites.User
+	var token string
 	go func() {
-		userResponse, signInError = s.userService.SignIn(form, signInChan)
+		userResponse, token, signInError = s.authService.SignIn(form, signInChan)
 	}()
 	<-signInChan
 	if signInError != nil {
 		return nil, signInError
-	}
-	token, e := s.jwtService.CreateToken(userResponse.Login)
-	if e != nil {
-		return nil, e
 	}
 	return &user.SignInResponse{
 		Id:    uint64(userResponse.ID),

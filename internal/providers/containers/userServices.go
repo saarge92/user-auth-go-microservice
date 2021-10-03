@@ -39,5 +39,15 @@ func ProvideUserServices(container *dig.Container) error {
 	if e != nil {
 		return e
 	}
+	e = container.Provide(
+		func(
+			userService *services.UserService,
+			jwtService *services.JwtService,
+		) *services.AuthService {
+			return services.NewAuthService(userService, jwtService)
+		})
+	if e != nil {
+		return e
+	}
 	return nil
 }

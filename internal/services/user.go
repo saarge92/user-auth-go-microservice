@@ -25,20 +25,17 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) SignUp(form *forms.SignUp, chanResp chan<- interface{}) (*entites.User, error) {
+func (s *UserService) SignUp(form *forms.SignUp) (*entites.User, error) {
 	userExist, e := s.userRemoteServices.CheckRemoteUser(form.Inn)
 	if e != nil {
-		chanResp <- e
 		return nil, e
 	}
 	if !userExist {
-		chanResp <- nil
 		return nil, status.Error(codes.NotFound, errorlists.UserNotFoundOnRemote)
 	}
 	user := &entites.User{}
 	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 	if e != nil {
-		chanResp <- e
 		return nil, e
 	}
 	user.Password = string(passwordHash)
@@ -46,32 +43,23 @@ func (s *UserService) SignUp(form *forms.SignUp, chanResp chan<- interface{}) (*
 	user.Name = form.Name
 	user.Inn = form.Inn
 	if e = s.userRepository.Create(user); e != nil {
-		chanResp <- e
 		return nil, e
 	}
-	chanResp <- nil
 	return user, nil
 }
 
-func (s *UserService) SignIn(
-	form *forms.SignIn,
-	chanResp chan<- interface{},
-) (*entites.User, error) {
+func (s *UserService) SignIn(form *forms.SignIn) (*entites.User, error) {
 	user, e := s.userRepository.GetUser(form.Login)
 	if e != nil {
-		chanResp <- e
 		return nil, e
 	}
 	if user == nil {
 		userErr := status.Error(codes.NotFound, errorlists.UserNotFound)
-		chanResp <- userErr
 		return nil, userErr
 	}
 	e = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
 	if e != nil {
-		chanResp <- e
 		return nil, e
 	}
-	chanResp <- nil
 	return user, nil
 }
