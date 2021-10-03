@@ -4,6 +4,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	main2 "go-user-microservice/internal/app"
 	"os"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		log.Debug(".env file not found, use system environment")
 	}
-	server := NewServer()
+	server := main2.NewServer()
 	if e := server.Start(); e != nil {
 		log.Fatal(e)
 	}
