@@ -3,6 +3,7 @@ module go-user-microservice
 go 1.16
 
 require (
+	github.com/DATA-DOG/go-txdb v0.1.4 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
