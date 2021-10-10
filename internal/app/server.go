@@ -28,7 +28,7 @@ func NewServer() *Server {
 	return mainServer
 }
 func (s *Server) InitConfig() error {
-	_, filename, _, _ := runtime.Caller(0)
+	var _, filename, _, _ = runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../../")
 	e := os.Chdir(dir)
 	if e != nil {
