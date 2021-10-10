@@ -23,7 +23,7 @@ func TestUserSignInSignUp(t *testing.T) {
 		})
 	assert.Nil(t, e)
 	password := faker.Password()
-
+	var token string
 	t.Run("Should return success sign up messages", func(t *testing.T) {
 		message := &user.SignUpMessage{
 			Login:    test.Login,
@@ -35,6 +35,7 @@ func TestUserSignInSignUp(t *testing.T) {
 		response, e := userGrpcServer.Signup(emptyContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
+		assert.IsType(t, &user.SignUpResponse{}, response)
 		assert.IsType(t, uint64(0), response.Id)
 		assert.IsType(t, string(""), response.Token)
 	})
@@ -48,5 +49,17 @@ func TestUserSignInSignUp(t *testing.T) {
 		response, e := userGrpcServer.SignIn(emptyContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
+		assert.IsType(t, &user.SignInResponse{}, response)
+		token = response.Token
+	})
+
+	t.Run("Should verify token properly", func(t *testing.T) {
+		message := &user.VerifyMessage{Token: token}
+		emptyContext := context.Background()
+		response, e := userGrpcServer.VerifyToken(emptyContext, message)
+		assert.Nil(t, e)
+		assert.NotNil(t, response)
+		assert.IsType(t, &user.VerifyMessageResponse{}, response)
+		assert.Equal(t, response.User.Login, test.Login)
 	})
 }

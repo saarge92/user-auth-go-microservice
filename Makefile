@@ -6,14 +6,18 @@ init:
 lint:
 	golangci-lint run ./internal/...
 
-migrateup:
+migrate-up:
 	migrate -path scripts/migrations -database "mysql://user:pass@(localhost:3311)/user-platform?charset=utf8&parseTime=true" \
  	-verbose up
 
-migratedown:
+migrate-down:
 	migrate -path scripts/migrations -database "mysql://user:pass@(localhost:3311)/user-platform?charset=utf8&parseTime=true" \
 	-verbose down
 
-migrateup-test:
+migrate-test-up:
 	migrate -path scripts/migrations -database "mysql://test:test@(localhost:3312)/user-test?charset=utf8&parseTime=true" \
      	-verbose up
+
+migrate-test-down:
+	migrate -path scripts/migrations -database "mysql://test:test@(localhost:3312)/user-platform?charset=utf8&parseTime=true" \
+      -verbose down
