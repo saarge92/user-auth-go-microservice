@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +17,8 @@ const (
 	DatabaseName        = "user-database"
 )
 
+var connectionCount = 0
+
 func CreateTestServer() (servers.ServerInterface, func(), error) {
 	server := NewServerTest()
 	e := server.InitConfig()
@@ -29,8 +32,10 @@ func CreateTestServer() (servers.ServerInterface, func(), error) {
 	if e != nil {
 		return nil, nil, e
 	}
-	txdb.Register(DatabaseName, "mysql", configuration.CoreDatabaseURL)
-	e = server.InitContainer()
+	connectionName := fmt.Sprintf(DatabaseName+"_%d", connectionCount)
+	txdb.Register(connectionName, "mysql", configuration.CoreDatabaseURL)
+	connectionCount++
+	e = server.InitContainer(connectionName)
 	if e != nil {
 		return nil, nil, e
 	}

@@ -13,7 +13,7 @@ func main() {
 	if e := server.InitConfig(); e != nil {
 		log.Fatal(e)
 	}
-	e := server.InitContainer()
+	e := server.InitContainer("mysql")
 	if e != nil {
 		log.Fatal(e)
 	}

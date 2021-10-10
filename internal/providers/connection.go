@@ -10,8 +10,11 @@ type ConnectionProvider struct {
 	coreConnection *sqlx.DB
 }
 
-func NewConnectionProvider(config *config.Config) *ConnectionProvider {
-	coreConn, e := sqlx.Connect("mysql", config.CoreDatabaseURL)
+func NewConnectionProvider(
+	config *config.Config,
+	driverDB string,
+) *ConnectionProvider {
+	coreConn, e := sqlx.Connect(driverDB, config.CoreDatabaseURL)
 	if e != nil {
 		log.Fatal(e)
 	}

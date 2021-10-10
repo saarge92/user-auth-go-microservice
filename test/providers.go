@@ -8,9 +8,12 @@ import (
 	"log"
 )
 
-func ProvideTestConnections(container *dig.Container) error {
+func ProvideTestConnections(
+	container *dig.Container,
+	driverDB string,
+) error {
 	e := container.Provide(func(config *config.Config) *providers.ConnectionProvider {
-		return NewConnectionTestProvider(config)
+		return NewConnectionTestProvider(config, driverDB)
 	})
 	if e != nil {
 		return e
@@ -18,8 +21,11 @@ func ProvideTestConnections(container *dig.Container) error {
 	return nil
 }
 
-func NewConnectionTestProvider(config *config.Config) *providers.ConnectionProvider {
-	coreConn, e := sqlx.Open(DatabaseName, config.CoreDatabaseURL)
+func NewConnectionTestProvider(
+	config *config.Config,
+	driverDB string,
+) *providers.ConnectionProvider {
+	coreConn, e := sqlx.Open(driverDB, config.CoreDatabaseURL)
 	if e != nil {
 		log.Fatal(e)
 	}
