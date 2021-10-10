@@ -3,15 +3,10 @@ package test
 import (
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	"go-user-microservice/internal/app"
 	"go-user-microservice/internal/config"
+	"go-user-microservice/internal/contracts/servers"
 	"go-user-microservice/internal/providers"
-	"os"
-	"path"
-	"runtime"
 	"time"
 )
 
@@ -21,44 +16,38 @@ const (
 	DatabaseName        = "user-database"
 )
 
-func CreateTestServer() (*app.Server, func()) {
-	_, filename, _, _ := runtime.Caller(0)
-	dir := path.Join(path.Dir(filename), "..")
-	e := os.Chdir(dir)
+func CreateTestServer() (servers.ServerInterface, func(), error) {
+	server := NewServerTest()
+	e := server.InitConfig()
 	if e != nil {
-		panic(e)
+		return nil, nil, e
 	}
-	if e := godotenv.Load(".env.test"); e != nil {
-		panic(e)
-	}
-	server := app.NewServer()
 	var configuration *config.Config
 	e = server.GetDIContainer().Invoke(func(config *config.Config) {
 		configuration = config
 	})
 	if e != nil {
-		panic(e)
+		return nil, nil, e
 	}
 	txdb.Register(DatabaseName, "mysql", configuration.CoreDatabaseURL)
-	var connProviderTest *providers.ConnectionProvider
-	e = server.GetDIContainer().Invoke(func(connProvider *providers.ConnectionProvider) {
-		connProviderTest = connProvider
-	})
-	coreConn := connProviderTest.GetCoreConnection()
-	e = coreConn.Close()
+	e = server.InitContainer()
 	if e != nil {
-		panic(e)
+		return nil, nil, e
 	}
-	coreConn, e = sqlx.Open(DatabaseName, configuration.CoreDatabaseURL)
+	var connectionProvider *providers.ConnectionProvider
+	e = server.GetDIContainer().Invoke(
+		func(connProvider *providers.ConnectionProvider) {
+			connectionProvider = connProvider
+		})
 	if e != nil {
-		panic(e)
+		return nil, nil, e
 	}
-	connProviderTest.SetCoreConnection(coreConn)
+	coreConn := connectionProvider.GetCoreConnection()
 	return server, func() {
 		time.Sleep(time.Second)
 		if e := coreConn.Close(); e != nil {
 			log.Error(e)
 		}
 		log.Infof("Connection closed: %s", coreConn.DriverName())
-	}
+	}, nil
 }

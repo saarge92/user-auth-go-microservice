@@ -20,10 +20,10 @@ func NewConnectionProvider(config *config.Config) *ConnectionProvider {
 	}
 }
 
-func (c *ConnectionProvider) GetCoreConnection() *sqlx.DB {
-	return c.coreConnection
+func NewConnectionProviderForConnection(connection *sqlx.DB) *ConnectionProvider {
+	return &ConnectionProvider{coreConnection: connection}
 }
 
-func (c *ConnectionProvider) SetCoreConnection(conn *sqlx.DB) {
-	c.coreConnection = conn
+func (c *ConnectionProvider) GetCoreConnection() *sqlx.DB {
+	return c.coreConnection
 }

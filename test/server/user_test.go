@@ -12,25 +12,41 @@ import (
 )
 
 func TestUserSignInSignUp(t *testing.T) {
-	server, closeFunc := test.CreateTestServer()
+	server, closeFunc, e := test.CreateTestServer()
+	assert.Nil(t, e)
 	defer closeFunc()
 	container := server.GetDIContainer()
 	var userGrpcServer *grpcServer.UserGrpcServer
-	e := container.Invoke(
+	e = container.Invoke(
 		func(userServer *grpcServer.UserGrpcServer) {
 			userGrpcServer = userServer
 		})
 	assert.Nil(t, e)
-	message := &user.SignUpMessage{
-		Login:    test.Login,
-		Inn:      test.Inn,
-		Password: faker.Password(),
-		Name:     faker.Name(),
-	}
-	emptyContext := context.Background()
-	response, e := userGrpcServer.Signup(emptyContext, message)
-	assert.Nil(t, e)
-	assert.NotNil(t, response)
-	assert.IsType(t, uint64(0), response.Id)
-	assert.IsType(t, string(""), response.Token)
+	password := faker.Password()
+
+	t.Run("Should return success sign up messages", func(t *testing.T) {
+		message := &user.SignUpMessage{
+			Login:    test.Login,
+			Inn:      test.Inn,
+			Password: password,
+			Name:     faker.Name(),
+		}
+		emptyContext := context.Background()
+		response, e := userGrpcServer.Signup(emptyContext, message)
+		assert.Nil(t, e)
+		assert.NotNil(t, response)
+		assert.IsType(t, uint64(0), response.Id)
+		assert.IsType(t, string(""), response.Token)
+	})
+
+	t.Run("Should return sign in message", func(t *testing.T) {
+		message := &user.SignInMessage{
+			Login:    test.Login,
+			Password: password,
+		}
+		emptyContext := context.Background()
+		response, e := userGrpcServer.SignIn(emptyContext, message)
+		assert.Nil(t, e)
+		assert.NotNil(t, response)
+	})
 }

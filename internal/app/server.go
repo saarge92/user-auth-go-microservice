@@ -4,6 +4,7 @@ import (
 	"fmt"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/config"
 	"go-user-microservice/internal/providers/containers"
@@ -12,6 +13,9 @@ import (
 	"go.uber.org/dig"
 	"google.golang.org/grpc"
 	"net"
+	"os"
+	"path"
+	"runtime"
 )
 
 type Server struct {
@@ -20,20 +24,23 @@ type Server struct {
 
 func NewServer() *Server {
 	mainServer := &Server{}
-	e := mainServer.initContainer()
-	if e != nil {
-		log.Fatal(e)
-	}
+	mainServer.container = dig.New()
 	return mainServer
 }
-
-func (s *Server) initContainer() error {
-	s.container = dig.New()
-	e := containers.ProvideConfig(s.container)
+func (s *Server) InitConfig() error {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "../../")
+	e := os.Chdir(dir)
 	if e != nil {
-		return e
+		panic(e)
 	}
-	e = containers.ProvideConnections(s.container)
+	if e := godotenv.Load(".env"); e != nil {
+		panic(e)
+	}
+	return containers.ProvideConfig(s.container)
+}
+func (s *Server) InitContainer() error {
+	e := containers.ProvideConnections(s.container)
 	if e != nil {
 		return e
 	}
