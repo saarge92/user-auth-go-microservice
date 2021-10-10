@@ -13,3 +13,7 @@ migrateup:
 migratedown:
 	migrate -path scripts/migrations -database "mysql://user:pass@(localhost:3311)/user-platform?charset=utf8&parseTime=true" \
 	-verbose down
+
+migrateup-test:
+	migrate -path scripts/migrations -database "mysql://test:test@(localhost:3312)/user-test?charset=utf8&parseTime=true" \
+     	-verbose up

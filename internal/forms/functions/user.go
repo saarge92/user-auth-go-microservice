@@ -25,7 +25,7 @@ func UserAlReadyExists(userRepository repositories.UserRepository) validation.Ru
 
 func UserWithInnAlreadyExists(userRepository repositories.UserRepository) validation.RuleFunc {
 	return func(value interface{}) error {
-		inn := value.(uint32)
+		inn := value.(uint64)
 		exist, e := userRepository.UserByInnExist(inn)
 		if e != nil {
 			return e

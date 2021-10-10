@@ -68,7 +68,7 @@ func (r *UserRepository) GetUser(login string) (*entites.User, error) {
 	return user, nil
 }
 
-func (r *UserRepository) UserByInnExist(inn uint32) (bool, error) {
+func (r *UserRepository) UserByInnExist(inn uint64) (bool, error) {
 	query := `SELECT * FROM users where users.inn = ?`
 	user := &entites.User{}
 	if e := r.db.Get(user, query, inn); e != nil {

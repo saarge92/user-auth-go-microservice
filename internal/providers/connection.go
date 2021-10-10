@@ -23,3 +23,7 @@ func NewConnectionProvider(config *config.Config) *ConnectionProvider {
 func (c *ConnectionProvider) GetCoreConnection() *sqlx.DB {
 	return c.coreConnection
 }
+
+func (c *ConnectionProvider) SetCoreConnection(conn *sqlx.DB) {
+	c.coreConnection = conn
+}

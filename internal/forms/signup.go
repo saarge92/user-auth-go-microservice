@@ -58,7 +58,7 @@ func (f *SignUp) Validate() error {
 			&f.Inn,
 			validation.Required,
 			validation.By(func(value interface{}) error {
-				intValue := value.(uint32)
+				intValue := value.(uint64)
 				stringValue := strconv.Itoa(int(intValue))
 				e := validation.Validate(stringValue, validation.Match(regexp.MustCompile(innPattern)))
 				if e != nil {

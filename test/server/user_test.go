@@ -12,7 +12,8 @@ import (
 )
 
 func TestUserSignInSignUp(t *testing.T) {
-	server := test.CreateTestServer()
+	server, closeFunc := test.CreateTestServer()
+	defer closeFunc()
 	container := server.GetDIContainer()
 	var userGrpcServer *grpcServer.UserGrpcServer
 	e := container.Invoke(
@@ -30,6 +31,6 @@ func TestUserSignInSignUp(t *testing.T) {
 	response, e := userGrpcServer.Signup(emptyContext, message)
 	assert.Nil(t, e)
 	assert.NotNil(t, response)
-	assert.IsType(t, int32(0), response.Id)
+	assert.IsType(t, uint64(0), response.Id)
 	assert.IsType(t, string(""), response.Token)
 }
