@@ -8,7 +8,6 @@ import (
 	"go-user-microservice/internal/config"
 	"go-user-microservice/internal/contracts/servers"
 	"go-user-microservice/internal/providers"
-	"time"
 )
 
 const (
@@ -35,7 +34,8 @@ func CreateTestServer() (servers.ServerInterface, func(), error) {
 	connectionName := fmt.Sprintf(DatabaseName+"_%d", connectionCount)
 	txdb.Register(connectionName, "mysql", configuration.CoreDatabaseURL)
 	connectionCount++
-	e = server.InitContainer(connectionName)
+	configuration.DatabaseDriver = connectionName
+	e = server.InitContainer()
 	if e != nil {
 		return nil, nil, e
 	}
@@ -49,7 +49,6 @@ func CreateTestServer() (servers.ServerInterface, func(), error) {
 	}
 	coreConn := connectionProvider.GetCoreConnection()
 	return server, func() {
-		time.Sleep(time.Second)
 		if e := coreConn.Close(); e != nil {
 			log.Error(e)
 		}

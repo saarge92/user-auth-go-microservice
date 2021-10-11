@@ -8,10 +8,9 @@ import (
 
 func ProvideConnections(
 	container *dig.Container,
-	driverDB string,
 ) error {
 	e := container.Provide(func(config *config.Config) *providers.ConnectionProvider {
-		return providers.NewConnectionProvider(config, driverDB)
+		return providers.NewConnectionProvider(config)
 	})
 	if e != nil {
 		return e

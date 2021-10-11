@@ -39,8 +39,8 @@ func (s *Server) InitConfig() error {
 	}
 	return containers.ProvideConfig(s.container)
 }
-func (s *Server) InitContainer(driverDB string) error {
-	e := containers.ProvideConnections(s.container, driverDB)
+func (s *Server) InitContainer() error {
+	e := containers.ProvideConnections(s.container)
 	if e != nil {
 		return e
 	}

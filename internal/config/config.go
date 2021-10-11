@@ -13,6 +13,7 @@ type Config struct {
 	JwtAudience       string
 	JwtExpiration     int32
 	JwtKey            string
+	DatabaseDriver    string
 }
 
 func NewConfig() *Config {
@@ -25,5 +26,6 @@ func NewConfig() *Config {
 		JwtAudience:       os.Getenv("JWT_AUDIENCE"),
 		JwtExpiration:     int32(jwtExpiration),
 		JwtKey:            os.Getenv("JWT_KEY"),
+		DatabaseDriver:    os.Getenv("DATABASE_DRIVER"),
 	}
 }

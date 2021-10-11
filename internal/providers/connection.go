@@ -12,9 +12,8 @@ type ConnectionProvider struct {
 
 func NewConnectionProvider(
 	config *config.Config,
-	driverDB string,
 ) *ConnectionProvider {
-	coreConn, e := sqlx.Connect(driverDB, config.CoreDatabaseURL)
+	coreConn, e := sqlx.Open(config.DatabaseDriver, config.CoreDatabaseURL)
 	if e != nil {
 		log.Fatal(e)
 	}
