@@ -5,13 +5,14 @@ import (
 	repositoriesInterface "go-user-microservice/internal/contracts/repositories"
 	"go-user-microservice/internal/repositories"
 	"go-user-microservice/internal/services"
+	"go-user-microservice/internal/services/user"
 	"go.uber.org/dig"
 )
 
 func ProvideUserServices(container *dig.Container) error {
 	e := container.Provide(
-		func(config *config.Config) *services.RemoteUserService {
-			return services.NewRemoteUserService(config)
+		func(config *config.Config) *user.RemoteUserService {
+			return user.NewRemoteUserService(config)
 		},
 	)
 	if e != nil {
@@ -20,9 +21,9 @@ func ProvideUserServices(container *dig.Container) error {
 	e = container.Provide(
 		func(
 			userRepo *repositories.UserRepository,
-			userRemoteService *services.RemoteUserService,
+			userRemoteService *user.RemoteUserService,
 		) *services.UserService {
-			var userRepositoryInterface repositoriesInterface.UserRepository = userRepo
+			var userRepositoryInterface repositoriesInterface.UserRepositoryInterface = userRepo
 			return services.NewUserService(userRepositoryInterface, userRemoteService)
 		})
 	if e != nil {
@@ -32,9 +33,9 @@ func ProvideUserServices(container *dig.Container) error {
 		func(
 			config *config.Config,
 			userRepo *repositories.UserRepository,
-		) *services.JwtService {
-			var userRepositoryInterface repositoriesInterface.UserRepository = userRepo
-			return services.NewJwtService(config, userRepositoryInterface)
+		) *user.JwtService {
+			var userRepositoryInterface repositoriesInterface.UserRepositoryInterface = userRepo
+			return user.NewJwtService(config, userRepositoryInterface)
 		})
 	if e != nil {
 		return e
@@ -42,9 +43,9 @@ func ProvideUserServices(container *dig.Container) error {
 	e = container.Provide(
 		func(
 			userService *services.UserService,
-			jwtService *services.JwtService,
-		) *services.AuthService {
-			return services.NewAuthService(userService, jwtService)
+			jwtService *user.JwtService,
+		) *user.AuthService {
+			return user.NewAuthService(userService, jwtService)
 		})
 	if e != nil {
 		return e

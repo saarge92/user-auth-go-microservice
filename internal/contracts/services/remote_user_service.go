@@ -1,5 +1,5 @@
 package services
 
 type RemoteUserServiceInterface interface {
-	CheckRemoteUser(login string) bool
+	CheckRemoteUser(inn uint64) (r bool, e error)
 }

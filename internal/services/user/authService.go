@@ -1,18 +1,19 @@
-package services
+package user
 
 import (
 	"go-user-microservice/internal/dto"
 	"go-user-microservice/internal/entites"
 	"go-user-microservice/internal/forms"
+	"go-user-microservice/internal/services"
 )
 
 type AuthService struct {
-	UserService *UserService
+	UserService *services.UserService
 	JwtService  *JwtService
 }
 
 func NewAuthService(
-	userService *UserService,
+	userService *services.UserService,
 	jwtService *JwtService,
 ) *AuthService {
 	return &AuthService{

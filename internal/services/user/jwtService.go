@@ -1,4 +1,4 @@
-package services
+package user
 
 import (
 	"errors"
@@ -15,12 +15,12 @@ import (
 
 type JwtService struct {
 	config         *config.Config
-	userRepository repositories.UserRepository
+	userRepository repositories.UserRepositoryInterface
 }
 
 func NewJwtService(
 	config *config.Config,
-	userRepository repositories.UserRepository,
+	userRepository repositories.UserRepositoryInterface,
 ) *JwtService {
 	return &JwtService{
 		config:         config,

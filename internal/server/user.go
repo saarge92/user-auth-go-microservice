@@ -4,18 +4,18 @@ import (
 	"context"
 	"go-user-microservice/internal/entites"
 	"go-user-microservice/internal/forms/builders"
-	"go-user-microservice/internal/services"
+	userServices "go-user-microservice/internal/services/user"
 	"go-user-microservice/pkg/protobuf/user"
 )
 
 type UserGrpcServer struct {
-	authService     *services.AuthService
+	authService     *userServices.AuthService
 	userFormBuilder *builders.UserFormBuilder
 }
 
 func NewUserGrpcServer(
 	userFormBuilder *builders.UserFormBuilder,
-	authService *services.AuthService,
+	authService *userServices.AuthService,
 ) *UserGrpcServer {
 	return &UserGrpcServer{
 		userFormBuilder: userFormBuilder,

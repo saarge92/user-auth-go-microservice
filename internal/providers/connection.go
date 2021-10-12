@@ -22,10 +22,6 @@ func NewConnectionProvider(
 	}
 }
 
-func NewConnectionProviderForConnection(connection *sqlx.DB) *ConnectionProvider {
-	return &ConnectionProvider{coreConnection: connection}
-}
-
 func (c *ConnectionProvider) GetCoreConnection() *sqlx.DB {
 	return c.coreConnection
 }

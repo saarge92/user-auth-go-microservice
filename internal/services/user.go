@@ -5,19 +5,20 @@ import (
 	"go-user-microservice/internal/entites"
 	"go-user-microservice/internal/errorlists"
 	"go-user-microservice/internal/forms"
+	"go-user-microservice/internal/services/user"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type UserService struct {
-	userRepository     repositories.UserRepository
-	userRemoteServices *RemoteUserService
+	userRepository     repositories.UserRepositoryInterface
+	userRemoteServices *user.RemoteUserService
 }
 
 func NewUserService(
-	userRepository repositories.UserRepository,
-	userRemoteService *RemoteUserService,
+	userRepository repositories.UserRepositoryInterface,
+	userRemoteService *user.RemoteUserService,
 ) *UserService {
 	return &UserService{
 		userRepository:     userRepository,

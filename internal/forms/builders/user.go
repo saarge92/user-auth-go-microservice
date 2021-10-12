@@ -8,10 +8,10 @@ import (
 )
 
 type UserFormBuilder struct {
-	userRepository repositories.UserRepository
+	userRepository repositories.UserRepositoryInterface
 }
 
-func NewUserFormBuilder(userRepository repositories.UserRepository) *UserFormBuilder {
+func NewUserFormBuilder(userRepository repositories.UserRepositoryInterface) *UserFormBuilder {
 	return &UserFormBuilder{
 		userRepository: userRepository,
 	}

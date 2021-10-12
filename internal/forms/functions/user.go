@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func UserAlReadyExists(userRepository repositories.UserRepository) validation.RuleFunc {
+func UserAlReadyExists(userRepository repositories.UserRepositoryInterface) validation.RuleFunc {
 	return func(value interface{}) error {
 		email := value.(string)
 		exist, e := userRepository.UserExist(email)
@@ -23,7 +23,7 @@ func UserAlReadyExists(userRepository repositories.UserRepository) validation.Ru
 	}
 }
 
-func UserWithInnAlreadyExists(userRepository repositories.UserRepository) validation.RuleFunc {
+func UserWithInnAlreadyExists(userRepository repositories.UserRepositoryInterface) validation.RuleFunc {
 	return func(value interface{}) error {
 		inn := value.(uint64)
 		exist, e := userRepository.UserByInnExist(inn)

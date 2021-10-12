@@ -57,7 +57,7 @@ func (r *UserRepository) UserExist(login string) (bool, error) {
 }
 
 func (r *UserRepository) GetUser(login string) (*entites.User, error) {
-	query := `SELECT * FROM users where users.login = ?`
+	query := `SELECT * FROM users WHERE users.login = ?`
 	var user = &entites.User{}
 	if e := r.db.Get(user, query, login); e != nil {
 		if e == sql.ErrNoRows {
@@ -69,7 +69,7 @@ func (r *UserRepository) GetUser(login string) (*entites.User, error) {
 }
 
 func (r *UserRepository) UserByInnExist(inn uint64) (bool, error) {
-	query := `SELECT * FROM users where users.inn = ?`
+	query := `SELECT * FROM users WHERE users.inn = ?`
 	user := &entites.User{}
 	if e := r.db.Get(user, query, inn); e != nil {
 		if e == sql.ErrNoRows {
@@ -78,4 +78,16 @@ func (r *UserRepository) UserByInnExist(inn uint64) (bool, error) {
 		return false, errors.DatabaseError(e)
 	}
 	return true, nil
+}
+
+func (r *UserRepository) UserByID(id uint64) (*entites.User, error) {
+	query := `SELECT * FROM users WHERE users.id = ?`
+	user := &entites.User{}
+	if e := r.db.Get(user, query, id); e != nil {
+		if e == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.DatabaseError(e)
+	}
+	return user, nil
 }

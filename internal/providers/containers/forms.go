@@ -9,7 +9,7 @@ import (
 
 func ProvideForms(container *dig.Container) error {
 	e := container.Provide(func(userRepository *repositoriesImpl.UserRepository) *builders.UserFormBuilder {
-		var userRepoInterface repositories.UserRepository = userRepository
+		var userRepoInterface repositories.UserRepositoryInterface = userRepository
 		return builders.NewUserFormBuilder(userRepoInterface)
 	})
 	if e != nil {

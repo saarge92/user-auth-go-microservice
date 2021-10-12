@@ -4,6 +4,7 @@ import (
 	"go-user-microservice/internal/forms/builders"
 	"go-user-microservice/internal/server"
 	"go-user-microservice/internal/services"
+	userService "go-user-microservice/internal/services/user"
 	"go.uber.org/dig"
 )
 
@@ -11,7 +12,7 @@ func ProvideGrpcServers(container *dig.Container) error {
 	e := container.Provide(
 		func(userService *services.UserService,
 			userFormBuilder *builders.UserFormBuilder,
-			authService *services.AuthService,
+			authService *userService.AuthService,
 		) *server.UserGrpcServer {
 			return server.NewUserGrpcServer(userFormBuilder, authService)
 		})
