@@ -5,27 +5,27 @@ import (
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
-	"go-user-microservice/internal/config"
-	"go-user-microservice/internal/contracts/servers"
-	"go-user-microservice/internal/providers"
+	config2 "go-user-microservice/internal/app/config"
+	servers2 "go-user-microservice/internal/app/domain/servers"
+	providers2 "go-user-microservice/internal/app/providers"
 )
 
 const (
 	Inn          uint64 = 7707083893
-	Login        string = "user@mail.ru"
-	DatabaseName        = "user-database"
+	Login        string = "member@mail.ru"
+	DatabaseName        = "member-database"
 )
 
 var connectionCount = 0
 
-func CreateTestServer() (servers.ServerInterface, func(), error) {
+func CreateTestServer() (servers2.ServerInterface, func(), error) {
 	server := NewServerTest()
 	e := server.InitConfig()
 	if e != nil {
 		return nil, nil, e
 	}
-	var configuration *config.Config
-	e = server.GetDIContainer().Invoke(func(config *config.Config) {
+	var configuration *config2.Config
+	e = server.GetDIContainer().Invoke(func(config *config2.Config) {
 		configuration = config
 	})
 	if e != nil {
@@ -39,9 +39,9 @@ func CreateTestServer() (servers.ServerInterface, func(), error) {
 	if e != nil {
 		return nil, nil, e
 	}
-	var connectionProvider *providers.ConnectionProvider
+	var connectionProvider *providers2.ConnectionProvider
 	e = server.GetDIContainer().Invoke(
-		func(connProvider *providers.ConnectionProvider) {
+		func(connProvider *providers2.ConnectionProvider) {
 			connectionProvider = connProvider
 		})
 	if e != nil {

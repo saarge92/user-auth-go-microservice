@@ -5,7 +5,7 @@ import (
 	"github.com/bxcodec/faker/v3"
 	_ "github.com/bxcodec/faker/v3"
 	"github.com/stretchr/testify/assert"
-	grpcServer "go-user-microservice/internal/server"
+	server2 "go-user-microservice/internal/app/server"
 	"go-user-microservice/pkg/protobuf/user"
 	"go-user-microservice/test"
 	"testing"
@@ -16,9 +16,9 @@ func TestUserSignInSignUp(t *testing.T) {
 	assert.Nil(t, e)
 	defer closeFunc()
 	container := server.GetDIContainer()
-	var userGrpcServer *grpcServer.UserGrpcServer
+	var userGrpcServer *server2.UserGrpcServer
 	e = container.Invoke(
-		func(userServer *grpcServer.UserGrpcServer) {
+		func(userServer *server2.UserGrpcServer) {
 			userGrpcServer = userServer
 		})
 	assert.Nil(t, e)
