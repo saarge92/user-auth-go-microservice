@@ -1,18 +1,34 @@
 package containers
 
 import (
-	providers2 "go-user-microservice/internal/app/providers"
-	repositories2 "go-user-microservice/internal/app/repositories"
+	"go-user-microservice/internal/app/providers"
+	"go-user-microservice/internal/app/repositories"
 	"go.uber.org/dig"
 )
 
 func ProvideRepositories(container *dig.Container) error {
 	e := container.Provide(
-		func(connProvider *providers2.ConnectionProvider) *repositories2.UserRepository {
-			return repositories2.NewUserRepository(connProvider.GetCoreConnection())
+		func(connProvider *providers.ConnectionProvider) *repositories.UserRepository {
+			return repositories.NewUserRepository(connProvider.GetCoreConnection())
 		})
 	if e != nil {
 		return e
 	}
-	return nil
+	e = container.Provide(
+		func(connProvider *providers.ConnectionProvider) *repositories.WalletRepository {
+			return repositories.NewWalletRepository(connProvider.GetCoreConnection())
+		},
+	)
+	if e != nil {
+		return e
+	}
+	e = container.Provide(
+		func(connProvider *providers.ConnectionProvider) *repositories.CurrencyRepository {
+			return repositories.NewCurrencyRepository(connProvider.GetCoreConnection())
+		},
+	)
+	if e != nil {
+		return e
+	}
+	return e
 }

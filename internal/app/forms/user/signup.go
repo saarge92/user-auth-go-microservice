@@ -1,4 +1,4 @@
-package forms
+package user
 
 import (
 	"fmt"

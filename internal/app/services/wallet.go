@@ -2,24 +2,24 @@ package services
 
 import (
 	"github.com/shopspring/decimal"
-	repositories2 "go-user-microservice/internal/app/domain/repositories"
-	entites2 "go-user-microservice/internal/app/entites"
-	errorlists2 "go-user-microservice/internal/app/errorlists"
-	forms2 "go-user-microservice/internal/app/forms"
+	"go-user-microservice/internal/app/domain/repositories"
+	"go-user-microservice/internal/app/entites"
+	"go-user-microservice/internal/app/errorlists"
+	"go-user-microservice/internal/app/forms"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type WalletService struct {
-	walletRepository   repositories2.WalletRepositoryInterface
-	userRepository     repositories2.UserRepositoryInterface
-	currencyRepository repositories2.CurrencyRepositoryInterface
+	walletRepository   repositories.WalletRepositoryInterface
+	userRepository     repositories.UserRepositoryInterface
+	currencyRepository repositories.CurrencyRepositoryInterface
 }
 
 func NewWalletService(
-	walletRepository repositories2.WalletRepositoryInterface,
-	userRepository repositories2.UserRepositoryInterface,
-	currencyRepository repositories2.CurrencyRepositoryInterface,
+	walletRepository repositories.WalletRepositoryInterface,
+	userRepository repositories.UserRepositoryInterface,
+	currencyRepository repositories.CurrencyRepositoryInterface,
 ) *WalletService {
 	return &WalletService{
 		walletRepository:   walletRepository,
@@ -28,23 +28,23 @@ func NewWalletService(
 	}
 }
 
-func (s *WalletService) Create(form *forms2.WalletCreateForm) (*entites2.Wallet, error) {
+func (s *WalletService) Create(form *forms.WalletCreateForm) (*entites.Wallet, error) {
 	user, e := s.userRepository.UserByID(form.UserID)
 	if e != nil {
 		return nil, e
 	}
 	if user == nil {
-		return nil, status.Error(codes.NotFound, errorlists2.UserNotFound)
+		return nil, status.Error(codes.NotFound, errorlists.UserNotFound)
 	}
 	currency, e := s.currencyRepository.GetByCode(form.Code)
 	if e != nil {
 		return nil, e
 	}
 	if currency == nil {
-		return nil, status.Error(codes.NotFound, errorlists2.CurrencyNotFound)
+		return nil, status.Error(codes.NotFound, errorlists.CurrencyNotFound)
 	}
 	balance := decimal.NewFromInt(0)
-	wallet := &entites2.Wallet{
+	wallet := &entites.Wallet{
 		UserID:     user.ID,
 		Balance:    balance,
 		CurrencyID: currency.ID,

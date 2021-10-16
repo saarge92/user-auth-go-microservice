@@ -3,7 +3,7 @@ package member
 import (
 	dto2 "go-user-microservice/internal/app/dto"
 	entites2 "go-user-microservice/internal/app/entites"
-	forms2 "go-user-microservice/internal/app/forms"
+	"go-user-microservice/internal/app/forms/user"
 )
 
 type AuthService struct {
@@ -22,7 +22,7 @@ func NewAuthService(
 }
 
 func (s *AuthService) SignUp(
-	f *forms2.SignUp, chanResp chan<- interface{},
+	f *user.SignUp, chanResp chan<- interface{},
 ) (*entites2.User, string, error) {
 	user, e := s.UserService.SignUp(f)
 	defer close(chanResp)
@@ -37,7 +37,7 @@ func (s *AuthService) SignUp(
 }
 
 func (s *AuthService) SignIn(
-	f *forms2.SignIn, chanResp chan<- interface{},
+	f *user.SignIn, chanResp chan<- interface{},
 ) (*entites2.User, string, error) {
 	user, e := s.UserService.SignIn(f)
 	defer close(chanResp)

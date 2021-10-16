@@ -7,9 +7,11 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/app/config"
+	"go-user-microservice/internal/app/middlewares"
 	"go-user-microservice/internal/app/providers/containers"
 	"go-user-microservice/internal/app/server"
 	"go-user-microservice/pkg/protobuf/user"
+	"go-user-microservice/pkg/protobuf/wallet"
 	"go.uber.org/dig"
 	"google.golang.org/grpc"
 	"net"
@@ -40,24 +42,22 @@ func (s *Server) InitConfig() error {
 	return containers.ProvideConfig(s.container)
 }
 func (s *Server) InitContainer() error {
-	e := containers.ProvideConnections(s.container)
-	if e != nil {
+	if e := containers.ProvideConnections(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideRepositories(s.container)
-	if e != nil {
+	if e := containers.ProvideRepositories(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideUserServices(s.container)
-	if e != nil {
+	if e := containers.ProvideUserServices(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideForms(s.container)
-	if e != nil {
+	if e := containers.ProvideWalletServices(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideGrpcServers(s.container)
-	if e != nil {
+	if e := containers.ProvideForms(s.container); e != nil {
+		return e
+	}
+	if e := containers.ProvideGrpcServers(s.container); e != nil {
 		return e
 	}
 	return nil
@@ -67,9 +67,11 @@ func (s *Server) Start() error {
 	serv := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
+			middlewares.UserUnaryInterceptor,
 		),
 	)
 	var userGrpcServer *server.UserGrpcServer
+	var walletGrpcServer *server.WalletGrpcServer
 	var configuration *config.Config
 	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
 		userGrpcServer = userServer
@@ -83,7 +85,14 @@ func (s *Server) Start() error {
 	if e != nil {
 		return e
 	}
+	e = s.container.Invoke(func(walletServer *server.WalletGrpcServer) {
+		walletGrpcServer = walletServer
+	})
+	if e != nil {
+		return e
+	}
 	user.RegisterUserServiceServer(serv, userGrpcServer)
+	wallet.RegisterWalletServiceServer(serv, walletGrpcServer)
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", configuration.GrpcPort))
 	if e != nil {
 		return e

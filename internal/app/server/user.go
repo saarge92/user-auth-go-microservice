@@ -2,20 +2,20 @@ package server
 
 import (
 	"context"
-	entites2 "go-user-microservice/internal/app/entites"
-	builders2 "go-user-microservice/internal/app/forms/builders"
-	user2 "go-user-microservice/internal/app/services/member"
+	"go-user-microservice/internal/app/entites"
+	builders2 "go-user-microservice/internal/app/forms/user/builders"
+	"go-user-microservice/internal/app/services/member"
 	"go-user-microservice/pkg/protobuf/user"
 )
 
 type UserGrpcServer struct {
-	authService     *user2.AuthService
+	authService     *member.AuthService
 	userFormBuilder *builders2.UserFormBuilder
 }
 
 func NewUserGrpcServer(
 	userFormBuilder *builders2.UserFormBuilder,
-	authService *user2.AuthService,
+	authService *member.AuthService,
 ) *UserGrpcServer {
 	return &UserGrpcServer{
 		userFormBuilder: userFormBuilder,
@@ -32,7 +32,7 @@ func (s *UserGrpcServer) Signup(
 		return nil, e
 	}
 	channelResponse := make(chan interface{})
-	var userResponse *entites2.User
+	var userResponse *entites.User
 	var tokenResponse string
 	var errorResponse error
 	go func() {
@@ -72,7 +72,7 @@ func (s *UserGrpcServer) SignIn(
 	form := s.userFormBuilder.SignIn(request)
 	signInChan := make(chan interface{})
 	var signInError error
-	var userResponse *entites2.User
+	var userResponse *entites.User
 	var token string
 	go func() {
 		userResponse, token, signInError = s.authService.SignIn(form, signInChan)

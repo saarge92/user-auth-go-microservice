@@ -1,17 +1,17 @@
 package containers
 
 import (
-	config2 "go-user-microservice/internal/app/config"
-	"go-user-microservice/internal/app/domain/repositories"
-	repositories2 "go-user-microservice/internal/app/repositories"
-	user2 "go-user-microservice/internal/app/services/member"
+	"go-user-microservice/internal/app/config"
+	repoInterfaces "go-user-microservice/internal/app/domain/repositories"
+	"go-user-microservice/internal/app/repositories"
+	"go-user-microservice/internal/app/services/member"
 	"go.uber.org/dig"
 )
 
 func ProvideUserServices(container *dig.Container) error {
 	e := container.Provide(
-		func(config *config2.Config) *user2.RemoteUserService {
-			return user2.NewRemoteUserService(config)
+		func(config *config.Config) *member.RemoteUserService {
+			return member.NewRemoteUserService(config)
 		},
 	)
 	if e != nil {
@@ -19,32 +19,32 @@ func ProvideUserServices(container *dig.Container) error {
 	}
 	e = container.Provide(
 		func(
-			userRepo *repositories2.UserRepository,
-			userRemoteService *user2.RemoteUserService,
-		) *user2.UserService {
-			var userRepositoryInterface repositories.UserRepositoryInterface = userRepo
-			return user2.NewUserService(userRepositoryInterface, userRemoteService)
+			userRepo *repositories.UserRepository,
+			userRemoteService *member.RemoteUserService,
+		) *member.UserService {
+			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
+			return member.NewUserService(userRepositoryInterface, userRemoteService)
 		})
 	if e != nil {
 		return e
 	}
 	e = container.Provide(
 		func(
-			config *config2.Config,
-			userRepo *repositories2.UserRepository,
-		) *user2.JwtService {
-			var userRepositoryInterface repositories.UserRepositoryInterface = userRepo
-			return user2.NewJwtService(config, userRepositoryInterface)
+			config *config.Config,
+			userRepo *repositories.UserRepository,
+		) *member.JwtService {
+			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
+			return member.NewJwtService(config, userRepositoryInterface)
 		})
 	if e != nil {
 		return e
 	}
 	e = container.Provide(
 		func(
-			userService *user2.UserService,
-			jwtService *user2.JwtService,
-		) *user2.AuthService {
-			return user2.NewAuthService(userService, jwtService)
+			userService *member.UserService,
+			jwtService *member.JwtService,
+		) *member.AuthService {
+			return member.NewAuthService(userService, jwtService)
 		})
 	if e != nil {
 		return e

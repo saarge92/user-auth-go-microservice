@@ -4,7 +4,7 @@ import (
 	repositories2 "go-user-microservice/internal/app/domain/repositories"
 	entites2 "go-user-microservice/internal/app/entites"
 	errorlists2 "go-user-microservice/internal/app/errorlists"
-	forms2 "go-user-microservice/internal/app/forms"
+	"go-user-microservice/internal/app/forms/user"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,7 +25,7 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) SignUp(form *forms2.SignUp) (*entites2.User, error) {
+func (s *UserService) SignUp(form *user.SignUp) (*entites2.User, error) {
 	userExist, e := s.userRemoteServices.CheckRemoteUser(form.Inn)
 	if e != nil {
 		return nil, e
@@ -48,7 +48,7 @@ func (s *UserService) SignUp(form *forms2.SignUp) (*entites2.User, error) {
 	return userEntity, nil
 }
 
-func (s *UserService) SignIn(form *forms2.SignIn) (*entites2.User, error) {
+func (s *UserService) SignIn(form *user.SignIn) (*entites2.User, error) {
 	user, e := s.userRepository.GetUser(form.Login)
 	if e != nil {
 		return nil, e
