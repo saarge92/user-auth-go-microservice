@@ -13,7 +13,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
-      - mysql-member-database:/var/lib/mysql
+      - mysql-user-database:/var/lib/mysql
 
   database-test:
     container_name: user_database_test
@@ -28,7 +28,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
-      - mysql-member-database-test:/var/lib/mysql
+      - mysql-user-database-test:/var/lib/mysql
 volumes:
   mysql-user-database:
   mysql-user-database-test:

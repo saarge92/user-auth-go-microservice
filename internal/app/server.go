@@ -54,6 +54,9 @@ func (s *Server) InitContainer() error {
 	if e := containers.ProvideWalletServices(s.container); e != nil {
 		return e
 	}
+	if e := containers.ProvideUserMiddlewares(s.container); e != nil {
+		return e
+	}
 	if e := containers.ProvideForms(s.container); e != nil {
 		return e
 	}
@@ -64,15 +67,10 @@ func (s *Server) InitContainer() error {
 }
 
 func (s *Server) Start() error {
-	serv := grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
-			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
-			middlewares.UserUnaryInterceptor,
-		),
-	)
 	var userGrpcServer *server.UserGrpcServer
 	var walletGrpcServer *server.WalletGrpcServer
 	var configuration *config.Config
+	var userMiddleware *middlewares.UserGrpcMiddleware
 	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
 		userGrpcServer = userServer
 	})
@@ -91,6 +89,18 @@ func (s *Server) Start() error {
 	if e != nil {
 		return e
 	}
+	e = s.container.Invoke(func(userGrpcMiddleware *middlewares.UserGrpcMiddleware) {
+		userMiddleware = userGrpcMiddleware
+	})
+	if e != nil {
+		return e
+	}
+	serv := grpc.NewServer(
+		grpc_middleware.WithUnaryServerChain(
+			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
+			userMiddleware.IsAuthenticatedMiddleware,
+		),
+	)
 	user.RegisterUserServiceServer(serv, userGrpcServer)
 	wallet.RegisterWalletServiceServer(serv, walletGrpcServer)
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", configuration.GrpcPort))
