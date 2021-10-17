@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"go-user-microservice/internal/app/errorlists"
+	"go-user-microservice/internal/app/middlewares/dictionary"
 	"go-user-microservice/internal/app/services/member"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"google.golang.org/grpc"
@@ -43,7 +44,7 @@ func (m *UserGrpcMiddleware) IsAuthenticatedMiddleware(
 			if e != nil {
 				return nil, e
 			}
-			newCtx := context.WithValue(ctx, "user_id", user.ID)
+			newCtx := context.WithValue(ctx, dictionary.UserID, user.ID)
 			return handler(newCtx, request)
 		}
 		return nil, authError

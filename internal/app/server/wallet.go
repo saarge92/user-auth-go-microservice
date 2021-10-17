@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-user-microservice/internal/app/domain/services"
 	"go-user-microservice/internal/app/forms"
+	"go-user-microservice/internal/app/middlewares/dictionary"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -24,7 +25,7 @@ func (s *WalletGrpcServer) CreateWallet(
 	ctx context.Context,
 	message *wallet.CreateWalletMessage,
 ) (*emptypb.Empty, error) {
-	userID := ctx.Value("user_id").(uint64)
+	userID := ctx.Value(dictionary.UserID).(uint64)
 	walletCreateForm := forms.NewWalletCreateForm(message, userID)
 	walletCreateForm.UserID = userID
 	if e := walletCreateForm.Validate(); e != nil {
