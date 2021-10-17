@@ -4,7 +4,7 @@ import (
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	entites2 "go-user-microservice/internal/app/entites"
-	"go-user-microservice/pkg/protobuf/user"
+	"go-user-microservice/pkg/protobuf/member"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"regexp"
@@ -12,13 +12,13 @@ import (
 )
 
 type SignUp struct {
-	*user.SignUpMessage
+	*member.SignUpMessage
 	userExistRule validation.RuleFunc
 	userInnRule   validation.RuleFunc
 }
 
 func NewSignUpForm(
-	request *user.SignUpMessage,
+	request *member.SignUpMessage,
 	userExistRule validation.RuleFunc,
 	userInnRule validation.RuleFunc,
 ) *SignUp {

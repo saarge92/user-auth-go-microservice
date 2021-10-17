@@ -10,7 +10,7 @@ import (
 	"go-user-microservice/internal/app/middlewares"
 	"go-user-microservice/internal/app/providers/containers"
 	"go-user-microservice/internal/app/server"
-	"go-user-microservice/pkg/protobuf/user"
+	"go-user-microservice/pkg/protobuf/member"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"go.uber.org/dig"
 	"google.golang.org/grpc"
@@ -101,7 +101,7 @@ func (s *Server) Start() error {
 			userMiddleware.IsAuthenticatedMiddleware,
 		),
 	)
-	user.RegisterUserServiceServer(serv, userGrpcServer)
+	member.RegisterUserServiceServer(serv, userGrpcServer)
 	wallet.RegisterWalletServiceServer(serv, walletGrpcServer)
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", configuration.GrpcPort))
 	if e != nil {

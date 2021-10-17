@@ -43,6 +43,13 @@ func (s *WalletService) Create(form *forms.WalletCreateForm) (*entites.Wallet, e
 	if currency == nil {
 		return nil, status.Error(codes.NotFound, errorlists.CurrencyNotFound)
 	}
+	walletUserExist, e := s.walletRepository.Exist(user.ID, currency.ID)
+	if e != nil {
+		return nil, e
+	}
+	if walletUserExist {
+		return nil, status.Error(codes.AlreadyExists, errorlists.UserWalletAlreadyExist)
+	}
 	balance := decimal.NewFromInt(0)
 	wallet := &entites.Wallet{
 		UserID:     user.ID,

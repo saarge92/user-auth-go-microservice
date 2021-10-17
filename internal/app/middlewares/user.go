@@ -12,14 +12,14 @@ import (
 )
 
 type UserGrpcMiddleware struct {
-	authService *member.AuthService
+	jwtService *member.JwtService
 }
 
 func NewUserGrpcMiddleware(
-	authService *member.AuthService,
+	jwtService *member.JwtService,
 ) *UserGrpcMiddleware {
 	return &UserGrpcMiddleware{
-		authService: authService,
+		jwtService: jwtService,
 	}
 }
 
@@ -27,24 +27,26 @@ func (m *UserGrpcMiddleware) IsAuthenticatedMiddleware(
 	ctx context.Context,
 	request interface{},
 	_ *grpc.UnaryServerInfo,
-	handler grpc.UnaryHandler) (interface{}, error) {
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
 	if _, ok := request.(*wallet.CreateWalletMessage); ok {
+		authError := status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
 		if headers, ok := metadata.FromIncomingContext(ctx); ok {
 			var tokenInfo []string
 			if tokenInfo, ok = headers["token"]; !ok {
-				return nil, status.Error(codes.Unauthenticated, errorlists.UserNotFound)
+				return nil, authError
 			}
 			if len(tokenInfo) == 0 {
-				return nil, status.Error(codes.Unauthenticated, errorlists.UserNotFound)
+				return nil, authError
 			}
-			_, user, e := m.authService.VerifyAndReturnPayloadToken(tokenInfo[0])
+			_, user, e := m.jwtService.VerifyAndReturnPayloadToken(tokenInfo[0])
 			if e != nil {
 				return nil, e
 			}
 			newCtx := context.WithValue(ctx, "user_id", user.ID)
 			return handler(newCtx, request)
 		}
-		return nil, status.Error(codes.Unauthenticated, errorlists.UserNotFound)
+		return nil, authError
 	}
 	return handler(ctx, request)
 }

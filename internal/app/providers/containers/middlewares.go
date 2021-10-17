@@ -8,8 +8,8 @@ import (
 
 func ProvideUserMiddlewares(container *dig.Container) error {
 	e := container.Provide(
-		func(authService *member.AuthService) *middlewares.UserGrpcMiddleware {
-			return middlewares.NewUserGrpcMiddleware(authService)
+		func(jwtService *member.JwtService) *middlewares.UserGrpcMiddleware {
+			return middlewares.NewUserGrpcMiddleware(jwtService)
 		},
 	)
 	return e

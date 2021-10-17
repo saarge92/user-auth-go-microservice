@@ -9,4 +9,6 @@ const (
 	UserInnAlreadyExist          = "member inn already exists"
 	NoInnDataRemote              = "inn data not found"
 	CurrencyNotFound             = "currency not found"
+	UserUnAuthenticated          = "user is not authenticated"
+	UserWalletAlreadyExist       = "user wallet already exist"
 )
