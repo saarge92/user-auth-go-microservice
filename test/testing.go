@@ -11,9 +11,12 @@ import (
 )
 
 const (
-	Inn          uint64 = 7707083893
-	Login        string = "member@mail.ru"
-	DatabaseName        = "member-database"
+	Inn              uint64 = 7707083893
+	Login            string = "member@mail.ru"
+	DatabaseName            = "member-database"
+	EmulateUserID           = 1
+	EmulateUserLogin        = "test@mail.ru"
+	EmulateLoginInn  uint64 = 7842349892
 )
 
 var connectionCount = 0

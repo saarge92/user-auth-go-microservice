@@ -26,7 +26,7 @@ func TestUserSignInSignUp(t *testing.T) {
 	var token string
 	t.Run("Should return success sign up messages", func(t *testing.T) {
 		message := &member.SignUpMessage{
-			Login:    test.Login,
+			Login:    faker.Email(),
 			Inn:      test.Inn,
 			Password: password,
 			Name:     faker.Name(),
