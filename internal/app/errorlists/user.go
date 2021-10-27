@@ -11,4 +11,5 @@ const (
 	CurrencyNotFound             = "currency not found"
 	UserUnAuthenticated          = "user is not authenticated"
 	UserWalletAlreadyExist       = "user wallet already exist"
+	SignInFail                   = "password or login is incorrect"
 )

@@ -63,17 +63,19 @@ func (s *UserService) SignUp(form *user.SignUp) (*entites.User, error) {
 }
 
 func (s *UserService) SignIn(form *user.SignIn) (*entites.User, error) {
-	user, e := s.userRepository.GetUser(form.Login)
+	userEntity, e := s.userRepository.GetUser(form.Login)
+	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
 	if e != nil {
 		return nil, e
 	}
-	if user == nil {
-		userErr := status.Error(codes.NotFound, errorlists.UserNotFound)
-		return nil, userErr
+	if userEntity == nil {
+		return nil, unAuthError
 	}
-	e = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(form.Password))
-	if e != nil {
-		return nil, e
+	hashPasswordBytes := []byte(userEntity.Password)
+	sourcePasswordBytes := []byte(form.Password)
+	if e = bcrypt.CompareHashAndPassword(hashPasswordBytes, sourcePasswordBytes); e != nil {
+		return nil, unAuthError
 	}
-	return user, nil
+
+	return userEntity, nil
 }
