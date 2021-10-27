@@ -7,12 +7,12 @@ import (
 )
 
 type AuthService struct {
-	UserService *UserService
+	UserService *ServiceUser
 	JwtService  *JwtService
 }
 
 func NewAuthService(
-	userService *UserService,
+	userService *ServiceUser,
 	jwtService *JwtService,
 ) *AuthService {
 	return &AuthService{

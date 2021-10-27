@@ -11,7 +11,7 @@ import (
 func ProvideGrpcServers(container *dig.Container) error {
 	e := container.Provide(
 		func(
-			userService *user.UserService,
+			userService *user.ServiceUser,
 			userFormBuilder *builders.UserFormBuilder,
 			authService *user.AuthService,
 		) *server.UserGrpcServer {

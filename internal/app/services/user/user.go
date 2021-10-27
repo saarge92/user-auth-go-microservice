@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type UserService struct {
+type ServiceUser struct {
 	userRepository     repositories.UserRepositoryInterface
 	userRemoteServices *RemoteUserService
 }
@@ -18,34 +18,41 @@ type UserService struct {
 func NewUserService(
 	userRepository repositories.UserRepositoryInterface,
 	userRemoteService *RemoteUserService,
-) *UserService {
-	return &UserService{
+) *ServiceUser {
+	return &ServiceUser{
 		userRepository:     userRepository,
 		userRemoteServices: userRemoteService,
 	}
 }
 
-func (s *UserService) SignUp(form *user.SignUp) (*entites.User, error) {
+func (s *ServiceUser) CheckUserData(form *user.SignUp) error {
 	userExist, e := s.userRepository.UserExist(form.Login)
 	if e != nil {
-		return nil, e
+		return e
 	}
 	if userExist {
-		return nil, status.Error(codes.AlreadyExists, errorlists.UserEmailAlreadyExist)
+		return status.Error(codes.AlreadyExists, errorlists.UserEmailAlreadyExist)
 	}
 	userInnExist, e := s.userRepository.UserByInnExist(form.Inn)
 	if e != nil {
-		return nil, e
+		return e
 	}
 	if userInnExist {
-		return nil, status.Error(codes.AlreadyExists, errorlists.UserInnAlreadyExist)
+		return status.Error(codes.AlreadyExists, errorlists.UserInnAlreadyExist)
 	}
 	userRemoteExist, e := s.userRemoteServices.CheckRemoteUser(form.Inn)
 	if e != nil {
-		return nil, e
+		return e
 	}
 	if !userRemoteExist {
-		return nil, status.Error(codes.NotFound, errorlists.UserNotFoundOnRemote)
+		return status.Error(codes.NotFound, errorlists.UserNotFoundOnRemote)
+	}
+	return nil
+}
+
+func (s *ServiceUser) SignUp(form *user.SignUp) (*entites.User, error) {
+	if checkError := s.CheckUserData(form); checkError != nil {
+		return nil, checkError
 	}
 	userEntity := &entites.User{}
 	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
@@ -62,7 +69,7 @@ func (s *UserService) SignUp(form *user.SignUp) (*entites.User, error) {
 	return userEntity, nil
 }
 
-func (s *UserService) SignIn(form *user.SignIn) (*entites.User, error) {
+func (s *ServiceUser) SignIn(form *user.SignIn) (*entites.User, error) {
 	userEntity, e := s.userRepository.GetUser(form.Login)
 	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
 	if e != nil {

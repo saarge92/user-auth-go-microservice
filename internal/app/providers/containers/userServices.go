@@ -21,7 +21,7 @@ func ProvideUserServices(container *dig.Container) error {
 		func(
 			userRepo *repositories.UserRepository,
 			userRemoteService *user.RemoteUserService,
-		) *user.UserService {
+		) *user.ServiceUser {
 			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
 			return user.NewUserService(userRepositoryInterface, userRemoteService)
 		})
@@ -41,7 +41,7 @@ func ProvideUserServices(container *dig.Container) error {
 	}
 	e = container.Provide(
 		func(
-			userService *user.UserService,
+			userService *user.ServiceUser,
 			jwtService *user.JwtService,
 		) *user.AuthService {
 			return user.NewAuthService(userService, jwtService)
