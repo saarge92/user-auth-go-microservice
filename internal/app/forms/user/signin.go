@@ -2,11 +2,11 @@ package user
 
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
-	"go-user-microservice/pkg/protobuf/member"
+	"go-user-microservice/pkg/protobuf/user_server"
 )
 
 type SignIn struct {
-	*member.SignInMessage
+	*user_server.SignInMessage
 }
 
 func (f *SignIn) Validate() error {

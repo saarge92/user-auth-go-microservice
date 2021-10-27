@@ -4,18 +4,18 @@ import (
 	"context"
 	"go-user-microservice/internal/app/entites"
 	userFormBuilders "go-user-microservice/internal/app/forms/user/builders"
-	"go-user-microservice/internal/app/services/member"
-	protoMember "go-user-microservice/pkg/protobuf/member"
+	"go-user-microservice/internal/app/services/user"
+	"go-user-microservice/pkg/protobuf/user_server"
 )
 
 type UserGrpcServer struct {
-	authService     *member.AuthService
+	authService     *user.AuthService
 	userFormBuilder *userFormBuilders.UserFormBuilder
 }
 
 func NewUserGrpcServer(
 	userFormBuilder *userFormBuilders.UserFormBuilder,
-	authService *member.AuthService,
+	authService *user.AuthService,
 ) *UserGrpcServer {
 	return &UserGrpcServer{
 		userFormBuilder: userFormBuilder,
@@ -25,8 +25,8 @@ func NewUserGrpcServer(
 
 func (s *UserGrpcServer) Signup(
 	_ context.Context,
-	request *protoMember.SignUpMessage,
-) (*protoMember.SignUpResponse, error) {
+	request *user_server.SignUpMessage,
+) (*user_server.SignUpResponse, error) {
 	form := s.userFormBuilder.Signup(request)
 	if e := form.Validate(); e != nil {
 		return nil, e
@@ -42,7 +42,7 @@ func (s *UserGrpcServer) Signup(
 	if errorResponse != nil {
 		return nil, errorResponse
 	}
-	return &protoMember.SignUpResponse{
+	return &user_server.SignUpResponse{
 		Id:    userResponse.ID,
 		Token: tokenResponse,
 	}, nil
@@ -50,14 +50,14 @@ func (s *UserGrpcServer) Signup(
 
 func (s *UserGrpcServer) VerifyToken(
 	_ context.Context,
-	request *protoMember.VerifyMessage,
-) (*protoMember.VerifyMessageResponse, error) {
+	request *user_server.VerifyMessage,
+) (*user_server.VerifyMessageResponse, error) {
 	userPayload, userEntity, e := s.authService.VerifyAndReturnPayloadToken(request.Token)
 	if e != nil {
 		return nil, e
 	}
-	return &protoMember.VerifyMessageResponse{
-		User: &protoMember.UserMessageResponse{
+	return &user_server.VerifyMessageResponse{
+		User: &user_server.UserMessageResponse{
 			Login: userPayload.UserName,
 			Id:    userEntity.ID,
 			Roles: nil,
@@ -67,8 +67,8 @@ func (s *UserGrpcServer) VerifyToken(
 
 func (s *UserGrpcServer) SignIn(
 	_ context.Context,
-	request *protoMember.SignInMessage,
-) (*protoMember.SignInResponse, error) {
+	request *user_server.SignInMessage,
+) (*user_server.SignInResponse, error) {
 	form := s.userFormBuilder.SignIn(request)
 	signInChan := make(chan interface{})
 	var signInError error
@@ -81,7 +81,7 @@ func (s *UserGrpcServer) SignIn(
 	if signInError != nil {
 		return nil, signInError
 	}
-	return &protoMember.SignInResponse{
+	return &user_server.SignInResponse{
 		Id:    userResponse.ID,
 		Token: token,
 	}, nil

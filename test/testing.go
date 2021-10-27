@@ -11,9 +11,10 @@ import (
 )
 
 const (
+	Email                   = "test@test.com"
 	Inn              uint64 = 7707083893
-	Login            string = "member@mail.ru"
-	DatabaseName            = "member-database"
+	Login            string = "user@mail.ru"
+	DatabaseName            = "user-database"
 	EmulateUserID           = 1
 	EmulateUserLogin        = "test@mail.ru"
 	EmulateLoginInn  uint64 = 7842349892

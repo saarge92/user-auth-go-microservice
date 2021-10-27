@@ -4,7 +4,7 @@ import (
 	"context"
 	"go-user-microservice/internal/app/errorlists"
 	"go-user-microservice/internal/app/middlewares/dictionary"
-	"go-user-microservice/internal/app/services/member"
+	"go-user-microservice/internal/app/services/user"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -13,11 +13,11 @@ import (
 )
 
 type UserGrpcMiddleware struct {
-	jwtService *member.JwtService
+	jwtService *user.JwtService
 }
 
 func NewUserGrpcMiddleware(
-	jwtService *member.JwtService,
+	jwtService *user.JwtService,
 ) *UserGrpcMiddleware {
 	return &UserGrpcMiddleware{
 		jwtService: jwtService,

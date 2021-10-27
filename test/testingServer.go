@@ -2,7 +2,7 @@ package test
 
 import (
 	"github.com/joho/godotenv"
-	containers2 "go-user-microservice/internal/app/providers/containers"
+	"go-user-microservice/internal/app/providers/containers"
 	"go.uber.org/dig"
 	"os"
 	"path"
@@ -29,27 +29,27 @@ func (s *ServerTest) InitConfig() error {
 	if e := godotenv.Load(".env.test"); e != nil {
 		panic(e)
 	}
-	return containers2.ProvideConfig(s.container)
+	return containers.ProvideConfig(s.container)
 }
 
 func (s *ServerTest) InitContainer() error {
-	e := containers2.ProvideConnections(s.container)
+	e := containers.ProvideConnections(s.container)
 	if e != nil {
 		return e
 	}
-	e = containers2.ProvideRepositories(s.container)
+	e = containers.ProvideRepositories(s.container)
 	if e != nil {
 		return e
 	}
-	e = containers2.ProvideUserServices(s.container)
+	e = containers.ProvideUserServices(s.container)
 	if e != nil {
 		return e
 	}
-	e = containers2.ProvideForms(s.container)
+	e = containers.ProvideForms(s.container)
 	if e != nil {
 		return e
 	}
-	e = containers2.ProvideGrpcServers(s.container)
+	e = containers.ProvideGrpcServers(s.container)
 	if e != nil {
 		return e
 	}

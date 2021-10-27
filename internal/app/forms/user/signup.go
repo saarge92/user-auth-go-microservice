@@ -4,7 +4,7 @@ import (
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	entites2 "go-user-microservice/internal/app/entites"
-	"go-user-microservice/pkg/protobuf/member"
+	"go-user-microservice/pkg/protobuf/user_server"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"regexp"
@@ -12,20 +12,14 @@ import (
 )
 
 type SignUp struct {
-	*member.SignUpMessage
-	userExistRule validation.RuleFunc
-	userInnRule   validation.RuleFunc
+	*user_server.SignUpMessage
 }
 
 func NewSignUpForm(
-	request *member.SignUpMessage,
-	userExistRule validation.RuleFunc,
-	userInnRule validation.RuleFunc,
+	request *user_server.SignUpMessage,
 ) *SignUp {
 	return &SignUp{
 		request,
-		userExistRule,
-		userInnRule,
 	}
 }
 
@@ -47,8 +41,7 @@ func (f *SignUp) Validate() error {
 					return status.Error(codes.InvalidArgument, sliceErrorMessages[emailPattern])
 				}
 				return nil
-			}),
-			validation.By(f.userExistRule)),
+			})),
 		validation.Field(
 			&f.Password,
 			validation.Required,
@@ -66,7 +59,6 @@ func (f *SignUp) Validate() error {
 				}
 				return nil
 			}),
-			validation.By(f.userInnRule),
 		),
 		validation.Field(&f.Name,
 			validation.Required,

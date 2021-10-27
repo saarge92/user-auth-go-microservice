@@ -1,4 +1,4 @@
-package member
+package user
 
 import (
 	"go-user-microservice/internal/app/dto"

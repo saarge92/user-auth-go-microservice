@@ -6,7 +6,7 @@ import (
 	_ "github.com/bxcodec/faker/v3"
 	"github.com/stretchr/testify/assert"
 	mainServer "go-user-microservice/internal/app/server"
-	"go-user-microservice/pkg/protobuf/member"
+	"go-user-microservice/pkg/protobuf/user_server"
 	"go-user-microservice/test"
 	"testing"
 )
@@ -25,8 +25,8 @@ func TestUserSignInSignUp(t *testing.T) {
 	password := faker.Password()
 	var token string
 	t.Run("Should return success sign up messages", func(t *testing.T) {
-		message := &member.SignUpMessage{
-			Login:    faker.Email(),
+		message := &user_server.SignUpMessage{
+			Login:    test.Login,
 			Inn:      test.Inn,
 			Password: password,
 			Name:     faker.Name(),
@@ -35,13 +35,13 @@ func TestUserSignInSignUp(t *testing.T) {
 		response, e := userGrpcServer.Signup(emptyContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
-		assert.IsType(t, &member.SignUpResponse{}, response)
+		assert.IsType(t, &user_server.SignUpResponse{}, response)
 		assert.IsType(t, uint64(0), response.Id)
 		assert.IsType(t, string(""), response.Token)
 	})
 
 	t.Run("Should return sign in message", func(t *testing.T) {
-		message := &member.SignInMessage{
+		message := &user_server.SignInMessage{
 			Login:    test.Login,
 			Password: password,
 		}
@@ -49,17 +49,17 @@ func TestUserSignInSignUp(t *testing.T) {
 		response, e := userGrpcServer.SignIn(emptyContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
-		assert.IsType(t, &member.SignInResponse{}, response)
+		assert.IsType(t, &user_server.SignInResponse{}, response)
 		token = response.Token
 	})
 
 	t.Run("Should verify token properly", func(t *testing.T) {
-		message := &member.VerifyMessage{Token: token}
+		message := &user_server.VerifyMessage{Token: token}
 		emptyContext := context.Background()
 		response, e := userGrpcServer.VerifyToken(emptyContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
-		assert.IsType(t, &member.VerifyMessageResponse{}, response)
+		assert.IsType(t, &user_server.VerifyMessageResponse{}, response)
 		assert.Equal(t, response.User.Login, test.Login)
 	})
 }

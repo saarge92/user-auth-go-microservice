@@ -4,14 +4,14 @@ import (
 	"go-user-microservice/internal/app/config"
 	repoInterfaces "go-user-microservice/internal/app/domain/repositories"
 	"go-user-microservice/internal/app/repositories"
-	"go-user-microservice/internal/app/services/member"
+	"go-user-microservice/internal/app/services/user"
 	"go.uber.org/dig"
 )
 
 func ProvideUserServices(container *dig.Container) error {
 	e := container.Provide(
-		func(config *config.Config) *member.RemoteUserService {
-			return member.NewRemoteUserService(config)
+		func(config *config.Config) *user.RemoteUserService {
+			return user.NewRemoteUserService(config)
 		},
 	)
 	if e != nil {
@@ -20,10 +20,10 @@ func ProvideUserServices(container *dig.Container) error {
 	e = container.Provide(
 		func(
 			userRepo *repositories.UserRepository,
-			userRemoteService *member.RemoteUserService,
-		) *member.UserService {
+			userRemoteService *user.RemoteUserService,
+		) *user.UserService {
 			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
-			return member.NewUserService(userRepositoryInterface, userRemoteService)
+			return user.NewUserService(userRepositoryInterface, userRemoteService)
 		})
 	if e != nil {
 		return e
@@ -32,19 +32,19 @@ func ProvideUserServices(container *dig.Container) error {
 		func(
 			config *config.Config,
 			userRepo *repositories.UserRepository,
-		) *member.JwtService {
+		) *user.JwtService {
 			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
-			return member.NewJwtService(config, userRepositoryInterface)
+			return user.NewJwtService(config, userRepositoryInterface)
 		})
 	if e != nil {
 		return e
 	}
 	e = container.Provide(
 		func(
-			userService *member.UserService,
-			jwtService *member.JwtService,
-		) *member.AuthService {
-			return member.NewAuthService(userService, jwtService)
+			userService *user.UserService,
+			jwtService *user.JwtService,
+		) *user.AuthService {
+			return user.NewAuthService(userService, jwtService)
 		})
 	if e != nil {
 		return e
