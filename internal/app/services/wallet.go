@@ -34,6 +34,17 @@ func (s *WalletService) Create(
 	ctx context.Context,
 	form *forms.WalletCreateForm,
 ) (*entites.Wallet, error) {
+	select {
+	case <-ctx.Done():
+		return nil, nil
+	default:
+		return s.initWallet(ctx, form)
+	}
+}
+
+func (s *WalletService) initWallet(
+	ctx context.Context,
+	form *forms.WalletCreateForm) (*entites.Wallet, error) {
 	var userID uint64
 	var ok bool
 	if userID, ok = ctx.Value(dictionary.UserID).(uint64); !ok {
