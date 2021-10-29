@@ -13,11 +13,9 @@ type WalletCreateForm struct {
 
 func NewWalletCreateForm(
 	message *wallet.CreateWalletMessage,
-	userID uint64,
 ) *WalletCreateForm {
 	return &WalletCreateForm{
-		message,
-		userID,
+		CreateWalletMessage: message,
 	}
 }
 
@@ -25,6 +23,5 @@ func (f *WalletCreateForm) Validate() error {
 	return validation.ValidateStruct(
 		f,
 		validation.Field(&f.Code, is.CurrencyCode),
-		validation.Field(&f.UserID, validation.Required),
 	)
 }

@@ -1,11 +1,13 @@
 package services
 
 import (
+	"context"
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/domain/repositories"
 	"go-user-microservice/internal/app/entites"
 	"go-user-microservice/internal/app/errorlists"
 	"go-user-microservice/internal/app/forms"
+	"go-user-microservice/internal/app/middlewares/dictionary"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -28,8 +30,16 @@ func NewWalletService(
 	}
 }
 
-func (s *WalletService) Create(form *forms.WalletCreateForm) (*entites.Wallet, error) {
-	user, e := s.userRepository.UserByID(form.UserID)
+func (s *WalletService) Create(
+	ctx context.Context,
+	form *forms.WalletCreateForm,
+) (*entites.Wallet, error) {
+	var userID uint64
+	var ok bool
+	if userID, ok = ctx.Value(dictionary.UserID).(uint64); !ok {
+		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
+	}
+	user, e := s.userRepository.UserByID(userID)
 	if e != nil {
 		return nil, e
 	}
