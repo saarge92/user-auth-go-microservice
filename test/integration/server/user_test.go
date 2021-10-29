@@ -20,8 +20,8 @@ func TestUserSignInSignUp(t *testing.T) {
 	var token string
 	t.Run("Should return success sign up messages", func(t *testing.T) {
 		message := &user_server.SignUpMessage{
-			Login:    test.Login,
-			Inn:      test.Inn,
+			Login:    test.LoginForTest,
+			Inn:      test.InnForTest,
 			Password: password,
 			Name:     faker.Name(),
 		}
@@ -31,12 +31,12 @@ func TestUserSignInSignUp(t *testing.T) {
 		assert.NotNil(t, response)
 		assert.IsType(t, &user_server.SignUpResponse{}, response)
 		assert.IsType(t, uint64(0), response.Id)
-		assert.IsType(t, string(""), response.Token)
+		assert.IsType(t, "", response.Token)
 	})
 
 	t.Run("Should return sign in message", func(t *testing.T) {
 		message := &user_server.SignInMessage{
-			Login:    test.Login,
+			Login:    test.LoginForTest,
 			Password: password,
 		}
 		emptyContext := context.Background()
@@ -54,6 +54,6 @@ func TestUserSignInSignUp(t *testing.T) {
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
 		assert.IsType(t, &user_server.VerifyMessageResponse{}, response)
-		assert.Equal(t, response.User.Login, test.Login)
+		assert.Equal(t, response.User.Login, test.LoginForTest)
 	})
 }

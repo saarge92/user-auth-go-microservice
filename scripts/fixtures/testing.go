@@ -7,6 +7,8 @@ import (
 	"go-user-microservice/internal/app/config"
 	"go-user-microservice/internal/app/entites"
 	"go-user-microservice/test"
+	"golang.org/x/crypto/bcrypt"
+	"time"
 )
 
 func main() {
@@ -25,14 +27,24 @@ func main() {
 }
 
 func createTestUser(db *sqlx.DB) error {
-	query := `INSERT INTO users (
-				id, login, inn, name, password, created_at, updated_at)`
-	userEntity := &entites.User{
-		ID:    test.EmulateUserID,
-		Login: test.EmulateUserLogin,
-		Inn:   test.EmulateLoginInn,
+	now := time.Now()
+	passwordHash, e := bcrypt.GenerateFromPassword([]byte(test.UserPasswordForRealUser), bcrypt.DefaultCost)
+	if e != nil {
+		return e
 	}
-	_, e := db.NamedExec(query, userEntity)
+	query := `INSERT INTO users (
+				id, login, inn, name, password, created_at, updated_at)
+				VALUES (:id, :login, :inn, :name, :password, :created_at, :updated_at)`
+	userEntity := &entites.User{
+		ID:        test.UserIDForRealUser,
+		Login:     test.UserLoginForRealUser,
+		Inn:       test.InnForRealUser,
+		Name:      test.NameForRealUser,
+		Password:  string(passwordHash),
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	_, e = db.NamedExec(query, userEntity)
 	if e != nil {
 		return e
 	}

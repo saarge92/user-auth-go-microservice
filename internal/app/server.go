@@ -21,8 +21,7 @@ import (
 )
 
 type Server struct {
-	container      *dig.Container
-	userGrpcServer *server.UserGrpcServer
+	container *dig.Container
 }
 
 func NewServer() *Server {
@@ -68,10 +67,13 @@ func (s *Server) InitContainer() error {
 }
 
 func (s *Server) Start() error {
-	var walletGrpcServer *server.WalletGrpcServer
 	var configuration *config.Config
 	var userMiddleware *middlewares.UserGrpcMiddleware
 	userGrpcServer, e := s.GetUserGrpcServer()
+	if e != nil {
+		return e
+	}
+	walletGrpcServer, e := s.GetWalletGrpcServer()
 	if e != nil {
 		return e
 	}
@@ -114,14 +116,23 @@ func (s *Server) GetDIContainer() *dig.Container {
 }
 
 func (s *Server) GetUserGrpcServer() (*server.UserGrpcServer, error) {
-	if s.userGrpcServer != nil {
-		return s.userGrpcServer, nil
-	}
+	userGrpcServer := new(server.UserGrpcServer)
 	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
-		s.userGrpcServer = userServer
+		userGrpcServer = userServer
 	})
 	if e != nil {
 		return nil, e
 	}
-	return s.userGrpcServer, nil
+	return userGrpcServer, nil
+}
+
+func (s *Server) GetWalletGrpcServer() (*server.WalletGrpcServer, error) {
+	walletGrpcServer := new(server.WalletGrpcServer)
+	e := s.container.Invoke(func(walletServer *server.WalletGrpcServer) {
+		walletGrpcServer = walletServer
+	})
+	if e != nil {
+		return nil, e
+	}
+	return walletGrpcServer, nil
 }

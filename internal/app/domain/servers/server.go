@@ -11,4 +11,5 @@ type ServerInterface interface {
 	Start() error
 	GetDIContainer() *dig.Container
 	GetUserGrpcServer() (*server.UserGrpcServer, error)
+	GetWalletGrpcServer() (*server.WalletGrpcServer, error)
 }

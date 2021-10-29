@@ -40,11 +40,11 @@ func (m *UserGrpcMiddleware) IsAuthenticatedMiddleware(
 			if len(tokenInfo) == 0 {
 				return nil, authError
 			}
-			_, user, e := m.jwtService.VerifyAndReturnPayloadToken(tokenInfo[0])
+			_, userData, e := m.jwtService.VerifyAndReturnPayloadToken(tokenInfo[0])
 			if e != nil {
 				return nil, e
 			}
-			newCtx := context.WithValue(ctx, dictionary.UserID, user.ID)
+			newCtx := context.WithValue(ctx, dictionary.UserID, userData.ID)
 			return handler(newCtx, request)
 		}
 		return nil, authError

@@ -11,13 +11,15 @@ import (
 )
 
 const (
-	Email                   = "test@test.com"
-	Inn              uint64 = 7707083893
-	Login            string = "user@mail.ru"
-	DatabaseName            = "user-database"
-	EmulateUserID           = 1
-	EmulateUserLogin        = "test@mail.ru"
-	EmulateLoginInn  uint64 = 7842349892
+	InnForTest              uint64 = 7707083893
+	LoginForTest            string = "user@mail.ru"
+	DatabaseName                   = "user-database"
+	UserIDForRealUser       uint64 = 1
+	UserLoginForRealUser           = "test@mail.ru"
+	UserPasswordForRealUser        = "test123!`"
+	InnForRealUser          uint64 = 7842349892
+	NameForRealUser                = "Ivan"
+	CurrencyCode                   = "RUB"
 )
 
 var connectionCount = 0

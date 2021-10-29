@@ -46,6 +46,10 @@ func (s *ServerTest) InitContainer() error {
 	if e != nil {
 		return e
 	}
+	e = containers.ProvideWalletServices(s.container)
+	if e != nil {
+		return e
+	}
 	e = containers.ProvideForms(s.container)
 	if e != nil {
 		return e
@@ -74,4 +78,15 @@ func (s *ServerTest) GetUserGrpcServer() (*server.UserGrpcServer, error) {
 		return nil, e
 	}
 	return userGrpcServer, nil
+}
+
+func (s *ServerTest) GetWalletGrpcServer() (*server.WalletGrpcServer, error) {
+	var walletGrpcServer *server.WalletGrpcServer
+	e := s.container.Invoke(func(walletServer *server.WalletGrpcServer) {
+		walletGrpcServer = walletServer
+	})
+	if e != nil {
+		return nil, e
+	}
+	return walletGrpcServer, nil
 }
