@@ -21,7 +21,8 @@ import (
 )
 
 type Server struct {
-	container *dig.Container
+	container      *dig.Container
+	userGrpcServer *server.UserGrpcServer
 }
 
 func NewServer() *Server {
@@ -67,13 +68,10 @@ func (s *Server) InitContainer() error {
 }
 
 func (s *Server) Start() error {
-	var userGrpcServer *server.UserGrpcServer
 	var walletGrpcServer *server.WalletGrpcServer
 	var configuration *config.Config
 	var userMiddleware *middlewares.UserGrpcMiddleware
-	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
-		userGrpcServer = userServer
-	})
+	userGrpcServer, e := s.GetUserGrpcServer()
 	if e != nil {
 		return e
 	}
@@ -113,4 +111,17 @@ func (s *Server) Start() error {
 
 func (s *Server) GetDIContainer() *dig.Container {
 	return s.container
+}
+
+func (s *Server) GetUserGrpcServer() (*server.UserGrpcServer, error) {
+	if s.userGrpcServer != nil {
+		return s.userGrpcServer, nil
+	}
+	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
+		s.userGrpcServer = userServer
+	})
+	if e != nil {
+		return nil, e
+	}
+	return s.userGrpcServer, nil
 }

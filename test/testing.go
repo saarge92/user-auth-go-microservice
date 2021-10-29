@@ -5,9 +5,9 @@ import (
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
-	config2 "go-user-microservice/internal/app/config"
-	servers2 "go-user-microservice/internal/app/domain/servers"
-	providers2 "go-user-microservice/internal/app/providers"
+	"go-user-microservice/internal/app/config"
+	"go-user-microservice/internal/app/domain/servers"
+	"go-user-microservice/internal/app/providers"
 )
 
 const (
@@ -22,14 +22,14 @@ const (
 
 var connectionCount = 0
 
-func CreateTestServer() (servers2.ServerInterface, func(), error) {
-	server := NewServerTest()
-	e := server.InitConfig()
+func CreateTestServer() (servers.ServerInterface, func(), error) {
+	serverTest := NewServerTest()
+	e := serverTest.InitConfig()
 	if e != nil {
 		return nil, nil, e
 	}
-	var configuration *config2.Config
-	e = server.GetDIContainer().Invoke(func(config *config2.Config) {
+	var configuration *config.Config
+	e = serverTest.GetDIContainer().Invoke(func(config *config.Config) {
 		configuration = config
 	})
 	if e != nil {
@@ -39,20 +39,20 @@ func CreateTestServer() (servers2.ServerInterface, func(), error) {
 	txdb.Register(connectionName, "mysql", configuration.CoreDatabaseURL)
 	connectionCount++
 	configuration.DatabaseDriver = connectionName
-	e = server.InitContainer()
+	e = serverTest.InitContainer()
 	if e != nil {
 		return nil, nil, e
 	}
-	var connectionProvider *providers2.ConnectionProvider
-	e = server.GetDIContainer().Invoke(
-		func(connProvider *providers2.ConnectionProvider) {
+	var connectionProvider *providers.ConnectionProvider
+	e = serverTest.GetDIContainer().Invoke(
+		func(connProvider *providers.ConnectionProvider) {
 			connectionProvider = connProvider
 		})
 	if e != nil {
 		return nil, nil, e
 	}
 	coreConn := connectionProvider.GetCoreConnection()
-	return server, func() {
+	return serverTest, func() {
 		if e := coreConn.Close(); e != nil {
 			log.Error(e)
 		}

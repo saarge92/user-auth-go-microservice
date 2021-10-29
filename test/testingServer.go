@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/joho/godotenv"
 	"go-user-microservice/internal/app/providers/containers"
+	"go-user-microservice/internal/app/server"
 	"go.uber.org/dig"
 	"os"
 	"path"
@@ -14,9 +15,9 @@ type ServerTest struct {
 }
 
 func NewServerTest() *ServerTest {
-	server := &ServerTest{}
-	server.container = dig.New()
-	return server
+	serverTest := &ServerTest{}
+	serverTest.container = dig.New()
+	return serverTest
 }
 
 func (s *ServerTest) InitConfig() error {
@@ -62,4 +63,15 @@ func (s *ServerTest) Start() error {
 
 func (s *ServerTest) GetDIContainer() *dig.Container {
 	return s.container
+}
+
+func (s *ServerTest) GetUserGrpcServer() (*server.UserGrpcServer, error) {
+	userGrpcServer := new(server.UserGrpcServer)
+	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
+		userGrpcServer = userServer
+	})
+	if e != nil {
+		return nil, e
+	}
+	return userGrpcServer, nil
 }
