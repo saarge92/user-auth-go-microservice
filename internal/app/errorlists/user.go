@@ -12,4 +12,5 @@ const (
 	UserUnAuthenticated          = "user is not authenticated"
 	UserWalletAlreadyExist       = "user wallet already exist"
 	SignInFail                   = "password or login is incorrect"
+	ConvertError                 = "convert error for %s"
 )
