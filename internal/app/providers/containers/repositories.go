@@ -30,5 +30,12 @@ func ProvideRepositories(container *dig.Container) error {
 	if e != nil {
 		return e
 	}
-	return e
+	e = container.Provide(
+		func(connProvider *providers.ConnectionProvider) *repositories.CountryRepository {
+			return repositories.NewCountryRepository(connProvider.GetCoreConnection())
+		})
+	if e != nil {
+		return e
+	}
+	return nil
 }

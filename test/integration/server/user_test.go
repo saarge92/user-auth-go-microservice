@@ -16,6 +16,7 @@ func TestUserSignInSignUp(t *testing.T) {
 	defer closeFunc()
 	userGrpcServer, e := server.GetUserGrpcServer()
 	assert.Nil(t, e)
+	assert.NotNil(t, userGrpcServer)
 	password := faker.Password()
 	var token string
 	t.Run("Should return success sign up messages", func(t *testing.T) {
@@ -24,6 +25,7 @@ func TestUserSignInSignUp(t *testing.T) {
 			Inn:      test.InnForTest,
 			Password: password,
 			Name:     faker.Name(),
+			Country:  "RU",
 		}
 		emptyContext := context.Background()
 		response, e := userGrpcServer.Signup(emptyContext, message)

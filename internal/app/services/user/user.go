@@ -1,6 +1,8 @@
 package user
 
 import (
+	"context"
+	"database/sql"
 	"go-user-microservice/internal/app/domain/repositories"
 	"go-user-microservice/internal/app/entites"
 	"go-user-microservice/internal/app/errorlists"
@@ -12,46 +14,60 @@ import (
 
 type ServiceUser struct {
 	userRepository     repositories.UserRepositoryInterface
+	countryRepository  repositories.CountryRepositoryInterface
 	userRemoteServices *RemoteUserService
 }
 
 func NewUserService(
 	userRepository repositories.UserRepositoryInterface,
+	countryRepository repositories.CountryRepositoryInterface,
 	userRemoteService *RemoteUserService,
 ) *ServiceUser {
 	return &ServiceUser{
 		userRepository:     userRepository,
 		userRemoteServices: userRemoteService,
+		countryRepository:  countryRepository,
 	}
 }
 
-func (s *ServiceUser) CheckUserData(form *user.SignUp) error {
+func (s *ServiceUser) checkUserDataWithCountryResponse(form *user.SignUp) (*entites.Country, error) {
 	userExist, e := s.userRepository.UserExist(form.Login)
 	if e != nil {
-		return e
+		return nil, e
 	}
 	if userExist {
-		return status.Error(codes.AlreadyExists, errorlists.UserEmailAlreadyExist)
+		return nil, status.Error(codes.AlreadyExists, errorlists.UserEmailAlreadyExist)
 	}
 	userInnExist, e := s.userRepository.UserByInnExist(form.Inn)
 	if e != nil {
-		return e
+		return nil, e
 	}
 	if userInnExist {
-		return status.Error(codes.AlreadyExists, errorlists.UserInnAlreadyExist)
+		return nil, status.Error(codes.AlreadyExists, errorlists.UserInnAlreadyExist)
 	}
 	userRemoteExist, e := s.userRemoteServices.CheckRemoteUser(form.Inn)
 	if e != nil {
-		return e
+		return nil, e
 	}
 	if !userRemoteExist {
-		return status.Error(codes.NotFound, errorlists.UserNotFoundOnRemote)
+		return nil, status.Error(codes.NotFound, errorlists.UserNotFoundOnRemote)
 	}
-	return nil
+	if form.Country != "" {
+		var countryError error
+		var country *entites.Country
+		country, countryError = s.countryRepository.GetByCodeTwo(context.Background(), form.Country)
+		if countryError != nil {
+			return nil, countryError
+		}
+		return country, nil
+	}
+	return nil, nil
 }
 
 func (s *ServiceUser) SignUp(form *user.SignUp) (*entites.User, error) {
-	if checkError := s.CheckUserData(form); checkError != nil {
+	var country *entites.Country
+	var checkError error
+	if country, checkError = s.checkUserDataWithCountryResponse(form); checkError != nil {
 		return nil, checkError
 	}
 	userEntity := &entites.User{}
@@ -63,6 +79,9 @@ func (s *ServiceUser) SignUp(form *user.SignUp) (*entites.User, error) {
 	userEntity.Login = form.Login
 	userEntity.Name = form.Name
 	userEntity.Inn = form.Inn
+	if country != nil {
+		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
+	}
 	if e = s.userRepository.Create(userEntity); e != nil {
 		return nil, e
 	}

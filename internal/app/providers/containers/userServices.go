@@ -21,9 +21,10 @@ func ProvideUserServices(container *dig.Container) error {
 		func(
 			userRepo *repositories.UserRepository,
 			userRemoteService *user.RemoteUserService,
+			countryRepository *repositories.CountryRepository,
 		) *user.ServiceUser {
 			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
-			return user.NewUserService(userRepositoryInterface, userRemoteService)
+			return user.NewUserService(userRepositoryInterface, countryRepository, userRemoteService)
 		})
 	if e != nil {
 		return e

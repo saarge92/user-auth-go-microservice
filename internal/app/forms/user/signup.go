@@ -3,7 +3,9 @@ package user
 import (
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
-	entites2 "go-user-microservice/internal/app/entites"
+	"github.com/go-ozzo/ozzo-validation/is"
+	v "github.com/go-ozzo/ozzo-validation/v4"
+	"go-user-microservice/internal/app/entites"
 	"go-user-microservice/pkg/protobuf/user_server"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,7 +27,7 @@ func NewSignUpForm(
 
 func (f *SignUp) Validate() error {
 	emailPattern := "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$"
-	innPattern := fmt.Sprintf(`^\d{%d}$`, entites2.InnLength)
+	innPattern := fmt.Sprintf(`^\d{%d}$`, entites.InnLength)
 	sliceErrorMessages := map[string]string{
 		emailPattern: "Should contain email address",
 		innPattern:   "Should contain 10 digits exactly",
@@ -64,5 +66,7 @@ func (f *SignUp) Validate() error {
 			validation.Required,
 			validation.Length(2, 120),
 		),
-	)
+		validation.Field(&f.Country,
+			v.When(f.Country != "", is.CountryCode2),
+		))
 }
