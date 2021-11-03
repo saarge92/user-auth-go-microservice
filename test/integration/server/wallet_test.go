@@ -10,7 +10,7 @@ import (
 )
 
 func TestCreateWallet(t *testing.T) {
-	serverTest, closeFunc, e := test.CreateTestServer()
+	serverTest, closeFunc, e := test.CreateTestServer(nil)
 	defer closeFunc()
 	assert.Nil(t, e)
 	walletServer, e := serverTest.GetWalletGrpcServer()

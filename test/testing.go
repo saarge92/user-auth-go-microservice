@@ -8,6 +8,7 @@ import (
 	"go-user-microservice/internal/app/config"
 	"go-user-microservice/internal/app/domain/servers"
 	"go-user-microservice/internal/app/providers"
+	"go-user-microservice/test/test_providers"
 )
 
 const (
@@ -24,8 +25,10 @@ const (
 
 var connectionCount = 0
 
-func CreateTestServer() (servers.ServerInterface, func(), error) {
-	serverTest := NewServerTest()
+func CreateTestServer(
+	stripeServiceProvider *test_providers.StripeServiceProvider,
+) (servers.ServerInterface, func(), error) {
+	serverTest := NewServerTest(nil)
 	e := serverTest.InitConfig()
 	if e != nil {
 		return nil, nil, e

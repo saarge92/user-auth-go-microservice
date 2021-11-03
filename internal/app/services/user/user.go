@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"go-user-microservice/internal/app/domain/repositories"
+	stripeInterface "go-user-microservice/internal/app/domain/services/stripe"
+	"go-user-microservice/internal/app/dto"
 	"go-user-microservice/internal/app/entites"
 	"go-user-microservice/internal/app/errorlists"
 	"go-user-microservice/internal/app/forms/user"
@@ -13,20 +15,23 @@ import (
 )
 
 type ServiceUser struct {
-	userRepository     repositories.UserRepositoryInterface
-	countryRepository  repositories.CountryRepositoryInterface
-	userRemoteServices *RemoteUserService
+	userRepository       repositories.UserRepositoryInterface
+	countryRepository    repositories.CountryRepositoryInterface
+	userRemoteServices   *RemoteUserService
+	stripeAccountService stripeInterface.AccountStripeServiceInterface
 }
 
 func NewUserService(
 	userRepository repositories.UserRepositoryInterface,
 	countryRepository repositories.CountryRepositoryInterface,
 	userRemoteService *RemoteUserService,
+	stripeAccountService stripeInterface.AccountStripeServiceInterface,
 ) *ServiceUser {
 	return &ServiceUser{
-		userRepository:     userRepository,
-		userRemoteServices: userRemoteService,
-		countryRepository:  countryRepository,
+		userRepository:       userRepository,
+		userRemoteServices:   userRemoteService,
+		countryRepository:    countryRepository,
+		stripeAccountService: stripeAccountService,
 	}
 }
 
@@ -79,9 +84,20 @@ func (s *ServiceUser) SignUp(form *user.SignUp) (*entites.User, error) {
 	userEntity.Login = form.Login
 	userEntity.Name = form.Name
 	userEntity.Inn = form.Inn
+
+	accountStripeDto := &dto.StripeAccountCreate{
+		Email: userEntity.Login,
+	}
+
 	if country != nil {
 		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
+		accountStripeDto.Country = country.CodeTwo
 	}
+	accountResponse, e := s.stripeAccountService.Create(accountStripeDto)
+	if e != nil {
+		return nil, e
+	}
+	userEntity.ProviderPaymentID = accountResponse.ID
 	if e = s.userRepository.Create(userEntity); e != nil {
 		return nil, e
 	}

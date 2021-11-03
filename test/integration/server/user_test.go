@@ -11,7 +11,7 @@ import (
 )
 
 func TestUserSignInSignUp(t *testing.T) {
-	server, closeFunc, e := test.CreateTestServer()
+	server, closeFunc, e := test.CreateTestServer(nil)
 	assert.Nil(t, e)
 	defer closeFunc()
 	userGrpcServer, e := server.GetUserGrpcServer()

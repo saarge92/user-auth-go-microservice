@@ -6,7 +6,9 @@ import (
 	"go.uber.org/dig"
 )
 
-func ProvideWalletServices(container *dig.Container) error {
+type WalletServiceProvider struct{}
+
+func (p *WalletServiceProvider) Provide(container *dig.Container) error {
 	e := container.Provide(
 		func(
 			currencyRepo *repositories.CurrencyRepository,

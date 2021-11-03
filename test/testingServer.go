@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/joho/godotenv"
+	"go-user-microservice/internal/app/domain/providers"
 	"go-user-microservice/internal/app/providers/containers"
 	"go-user-microservice/internal/app/server"
 	"go.uber.org/dig"
@@ -11,11 +12,16 @@ import (
 )
 
 type ServerTest struct {
-	container *dig.Container
+	container             *dig.Container
+	stripeServiceProvider providers.ProviderInterface
 }
 
-func NewServerTest() *ServerTest {
-	serverTest := &ServerTest{}
+func NewServerTest(
+	stripeServiceProvider providers.ProviderInterface,
+) *ServerTest {
+	serverTest := &ServerTest{
+		stripeServiceProvider: stripeServiceProvider,
+	}
 	serverTest.container = dig.New()
 	return serverTest
 }
@@ -41,6 +47,12 @@ func (s *ServerTest) InitContainer() error {
 	e = containers.ProvideRepositories(s.container)
 	if e != nil {
 		return e
+	}
+	if s.stripeServiceProvider != nil {
+		e := s.stripeServiceProvider.Provide(s.container)
+		if e != nil {
+			return e
+		}
 	}
 	e = containers.ProvideUserServices(s.container)
 	if e != nil {

@@ -2,13 +2,15 @@ package containers
 
 import (
 	"go-user-microservice/internal/app/config"
-	repoInterfaces "go-user-microservice/internal/app/domain/repositories"
 	"go-user-microservice/internal/app/repositories"
+	"go-user-microservice/internal/app/services/stripe"
 	"go-user-microservice/internal/app/services/user"
 	"go.uber.org/dig"
 )
 
-func ProvideUserServices(container *dig.Container) error {
+type UserServicesProvider struct{}
+
+func (p *UserServicesProvider) Provide(container *dig.Container) error {
 	e := container.Provide(
 		func(config *config.Config) *user.RemoteUserService {
 			return user.NewRemoteUserService(config)
@@ -22,9 +24,13 @@ func ProvideUserServices(container *dig.Container) error {
 			userRepo *repositories.UserRepository,
 			userRemoteService *user.RemoteUserService,
 			countryRepository *repositories.CountryRepository,
+			accountStripeService *stripe.AccountStripeService,
 		) *user.ServiceUser {
-			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
-			return user.NewUserService(userRepositoryInterface, countryRepository, userRemoteService)
+			return user.NewUserService(
+				userRepo,
+				countryRepository,
+				userRemoteService,
+				accountStripeService)
 		})
 	if e != nil {
 		return e
@@ -34,8 +40,7 @@ func ProvideUserServices(container *dig.Container) error {
 			config *config.Config,
 			userRepo *repositories.UserRepository,
 		) *user.JwtService {
-			var userRepositoryInterface repoInterfaces.UserRepositoryInterface = userRepo
-			return user.NewJwtService(config, userRepositoryInterface)
+			return user.NewJwtService(config, userRepo)
 		})
 	if e != nil {
 		return e

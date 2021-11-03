@@ -2,7 +2,7 @@ package app
 
 import (
 	"fmt"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -42,25 +42,37 @@ func (s *Server) InitConfig() error {
 	return containers.ProvideConfig(s.container)
 }
 func (s *Server) InitContainer() error {
-	if e := containers.ProvideConnections(s.container); e != nil {
+	userServiceProvider := &containers.UserServicesProvider{}
+	repositoryProvider := &containers.RepositoryProvider{}
+	encryptionServiceProvider := &containers.EncryptionProvider{}
+	connectionProvider := &containers.ConnectionProvider{}
+	walletServiceProvider := &containers.WalletServiceProvider{}
+	userGRPCMiddlewareProvider := &containers.UserGRPCMiddlewareProvider{}
+	grpcServerProvider := &containers.GrpcServerProvider{}
+	stripeServiceProvider := &containers.StripeServiceProvider{}
+
+	if e := encryptionServiceProvider.Provide(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideRepositories(s.container); e != nil {
+	if e := connectionProvider.Provide(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideUserServices(s.container); e != nil {
+	if e := repositoryProvider.Provide(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideWalletServices(s.container); e != nil {
+	if e := stripeServiceProvider.Provide(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideUserMiddlewares(s.container); e != nil {
+	if e := userServiceProvider.Provide(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideForms(s.container); e != nil {
+	if e := walletServiceProvider.Provide(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideGrpcServers(s.container); e != nil {
+	if e := userGRPCMiddlewareProvider.Provide(s.container); e != nil {
+		return e
+	}
+	if e := grpcServerProvider.Provide(s.container); e != nil {
 		return e
 	}
 	return nil
@@ -96,7 +108,7 @@ func (s *Server) Start() error {
 		return e
 	}
 	serv := grpc.NewServer(
-		grpc_middleware.WithUnaryServerChain(
+		grpcmiddleware.WithUnaryServerChain(
 			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
 			userMiddleware.IsAuthenticatedMiddleware,
 		),
