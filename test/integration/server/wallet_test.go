@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
-	"go-user-microservice/internal/app/middlewares/dictionary"
+	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"go-user-microservice/test"
 	"testing"

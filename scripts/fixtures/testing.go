@@ -4,8 +4,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	"go-user-microservice/internal/app/config"
-	"go-user-microservice/internal/app/entites"
+	"go-user-microservice/internal/app/user/entities"
+	"go-user-microservice/internal/pkg/config"
 	"go-user-microservice/test"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -35,7 +35,7 @@ func createTestUser(db *sqlx.DB) error {
 	query := `INSERT INTO users (
 				id, login, inn, name, password, created_at, updated_at)
 				VALUES (:id, :login, :inn, :name, :password, :created_at, :updated_at)`
-	userEntity := &entites.User{
+	userEntity := &entities.User{
 		ID:        test.UserIDForRealUser,
 		Login:     test.UserLoginForRealUser,
 		Inn:       test.InnForRealUser,

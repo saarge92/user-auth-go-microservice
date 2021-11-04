@@ -1,7 +1,7 @@
 package test_providers
 
 import (
-	stripeInterface "go-user-microservice/internal/app/domain/services/stripe"
+	stripeInterface "go-user-microservice/internal/pkg/domain/services/stripe"
 	serviceMock "go-user-microservice/test/services"
 	"go.uber.org/dig"
 )

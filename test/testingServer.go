@@ -2,9 +2,12 @@ package test
 
 import (
 	"github.com/joho/godotenv"
-	"go-user-microservice/internal/app/domain/providers"
-	"go-user-microservice/internal/app/providers/containers"
-	"go-user-microservice/internal/app/server"
+	"go-user-microservice/internal/app/user"
+	userProviders "go-user-microservice/internal/app/user/providers"
+	"go-user-microservice/internal/app/wallet"
+	walletProviders "go-user-microservice/internal/app/wallet/providers"
+	"go-user-microservice/internal/pkg/domain/providers"
+	sharedContainers "go-user-microservice/internal/pkg/providers/containers"
 	"go.uber.org/dig"
 	"os"
 	"path"
@@ -36,17 +39,23 @@ func (s *ServerTest) InitConfig() error {
 	if e := godotenv.Load(".env.test"); e != nil {
 		panic(e)
 	}
-	return containers.ProvideConfig(s.container)
+	return sharedContainers.ProvideConfig(s.container)
 }
 
 func (s *ServerTest) InitContainer() error {
-	if e := containers.ProvideEncryptionService(s.container); e != nil {
+	if e := sharedContainers.ProvideEncryptionService(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideConnection(s.container); e != nil {
+	if e := sharedContainers.ProvideConnection(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideRepositoryProvider(s.container); e != nil {
+	if e := sharedContainers.ProvideShareRepositories(s.container); e != nil {
+		return e
+	}
+	if e := userProviders.ProviderUserRepository(s.container); e != nil {
+		return e
+	}
+	if e := walletProviders.ProvideWalletRepository(s.container); e != nil {
 		return e
 	}
 	if s.stripeProvideFunction != nil {
@@ -54,20 +63,23 @@ func (s *ServerTest) InitContainer() error {
 			return e
 		}
 	} else {
-		if e := containers.ProvideStripeService(s.container); e != nil {
+		if e := sharedContainers.ProvideStripeService(s.container); e != nil {
 			return e
 		}
 	}
-	if e := containers.ProvideUserServices(s.container); e != nil {
+	if e := userProviders.ProvideUserServices(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideWalletServices(s.container); e != nil {
+	if e := walletProviders.ProvideWalletServices(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideGrpcMiddleware(s.container); e != nil {
+	if e := userProviders.ProvideGrpcMiddleware(s.container); e != nil {
 		return e
 	}
-	if e := containers.ProvideGrpcServers(s.container); e != nil {
+	if e := userProviders.ProvideUserGrpcServers(s.container); e != nil {
+		return e
+	}
+	if e := walletProviders.ProvideWalletGrpcServer(s.container); e != nil {
 		return e
 	}
 	return nil
@@ -81,9 +93,9 @@ func (s *ServerTest) GetDIContainer() *dig.Container {
 	return s.container
 }
 
-func (s *ServerTest) GetUserGrpcServer() (*server.UserGrpcServer, error) {
-	var userGrpcServer *server.UserGrpcServer
-	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
+func (s *ServerTest) GetUserGrpcServer() (*user.GrpcUserServer, error) {
+	var userGrpcServer *user.GrpcUserServer
+	e := s.container.Invoke(func(userServer *user.GrpcUserServer) {
 		userGrpcServer = userServer
 	})
 	if e != nil {
@@ -92,9 +104,9 @@ func (s *ServerTest) GetUserGrpcServer() (*server.UserGrpcServer, error) {
 	return userGrpcServer, nil
 }
 
-func (s *ServerTest) GetWalletGrpcServer() (*server.WalletGrpcServer, error) {
-	var walletGrpcServer *server.WalletGrpcServer
-	e := s.container.Invoke(func(walletServer *server.WalletGrpcServer) {
+func (s *ServerTest) GetWalletGrpcServer() (*wallet.GrpcWalletServer, error) {
+	var walletGrpcServer *wallet.GrpcWalletServer
+	e := s.container.Invoke(func(walletServer *wallet.GrpcWalletServer) {
 		walletGrpcServer = walletServer
 	})
 	if e != nil {

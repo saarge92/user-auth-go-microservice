@@ -59,9 +59,12 @@ issues:
       # 505 - Import blocklist: crypto/sha1
       text: "G[401,505]"
 
-    - path: internal/app/providers/*
+    - path: internal/app/pkg/providers/*
       linters:
         - funlen
-    - path: internal/app/providers/containers/*
+    - path: internal/pkg/providers/*
+      linters:
+        - gocritic
+    - path: internal/app/user/providers/*
       linters:
         - gocritic

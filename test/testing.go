@@ -5,10 +5,10 @@ import (
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
-	"go-user-microservice/internal/app/config"
-	providersFunction "go-user-microservice/internal/app/domain/providers"
-	"go-user-microservice/internal/app/domain/servers"
-	"go-user-microservice/internal/app/providers"
+	"go-user-microservice/internal/pkg/config"
+	providersFunction "go-user-microservice/internal/pkg/domain/providers"
+	"go-user-microservice/internal/pkg/domain/servers"
+	"go-user-microservice/internal/pkg/providers"
 )
 
 const (
