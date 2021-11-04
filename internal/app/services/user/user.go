@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"go-user-microservice/internal/app/domain/repositories"
-	stripeInterface "go-user-microservice/internal/app/domain/services/stripe"
 	"go-user-microservice/internal/app/dto"
 	"go-user-microservice/internal/app/entites"
 	"go-user-microservice/internal/app/errorlists"
@@ -15,23 +14,20 @@ import (
 )
 
 type ServiceUser struct {
-	userRepository       repositories.UserRepositoryInterface
-	countryRepository    repositories.CountryRepositoryInterface
-	userRemoteServices   *RemoteUserService
-	stripeAccountService stripeInterface.AccountStripeServiceInterface
+	userRepository     repositories.UserRepositoryInterface
+	countryRepository  repositories.CountryRepositoryInterface
+	userRemoteServices *RemoteUserService
 }
 
 func NewUserService(
 	userRepository repositories.UserRepositoryInterface,
 	countryRepository repositories.CountryRepositoryInterface,
 	userRemoteService *RemoteUserService,
-	stripeAccountService stripeInterface.AccountStripeServiceInterface,
 ) *ServiceUser {
 	return &ServiceUser{
-		userRepository:       userRepository,
-		userRemoteServices:   userRemoteService,
-		countryRepository:    countryRepository,
-		stripeAccountService: stripeAccountService,
+		userRepository:     userRepository,
+		userRemoteServices: userRemoteService,
+		countryRepository:  countryRepository,
 	}
 }
 
@@ -95,11 +91,7 @@ func (s *ServiceUser) SignUp(form *user.SignUp) (*entites.User, error) {
 		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
 		accountStripeDto.Country = country.CodeTwo
 	}
-	accountResponse, e := s.stripeAccountService.Create(accountStripeDto)
-	if e != nil {
-		return nil, e
-	}
-	userEntity.ProviderPaymentID = accountResponse.ID
+
 	if e = s.userRepository.Create(userEntity); e != nil {
 		return nil, e
 	}

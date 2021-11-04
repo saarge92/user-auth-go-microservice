@@ -2,7 +2,6 @@ package containers
 
 import (
 	"go-user-microservice/internal/app/config"
-	stripeInterface "go-user-microservice/internal/app/domain/services/stripe"
 	"go-user-microservice/internal/app/repositories"
 	"go-user-microservice/internal/app/services/user"
 	"go.uber.org/dig"
@@ -22,13 +21,11 @@ func ProvideUserServices(container *dig.Container) error {
 			userRepo *repositories.UserRepository,
 			userRemoteService *user.RemoteUserService,
 			countryRepository *repositories.CountryRepository,
-			accountStripeService stripeInterface.AccountStripeServiceInterface,
 		) *user.ServiceUser {
 			return user.NewUserService(
 				userRepo,
 				countryRepository,
-				userRemoteService,
-				accountStripeService)
+				userRemoteService)
 		})
 	if e != nil {
 		return e
