@@ -20,5 +20,5 @@ type User struct {
 	DeletedAt         sql.NullTime  `db:"deleted_at"`
 	IsBanned          bool          `db:"is_banned"`
 	CountryID         sql.NullInt64 `db:"country_id"`
-	ProviderPaymentID string        `db:"provider_payment_id"`
+	ProviderPaymentID string        `db:"payment_provider_account_id"`
 }

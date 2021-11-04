@@ -40,6 +40,9 @@ func (s *ServerTest) InitConfig() error {
 }
 
 func (s *ServerTest) InitContainer() error {
+	if e := containers.ProvideEncryptionService(s.container); e != nil {
+		return e
+	}
 	if e := containers.ProvideConnection(s.container); e != nil {
 		return e
 	}
@@ -79,7 +82,7 @@ func (s *ServerTest) GetDIContainer() *dig.Container {
 }
 
 func (s *ServerTest) GetUserGrpcServer() (*server.UserGrpcServer, error) {
-	userGrpcServer := new(server.UserGrpcServer)
+	var userGrpcServer *server.UserGrpcServer
 	e := s.container.Invoke(func(userServer *server.UserGrpcServer) {
 		userGrpcServer = userServer
 	})
