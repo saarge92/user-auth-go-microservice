@@ -13,14 +13,14 @@ import (
 
 type ServerTest struct {
 	container             *dig.Container
-	stripeServiceProvider providers.ProviderInterface
+	stripeProvideFunction providers.ProvideFunction
 }
 
 func NewServerTest(
-	stripeServiceProvider providers.ProviderInterface,
+	stripeServiceFunction providers.ProvideFunction,
 ) *ServerTest {
 	serverTest := &ServerTest{
-		stripeServiceProvider: stripeServiceProvider,
+		stripeProvideFunction: stripeServiceFunction,
 	}
 	serverTest.container = dig.New()
 	return serverTest
@@ -40,34 +40,31 @@ func (s *ServerTest) InitConfig() error {
 }
 
 func (s *ServerTest) InitContainer() error {
-	e := containers.ProvideConnections(s.container)
-	if e != nil {
+	if e := containers.ProvideConnection(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideRepositories(s.container)
-	if e != nil {
+	if e := containers.ProvideRepositoryProvider(s.container); e != nil {
 		return e
 	}
-	if s.stripeServiceProvider != nil {
-		e := s.stripeServiceProvider.Provide(s.container)
-		if e != nil {
+	if s.stripeProvideFunction != nil {
+		if e := s.stripeProvideFunction(s.container); e != nil {
+			return e
+		}
+	} else {
+		if e := containers.ProvideStripeService(s.container); e != nil {
 			return e
 		}
 	}
-	e = containers.ProvideUserServices(s.container)
-	if e != nil {
+	if e := containers.ProvideUserServices(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideWalletServices(s.container)
-	if e != nil {
+	if e := containers.ProvideWalletServices(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideForms(s.container)
-	if e != nil {
+	if e := containers.ProvideGrpcMiddleware(s.container); e != nil {
 		return e
 	}
-	e = containers.ProvideGrpcServers(s.container)
-	if e != nil {
+	if e := containers.ProvideGrpcServers(s.container); e != nil {
 		return e
 	}
 	return nil

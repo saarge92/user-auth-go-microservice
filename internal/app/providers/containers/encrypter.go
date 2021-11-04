@@ -5,9 +5,7 @@ import (
 	"go.uber.org/dig"
 )
 
-type EncryptionProvider struct{}
-
-func (p *EncryptionProvider) Provide(container *dig.Container) error {
+func ProvideEncryptionService(container *dig.Container) error {
 	e := container.Provide(
 		func() *services.EncryptService {
 			return &services.EncryptService{}

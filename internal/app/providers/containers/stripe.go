@@ -7,9 +7,7 @@ import (
 	"go.uber.org/dig"
 )
 
-type StripeServiceProvider struct{}
-
-func (p *StripeServiceProvider) Provide(container *dig.Container) error {
+func ProvideStripeService(container *dig.Container) error {
 	e := container.Provide(
 		func(
 			config *config.Config,

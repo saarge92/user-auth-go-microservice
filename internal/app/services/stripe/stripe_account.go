@@ -16,9 +16,9 @@ func NewAccountStripeService(client *ClientStripeWrapper) *AccountStripeService 
 }
 
 func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Account, error) {
+	accountType := "custom"
 	accountParams := &stripe.AccountParams{
-		Country: &data.Country,
-		Email:   &data.Email,
+		Email: &data.Email,
 		Capabilities: &stripe.AccountCapabilitiesParams{
 			CardPayments: &stripe.AccountCapabilitiesCardPaymentsParams{
 				Requested: stripe.Bool(data.CardPaymentsRequested),
@@ -27,6 +27,10 @@ func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Ac
 				Requested: stripe.Bool(data.TransferRequested),
 			},
 		},
+		Type: &accountType,
+	}
+	if data.Country != "" {
+		accountParams.Country = &data.Country
 	}
 	account, e := s.clientStripe.client.Account.New(accountParams)
 	if e != nil {

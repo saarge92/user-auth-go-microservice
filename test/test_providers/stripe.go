@@ -1,30 +1,15 @@
 package test_providers
 
 import (
-	"go-user-microservice/internal/app/config"
-	"go-user-microservice/internal/app/services"
-	"go-user-microservice/internal/app/services/stripe"
+	serviceMock "go-user-microservice/test/services"
 	"go.uber.org/dig"
 )
 
-type StripeServiceProvider struct{}
-
-func (s *StripeServiceProvider) Provide(container *dig.Container) error {
+func ProvideStripe(container *dig.Container) error {
 	e := container.Provide(
-		func(config *config.Config, encryptService *services.EncryptService) *stripe.ClientStripeWrapper {
-			return stripe.NewClientStripe(config, encryptService)
+		func() *serviceMock.AccountStripeServiceMock {
+			return &serviceMock.AccountStripeServiceMock{}
 		},
 	)
-	if e != nil {
-		return nil
-	}
-	e = container.Provide(
-		func(client *stripe.ClientStripeWrapper) *stripe.AccountStripeService {
-			return stripe.NewAccountStripeService(client)
-		},
-	)
-	if e != nil {
-		return e
-	}
-	return nil
+	return e
 }

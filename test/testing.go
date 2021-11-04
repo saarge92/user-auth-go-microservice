@@ -6,9 +6,9 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/app/config"
+	providersFunction "go-user-microservice/internal/app/domain/providers"
 	"go-user-microservice/internal/app/domain/servers"
 	"go-user-microservice/internal/app/providers"
-	"go-user-microservice/test/test_providers"
 )
 
 const (
@@ -26,9 +26,9 @@ const (
 var connectionCount = 0
 
 func CreateTestServer(
-	stripeServiceProvider *test_providers.StripeServiceProvider,
+	stripeServiceProvider providersFunction.ProvideFunction,
 ) (servers.ServerInterface, func(), error) {
-	serverTest := NewServerTest(nil)
+	serverTest := NewServerTest(stripeServiceProvider)
 	e := serverTest.InitConfig()
 	if e != nil {
 		return nil, nil, e

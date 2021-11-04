@@ -6,9 +6,7 @@ import (
 	"go.uber.org/dig"
 )
 
-type RepositoryProvider struct{}
-
-func (r *RepositoryProvider) Provide(container *dig.Container) error {
+func ProvideRepositoryProvider(container *dig.Container) error {
 	e := container.Provide(
 		func(connProvider *providers.ConnectionProvider) *repositories.UserRepository {
 			return repositories.NewUserRepository(connProvider.GetCoreConnection())

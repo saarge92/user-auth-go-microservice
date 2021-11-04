@@ -86,7 +86,9 @@ func (s *ServiceUser) SignUp(form *user.SignUp) (*entites.User, error) {
 	userEntity.Inn = form.Inn
 
 	accountStripeDto := &dto.StripeAccountCreate{
-		Email: userEntity.Login,
+		Email:                 userEntity.Login,
+		CardPaymentsRequested: true,
+		TransferRequested:     true,
 	}
 
 	if country != nil {

@@ -6,9 +6,7 @@ import (
 	"go.uber.org/dig"
 )
 
-type ConnectionProvider struct{}
-
-func (p *ConnectionProvider) Provide(
+func ProvideConnection(
 	container *dig.Container,
 ) error {
 	e := container.Provide(func(config *config.Config) *providers.ConnectionProvider {

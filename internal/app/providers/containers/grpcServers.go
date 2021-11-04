@@ -8,9 +8,7 @@ import (
 	"go.uber.org/dig"
 )
 
-type GrpcServerProvider struct{}
-
-func (p *GrpcServerProvider) Provide(container *dig.Container) error {
+func ProvideGrpcServers(container *dig.Container) error {
 	e := container.Provide(
 		func(
 			userService *user.ServiceUser,

@@ -8,7 +8,7 @@ import (
 
 type AuthService struct {
 	UserService *ServiceUser
-	JwtService  *JwtService
+	jwtService  *JwtService
 }
 
 func NewAuthService(
@@ -17,7 +17,7 @@ func NewAuthService(
 ) *AuthService {
 	return &AuthService{
 		UserService: userService,
-		JwtService:  jwtService,
+		jwtService:  jwtService,
 	}
 }
 
@@ -29,7 +29,8 @@ func (s *AuthService) SignUp(
 	if e != nil {
 		return nil, "", e
 	}
-	token, e := s.JwtService.CreateToken(userEntity.Login)
+
+	token, e := s.jwtService.CreateToken(userEntity.Login)
 	if e != nil {
 		return nil, "", e
 	}
@@ -44,7 +45,7 @@ func (s *AuthService) SignIn(
 	if e != nil {
 		return nil, "", e
 	}
-	token, e := s.JwtService.CreateToken(userEntity.Login)
+	token, e := s.jwtService.CreateToken(userEntity.Login)
 	if e != nil {
 		return nil, "", e
 	}
@@ -52,5 +53,5 @@ func (s *AuthService) SignIn(
 }
 
 func (s *AuthService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad, *entites.User, error) {
-	return s.JwtService.VerifyAndReturnPayloadToken(token)
+	return s.jwtService.VerifyAndReturnPayloadToken(token)
 }

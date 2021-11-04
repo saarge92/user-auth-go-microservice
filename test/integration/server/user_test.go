@@ -7,11 +7,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go-user-microservice/pkg/protobuf/user_server"
 	"go-user-microservice/test"
+	"go-user-microservice/test/test_providers"
 	"testing"
 )
 
 func TestUserSignInSignUp(t *testing.T) {
-	server, closeFunc, e := test.CreateTestServer(nil)
+	stripeContainerProvider := test_providers.ProvideStripe
+	server, closeFunc, e := test.CreateTestServer(stripeContainerProvider)
 	assert.Nil(t, e)
 	defer closeFunc()
 	userGrpcServer, e := server.GetUserGrpcServer()

@@ -8,9 +8,7 @@ import (
 	"go.uber.org/dig"
 )
 
-type UserServicesProvider struct{}
-
-func (p *UserServicesProvider) Provide(container *dig.Container) error {
+func ProvideUserServices(container *dig.Container) error {
 	e := container.Provide(
 		func(config *config.Config) *user.RemoteUserService {
 			return user.NewRemoteUserService(config)

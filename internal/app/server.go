@@ -42,37 +42,28 @@ func (s *Server) InitConfig() error {
 	return containers.ProvideConfig(s.container)
 }
 func (s *Server) InitContainer() error {
-	userServiceProvider := &containers.UserServicesProvider{}
-	repositoryProvider := &containers.RepositoryProvider{}
-	encryptionServiceProvider := &containers.EncryptionProvider{}
-	connectionProvider := &containers.ConnectionProvider{}
-	walletServiceProvider := &containers.WalletServiceProvider{}
-	userGRPCMiddlewareProvider := &containers.UserGRPCMiddlewareProvider{}
-	grpcServerProvider := &containers.GrpcServerProvider{}
-	stripeServiceProvider := &containers.StripeServiceProvider{}
-
-	if e := encryptionServiceProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideEncryptionService(s.container); e != nil {
 		return e
 	}
-	if e := connectionProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideConnection(s.container); e != nil {
 		return e
 	}
-	if e := repositoryProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideRepositoryProvider(s.container); e != nil {
 		return e
 	}
-	if e := stripeServiceProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideStripeService(s.container); e != nil {
 		return e
 	}
-	if e := userServiceProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideUserServices(s.container); e != nil {
 		return e
 	}
-	if e := walletServiceProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideWalletServices(s.container); e != nil {
 		return e
 	}
-	if e := userGRPCMiddlewareProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideGrpcMiddleware(s.container); e != nil {
 		return e
 	}
-	if e := grpcServerProvider.Provide(s.container); e != nil {
+	if e := containers.ProvideGrpcServers(s.container); e != nil {
 		return e
 	}
 	return nil
