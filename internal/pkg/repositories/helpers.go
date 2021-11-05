@@ -13,13 +13,11 @@ func LastInsertID(result sql.Result) int32 {
 	return int32(id)
 }
 
-func GetDBConnection(ctx context.Context, db *sqlx.DB) *sqlx.Tx {
+func GetDBTransaction(ctx context.Context) *sqlx.Tx {
 	var dbTransaction *sqlx.Tx
 	tx, ok := ctx.Value(CurrentTransaction).(*sqlx.Tx)
 	if ok {
 		dbTransaction = tx
-	} else {
-		dbTransaction = db.MustBegin()
 	}
 	return dbTransaction
 }

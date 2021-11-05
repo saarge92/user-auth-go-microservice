@@ -1,0 +1,19 @@
+syntax = 'proto3';
+package protobuf.card;
+option go_package = "protobuf/card";
+
+service CardService{
+  rpc CreateCard(CreateCardRequest)returns(CreateCardResponse);
+}
+
+message CreateCardRequest{
+  string card_number = 1;
+  uint32 expire_day = 2;
+  uint32 expire_month = 3;
+  uint32 expire_year = 4;
+  bool is_default = 5;
+}
+
+message CreateCardResponse{
+  string external_id = 1;
+}

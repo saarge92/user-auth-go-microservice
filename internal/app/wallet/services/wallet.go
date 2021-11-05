@@ -46,7 +46,8 @@ func (s *WalletService) Create(
 
 func (s *WalletService) initWallet(
 	ctx context.Context,
-	form *forms.WalletCreateForm) (*sharedEntities.Wallet, error) {
+	form *forms.WalletCreateForm,
+) (*sharedEntities.Wallet, error) {
 	user, currency, e := s.checkCreateWalletData(ctx, form)
 	if e != nil {
 		return nil, e

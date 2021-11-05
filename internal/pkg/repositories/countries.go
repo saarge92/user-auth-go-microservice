@@ -22,18 +22,19 @@ func NewCountryRepository(db *sqlx.DB) *CountryRepository {
 
 func (r *CountryRepository) GetByCodeTwo(ctx context.Context, code string) (*entites.Country, error) {
 	query := `SELECT * from countries WHERE code_2 = ?`
-	tx := GetDBConnection(ctx, r.db)
 	country := &entites.Country{}
-	e := tx.Get(country, query, code)
-	if e != nil {
-		if e == sql.ErrNoRows {
+	var dbError error
+	tx := GetDBTransaction(ctx)
+	if tx != nil {
+		dbError = tx.Get(country, query, code)
+	} else {
+		dbError = r.db.Get(country, query, code)
+	}
+	if dbError != nil {
+		if dbError == sql.ErrNoRows {
 			return nil, errors.CustomDatabaseError(codes.NotFound, errorlists.CountryNotFound)
 		}
-		return nil, e
-	}
-	e = tx.Commit()
-	if e != nil {
-		return nil, e
+		return nil, dbError
 	}
 	return country, nil
 }
