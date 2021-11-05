@@ -12,19 +12,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type UserGrpcMiddleware struct {
+type WalletGrpcMiddleware struct {
 	jwtService *services.JwtService
 }
 
 func NewUserGrpcMiddleware(
 	jwtService *services.JwtService,
-) *UserGrpcMiddleware {
-	return &UserGrpcMiddleware{
+) *WalletGrpcMiddleware {
+	return &WalletGrpcMiddleware{
 		jwtService: jwtService,
 	}
 }
 
-func (m *UserGrpcMiddleware) IsAuthenticatedMiddleware(
+func (m *WalletGrpcMiddleware) IsAuthenticatedMiddleware(
 	ctx context.Context,
 	request interface{},
 	_ *grpc.UnaryServerInfo,
@@ -40,11 +40,11 @@ func (m *UserGrpcMiddleware) IsAuthenticatedMiddleware(
 			if len(tokenInfo) == 0 {
 				return nil, authError
 			}
-			_, userData, e := m.jwtService.VerifyAndReturnPayloadToken(tokenInfo[0])
+			userData, e := m.jwtService.VerifyTokenAndReturnUser(tokenInfo[0])
 			if e != nil {
 				return nil, e
 			}
-			newCtx := context.WithValue(ctx, dictionary.UserID, userData.ID)
+			newCtx := context.WithValue(ctx, dictionary.User, userData)
 			return handler(newCtx, request)
 		}
 		return nil, authError

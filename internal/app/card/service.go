@@ -21,11 +21,11 @@ func NewServiceCard(cardRepository *RepositoryCard) *ServiceCard {
 func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*Card, error) {
 	var userID uint64
 	var convertOk bool
-	userIDData := ctx.Value(dictionary.UserID)
+	userIDData := ctx.Value(dictionary.User)
 	if userIDData == nil {
 		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
 	}
-	if userID, convertOk = ctx.Value(dictionary.UserID).(uint64); !convertOk {
+	if userID, convertOk = ctx.Value(dictionary.User).(uint64); !convertOk {
 		return nil, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
 	}
 	cardEntity := &Card{}

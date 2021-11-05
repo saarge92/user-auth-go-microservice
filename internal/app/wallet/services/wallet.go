@@ -71,11 +71,11 @@ func (s *WalletService) checkCreateWalletData(
 ) (*entities.User, *sharedEntities.Currency, error) {
 	var userID uint64
 	var ok bool
-	userIDData := ctx.Value(dictionary.UserID)
+	userIDData := ctx.Value(dictionary.User)
 	if userIDData == nil {
 		return nil, nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
 	}
-	if userID, ok = ctx.Value(dictionary.UserID).(uint64); !ok {
+	if userID, ok = ctx.Value(dictionary.User).(uint64); !ok {
 		return nil, nil, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
 	}
 	user, e := s.userRepository.UserByID(userID)

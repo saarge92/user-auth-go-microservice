@@ -7,9 +7,9 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/app/user"
-	"go-user-microservice/internal/app/user/middlewares"
 	userProviders "go-user-microservice/internal/app/user/providers"
 	wallet2 "go-user-microservice/internal/app/wallet"
+	"go-user-microservice/internal/app/wallet/middlewares"
 	walletProvider "go-user-microservice/internal/app/wallet/providers"
 	"go-user-microservice/internal/pkg/config"
 	sharedContainers "go-user-microservice/internal/pkg/providers/containers"
@@ -83,7 +83,7 @@ func (s *Server) InitContainer() error {
 
 func (s *Server) Start() error {
 	var configuration *config.Config
-	var userMiddleware *middlewares.UserGrpcMiddleware
+	var userMiddleware *middlewares.WalletGrpcMiddleware
 	userGrpcServer, e := s.GetUserGrpcServer()
 	if e != nil {
 		return e
@@ -104,7 +104,7 @@ func (s *Server) Start() error {
 	if e != nil {
 		return e
 	}
-	e = s.container.Invoke(func(userGrpcMiddleware *middlewares.UserGrpcMiddleware) {
+	e = s.container.Invoke(func(userGrpcMiddleware *middlewares.WalletGrpcMiddleware) {
 		userMiddleware = userGrpcMiddleware
 	})
 	if e != nil {

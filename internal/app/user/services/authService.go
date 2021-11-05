@@ -1,7 +1,6 @@
 package services
 
 import (
-	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
 )
@@ -52,6 +51,6 @@ func (s *AuthService) SignIn(
 	return userEntity, token, nil
 }
 
-func (s *AuthService) VerifyAndReturnPayloadToken(token string) (*dto.UserPayLoad, *entities.User, error) {
-	return s.jwtService.VerifyAndReturnPayloadToken(token)
+func (s *AuthService) VerifyAndReturnPayloadToken(token string) (*entities.User, error) {
+	return s.jwtService.VerifyTokenAndReturnUser(token)
 }

@@ -52,13 +52,13 @@ func (s *GrpcUserServer) VerifyToken(
 	_ context.Context,
 	request *user_server.VerifyMessage,
 ) (*user_server.VerifyMessageResponse, error) {
-	userPayload, userEntity, e := s.authService.VerifyAndReturnPayloadToken(request.Token)
+	userEntity, e := s.authService.VerifyAndReturnPayloadToken(request.Token)
 	if e != nil {
 		return nil, e
 	}
 	return &user_server.VerifyMessageResponse{
 		User: &user_server.UserMessageResponse{
-			Login: userPayload.UserName,
+			Login: userEntity.Login,
 			Id:    userEntity.ID,
 			Roles: nil,
 		},

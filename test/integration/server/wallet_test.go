@@ -20,7 +20,7 @@ func TestCreateWallet(t *testing.T) {
 		message := &wallet.CreateWalletMessage{
 			Code: test.CurrencyCode,
 		}
-		requestContext := context.WithValue(context.Background(), dictionary.UserID, test.UserIDForRealUser)
+		requestContext := context.WithValue(context.Background(), dictionary.User, test.UserIDForRealUser)
 		response, e := walletServer.CreateWallet(requestContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
