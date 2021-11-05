@@ -14,4 +14,6 @@ const (
 	UserWalletAlreadyExist       = "user wallet already exist"
 	SignInFail                   = "password or login is incorrect"
 	ConvertError                 = "convert error for %s"
+	MustBeMore                   = "%s should be more %d"
+	MustBeLess                   = "%s should be less %d"
 )
