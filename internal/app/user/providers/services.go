@@ -1,9 +1,10 @@
 package providers
 
 import (
-	repositories2 "go-user-microservice/internal/app/user/repositories"
+	userRepositories "go-user-microservice/internal/app/user/repositories"
 	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/internal/pkg/config"
+	"go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/repositories"
 	"go.uber.org/dig"
 )
@@ -19,14 +20,16 @@ func ProvideUserServices(container *dig.Container) error {
 	}
 	e = container.Provide(
 		func(
-			userRepo *repositories2.UserRepository,
+			userRepo *userRepositories.UserRepository,
 			userRemoteService *services.RemoteUserService,
 			countryRepository *repositories.CountryRepository,
+			stripeService stripe.AccountStripeServiceInterface,
 		) *services.ServiceUser {
 			return services.NewUserService(
 				userRepo,
 				countryRepository,
-				userRemoteService)
+				userRemoteService,
+				stripeService)
 		})
 	if e != nil {
 		return e
@@ -34,7 +37,7 @@ func ProvideUserServices(container *dig.Container) error {
 	e = container.Provide(
 		func(
 			config *config.Config,
-			userRepo *repositories2.UserRepository,
+			userRepo *userRepositories.UserRepository,
 		) *services.JwtService {
 			return services.NewJwtService(config, userRepo)
 		})

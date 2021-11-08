@@ -3,6 +3,7 @@ package stripe
 import (
 	"github.com/stripe/stripe-go/v72"
 	"go-user-microservice/internal/app/user/dto"
+	"go-user-microservice/internal/pkg/dictionary"
 )
 
 type AccountStripeService struct {
@@ -16,18 +17,10 @@ func NewAccountStripeService(client *ClientStripeWrapper) *AccountStripeService 
 }
 
 func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Account, error) {
-	accountType := "custom"
+	accountType := dictionary.StandardStripeAccountType
 	accountParams := &stripe.AccountParams{
 		Email: &data.Email,
-		Capabilities: &stripe.AccountCapabilitiesParams{
-			CardPayments: &stripe.AccountCapabilitiesCardPaymentsParams{
-				Requested: stripe.Bool(data.CardPaymentsRequested),
-			},
-			Transfers: &stripe.AccountCapabilitiesTransfersParams{
-				Requested: stripe.Bool(data.TransferRequested),
-			},
-		},
-		Type: &accountType,
+		Type:  (*string)(&accountType),
 	}
 	if data.Country != "" {
 		accountParams.Country = &data.Country

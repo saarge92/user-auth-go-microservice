@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/wallet/forms"
@@ -69,21 +68,10 @@ func (s *WalletService) checkCreateWalletData(
 	ctx context.Context,
 	form *forms.WalletCreateForm,
 ) (*entities.User, *sharedEntities.Currency, error) {
-	var userID uint64
+	var user *entities.User
 	var ok bool
-	userIDData := ctx.Value(dictionary.User)
-	if userIDData == nil {
+	if user, ok = ctx.Value(dictionary.User).(*entities.User); !ok {
 		return nil, nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
-	}
-	if userID, ok = ctx.Value(dictionary.User).(uint64); !ok {
-		return nil, nil, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
-	}
-	user, e := s.userRepository.UserByID(userID)
-	if e != nil {
-		return nil, nil, e
-	}
-	if user == nil {
-		return nil, nil, status.Error(codes.NotFound, errorlists.UserNotFound)
 	}
 	currency, e := s.currencyRepository.GetByCode(form.Code)
 	if e != nil {

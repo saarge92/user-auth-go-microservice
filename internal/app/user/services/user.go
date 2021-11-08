@@ -6,7 +6,8 @@ import (
 	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
-	repositories2 "go-user-microservice/internal/pkg/domain/repositories"
+	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
+	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/entites"
 	"go-user-microservice/internal/pkg/errorlists"
 	"golang.org/x/crypto/bcrypt"
@@ -15,20 +16,23 @@ import (
 )
 
 type ServiceUser struct {
-	userRepository     repositories2.UserRepositoryInterface
-	countryRepository  repositories2.CountryRepositoryInterface
-	userRemoteServices *RemoteUserService
+	userRepository       sharedRepoInterfaces.UserRepositoryInterface
+	countryRepository    sharedRepoInterfaces.CountryRepositoryInterface
+	userRemoteServices   *RemoteUserService
+	stripeAccountService stripeDomain.AccountStripeServiceInterface
 }
 
 func NewUserService(
-	userRepository repositories2.UserRepositoryInterface,
-	countryRepository repositories2.CountryRepositoryInterface,
+	userRepository sharedRepoInterfaces.UserRepositoryInterface,
+	countryRepository sharedRepoInterfaces.CountryRepositoryInterface,
 	userRemoteService *RemoteUserService,
+	stripeAccountService stripeDomain.AccountStripeServiceInterface,
 ) *ServiceUser {
 	return &ServiceUser{
-		userRepository:     userRepository,
-		userRemoteServices: userRemoteService,
-		countryRepository:  countryRepository,
+		userRepository:       userRepository,
+		userRemoteServices:   userRemoteService,
+		countryRepository:    countryRepository,
+		stripeAccountService: stripeAccountService,
 	}
 }
 
@@ -72,7 +76,21 @@ func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
 	if country, checkError = s.checkUserDataWithCountryResponse(form); checkError != nil {
 		return nil, checkError
 	}
+
+	stripeAccountData := &dto.StripeAccountCreate{
+		Email:   form.Login,
+		Country: form.Country,
+	}
 	userEntity := &entities.User{}
+
+	if country != nil {
+		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
+		stripeAccountData.Country = country.CodeTwo
+	}
+	responseAccount, e := s.stripeAccountService.Create(stripeAccountData)
+	if e != nil {
+		return nil, e
+	}
 	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
 	if e != nil {
 		return nil, e
@@ -81,18 +99,7 @@ func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
 	userEntity.Login = form.Login
 	userEntity.Name = form.Name
 	userEntity.Inn = form.Inn
-
-	accountStripeDto := &dto.StripeAccountCreate{
-		Email:                 userEntity.Login,
-		CardPaymentsRequested: true,
-		TransferRequested:     true,
-	}
-
-	if country != nil {
-		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
-		accountStripeDto.Country = country.CodeTwo
-	}
-
+	userEntity.ProviderPaymentID = responseAccount.ID
 	if e = s.userRepository.Create(userEntity); e != nil {
 		return nil, e
 	}
