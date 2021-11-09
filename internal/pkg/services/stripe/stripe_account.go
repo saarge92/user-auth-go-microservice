@@ -2,8 +2,8 @@ package stripe
 
 import (
 	"github.com/stripe/stripe-go/v72"
-	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/pkg/dictionary"
+	"go-user-microservice/internal/pkg/dto"
 )
 
 type AccountStripeService struct {

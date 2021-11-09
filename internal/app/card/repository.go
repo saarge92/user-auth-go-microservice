@@ -17,8 +17,11 @@ func NewRepositoryCard(db *sqlx.DB) *RepositoryCard {
 }
 
 func (r *RepositoryCard) Create(ctx context.Context, card *Card) error {
-	query := `INSERT INTO cards (user_id, is_default, number, expire_day, expire_month, expire_year)
-				VALUES (:user_id, :is_default, :number, :expire_day, :expire_month, :expire_year)`
+	query := `INSERT INTO cards (
+                   user_id, is_default, number, external_provider_id,
+                   expire_day, expire_month, expire_year)
+				VALUES (:user_id, :is_default, :number, :external_provider_id,
+				        :expire_day, :expire_month, :expire_year)`
 	tx := repositories.GetDBTransaction(ctx)
 	var result sql.Result
 	var dbError error

@@ -3,11 +3,11 @@ package services
 import (
 	"context"
 	"database/sql"
-	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
 	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
+	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/entites"
 	"go-user-microservice/internal/pkg/errorlists"
 	"golang.org/x/crypto/bcrypt"

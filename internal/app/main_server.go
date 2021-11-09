@@ -6,6 +6,7 @@ import (
 	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	providers2 "go-user-microservice/internal/app/card/providers"
 	"go-user-microservice/internal/app/user"
 	userProviders "go-user-microservice/internal/app/user/providers"
 	wallet2 "go-user-microservice/internal/app/wallet"
@@ -64,6 +65,12 @@ func (s *Server) InitContainer() error {
 		return e
 	}
 	if e := userProviders.ProvideUserServices(s.container); e != nil {
+		return e
+	}
+	if e := providers2.ProvideCardRepositories(s.container); e != nil {
+		return e
+	}
+	if e := providers2.ProvideCardServices(s.container); e != nil {
 		return e
 	}
 	if e := walletProvider.ProvideWalletServices(s.container); e != nil {

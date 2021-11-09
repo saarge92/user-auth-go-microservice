@@ -3,7 +3,7 @@ package services
 import (
 	"github.com/google/uuid"
 	"github.com/stripe/stripe-go/v72"
-	"go-user-microservice/internal/app/user/dto"
+	"go-user-microservice/internal/pkg/dto"
 )
 
 type AccountStripeServiceMock struct {

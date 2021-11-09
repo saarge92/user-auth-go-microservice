@@ -11,7 +11,8 @@ message CreateCardRequest{
   uint32 expire_day = 2;
   uint32 expire_month = 3;
   uint32 expire_year = 4;
-  bool is_default = 5;
+  uint32 cvc = 5;
+  bool is_default = 6;
 }
 
 message CreateCardResponse{
