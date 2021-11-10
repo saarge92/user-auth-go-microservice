@@ -6,14 +6,16 @@ import (
 	grpcLogrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	providers2 "go-user-microservice/internal/app/card/providers"
+	"go-user-microservice/internal/app/card"
+	cardProvider "go-user-microservice/internal/app/card/providers"
 	"go-user-microservice/internal/app/user"
 	userProviders "go-user-microservice/internal/app/user/providers"
-	wallet2 "go-user-microservice/internal/app/wallet"
+	walletApp "go-user-microservice/internal/app/wallet"
 	"go-user-microservice/internal/app/wallet/middlewares"
 	walletProvider "go-user-microservice/internal/app/wallet/providers"
 	"go-user-microservice/internal/pkg/config"
 	sharedContainers "go-user-microservice/internal/pkg/providers/containers"
+	cardGrpc "go-user-microservice/pkg/protobuf/card"
 	"go-user-microservice/pkg/protobuf/user_server"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"go.uber.org/dig"
@@ -67,10 +69,10 @@ func (s *Server) InitContainer() error {
 	if e := userProviders.ProvideUserServices(s.container); e != nil {
 		return e
 	}
-	if e := providers2.ProvideCardRepositories(s.container); e != nil {
+	if e := cardProvider.ProvideCardRepositories(s.container); e != nil {
 		return e
 	}
-	if e := providers2.ProvideCardServices(s.container); e != nil {
+	if e := cardProvider.ProvideCardServices(s.container); e != nil {
 		return e
 	}
 	if e := walletProvider.ProvideWalletServices(s.container); e != nil {
@@ -83,6 +85,9 @@ func (s *Server) InitContainer() error {
 		return e
 	}
 	if e := walletProvider.ProvideWalletGrpcServer(s.container); e != nil {
+		return e
+	}
+	if e := cardProvider.ProvideCardServer(s.container); e != nil {
 		return e
 	}
 	return nil
@@ -99,22 +104,23 @@ func (s *Server) Start() error {
 	if e != nil {
 		return e
 	}
-	e = s.container.Invoke(func(config *config.Config) {
+	cardGrpcServer, e := s.GetCardGrpcServer()
+	if e != nil {
+		return e
+	}
+	if e := s.container.Invoke(func(config *config.Config) {
 		configuration = config
-	})
-	if e != nil {
+	}); e != nil {
 		return e
 	}
-	e = s.container.Invoke(func(walletServer *wallet2.GrpcWalletServer) {
+	if e = s.container.Invoke(func(walletServer *walletApp.GrpcWalletServer) {
 		walletGrpcServer = walletServer
-	})
-	if e != nil {
+	}); e != nil {
 		return e
 	}
-	e = s.container.Invoke(func(userGrpcMiddleware *middlewares.WalletGrpcMiddleware) {
+	if e := s.container.Invoke(func(userGrpcMiddleware *middlewares.WalletGrpcMiddleware) {
 		userMiddleware = userGrpcMiddleware
-	})
-	if e != nil {
+	}); e != nil {
 		return e
 	}
 	serv := grpc.NewServer(
@@ -125,6 +131,7 @@ func (s *Server) Start() error {
 	)
 	user_server.RegisterUserServiceServer(serv, userGrpcServer)
 	wallet.RegisterWalletServiceServer(serv, walletGrpcServer)
+	cardGrpc.RegisterCardServiceServer(serv, cardGrpcServer)
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", configuration.GrpcPort))
 	if e != nil {
 		return e
@@ -139,22 +146,30 @@ func (s *Server) GetDIContainer() *dig.Container {
 
 func (s *Server) GetUserGrpcServer() (*user.GrpcUserServer, error) {
 	userGrpcServer := new(user.GrpcUserServer)
-	e := s.container.Invoke(func(userServer *user.GrpcUserServer) {
+	if e := s.container.Invoke(func(userServer *user.GrpcUserServer) {
 		userGrpcServer = userServer
-	})
-	if e != nil {
+	}); e != nil {
 		return nil, e
 	}
 	return userGrpcServer, nil
 }
 
-func (s *Server) GetWalletGrpcServer() (*wallet2.GrpcWalletServer, error) {
-	walletGrpcServer := new(wallet2.GrpcWalletServer)
-	e := s.container.Invoke(func(walletServer *wallet2.GrpcWalletServer) {
+func (s *Server) GetWalletGrpcServer() (*walletApp.GrpcWalletServer, error) {
+	walletGrpcServer := new(walletApp.GrpcWalletServer)
+	if e := s.container.Invoke(func(walletServer *walletApp.GrpcWalletServer) {
 		walletGrpcServer = walletServer
-	})
-	if e != nil {
+	}); e != nil {
 		return nil, e
 	}
 	return walletGrpcServer, nil
+}
+
+func (s *Server) GetCardGrpcServer() (*card.GrpcServerCard, error) {
+	cardGrpcServer := new(card.GrpcServerCard)
+	if e := s.container.Invoke(func(cardServer *card.GrpcServerCard) {
+		cardGrpcServer = cardServer
+	}); e != nil {
+		return nil, e
+	}
+	return cardGrpcServer, nil
 }

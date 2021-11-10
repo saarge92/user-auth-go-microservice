@@ -68,3 +68,6 @@ issues:
     - path: internal/app/user/providers/*
       linters:
         - gocritic
+    - path: internal/app/card/providers/*
+      linters:
+        - gocritic

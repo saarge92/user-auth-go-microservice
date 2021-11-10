@@ -9,19 +9,26 @@ import (
 )
 
 func ProvideStripeService(container *dig.Container) error {
-	e := container.Provide(
+	if e := container.Provide(
 		func(
 			config *config.Config,
 			encryptService *services.EncryptService) *stripe.ClientStripeWrapper {
 			return stripe.NewClientStripe(config, encryptService)
-		})
-	if e != nil {
+		}); e != nil {
 		return e
 	}
-	e = container.Provide(
+	if e := container.Provide(
 		func(client *stripe.ClientStripeWrapper) stripeInterface.AccountStripeServiceInterface {
 			stripeImpl := stripe.NewAccountStripeService(client)
 			return stripeImpl
-		})
-	return e
+		}); e != nil {
+		return e
+	}
+	if e := container.Provide(
+		func(client *stripe.ClientStripeWrapper) stripeInterface.CardStripeServiceInterface {
+			return stripe.NewCardStripeService(client)
+		}); e != nil {
+		return e
+	}
+	return nil
 }

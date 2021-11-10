@@ -2,6 +2,7 @@ package test
 
 import (
 	"github.com/joho/godotenv"
+	"go-user-microservice/internal/app/card"
 	"go-user-microservice/internal/app/user"
 	userProviders "go-user-microservice/internal/app/user/providers"
 	"go-user-microservice/internal/app/wallet"
@@ -113,4 +114,14 @@ func (s *ServerTest) GetWalletGrpcServer() (*wallet.GrpcWalletServer, error) {
 		return nil, e
 	}
 	return walletGrpcServer, nil
+}
+
+func (s *ServerTest) GetCardGrpcServer() (*card.GrpcServerCard, error) {
+	cardGrpcServer := new(card.GrpcServerCard)
+	if e := s.container.Invoke(func(cardServer *card.GrpcServerCard) {
+		cardGrpcServer = cardServer
+	}); e != nil {
+		return nil, e
+	}
+	return cardGrpcServer, nil
 }

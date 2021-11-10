@@ -6,21 +6,21 @@ import (
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/dictionary"
+	stripeInterface "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/errorlists"
-	"go-user-microservice/internal/pkg/services/stripe"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type ServiceCard struct {
 	cardRepository    *RepositoryCard
-	cardStripeService *stripe.CardStripeService
+	cardStripeService stripeInterface.CardStripeServiceInterface
 }
 
 func NewServiceCard(
 	cardRepository *RepositoryCard,
-	cardStripeService *stripe.CardStripeService,
+	cardStripeService stripeInterface.CardStripeServiceInterface,
 ) *ServiceCard {
 	return &ServiceCard{
 		cardRepository:    cardRepository,
