@@ -3,6 +3,7 @@ package stripe
 import (
 	"github.com/stripe/stripe-go/v72"
 	"go-user-microservice/internal/pkg/dto"
+	"strconv"
 )
 
 type CardStripeService struct {
@@ -20,6 +21,8 @@ func (s *CardStripeService) CreateCard(cardData *dto.StripeCardCreate) (*stripe.
 		Card: &stripe.CardParams{
 			Number:   stripe.String(cardData.Number),
 			ExpMonth: stripe.String(string(cardData.ExpireMonth)),
+			ExpYear:  stripe.String(string(cardData.ExpireMonth)),
+			CVC:      stripe.String(strconv.Itoa(int(cardData.CVC))),
 		},
 	}
 	token, e := s.client.client.Tokens.New(tokenParams)

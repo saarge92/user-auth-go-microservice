@@ -81,6 +81,9 @@ func (s *Server) InitContainer() error {
 	if e := userProviders.ProvideGrpcMiddleware(s.container); e != nil {
 		return e
 	}
+	if e := cardProvider.ProvideCardMiddleware(s.container); e != nil {
+		return e
+	}
 	if e := userProviders.ProvideUserGrpcServers(s.container); e != nil {
 		return e
 	}
@@ -96,6 +99,7 @@ func (s *Server) InitContainer() error {
 func (s *Server) Start() error {
 	var configuration *config.Config
 	var userMiddleware *middlewares.WalletGrpcMiddleware
+	var cardMiddleware *card.GrpcCardMiddleware
 	userGrpcServer, e := s.GetUserGrpcServer()
 	if e != nil {
 		return e
@@ -113,20 +117,26 @@ func (s *Server) Start() error {
 	}); e != nil {
 		return e
 	}
-	if e = s.container.Invoke(func(walletServer *walletApp.GrpcWalletServer) {
-		walletGrpcServer = walletServer
+	if e = s.container.Invoke(func(walletServerInstance *walletApp.GrpcWalletServer) {
+		walletGrpcServer = walletServerInstance
 	}); e != nil {
 		return e
 	}
-	if e := s.container.Invoke(func(userGrpcMiddleware *middlewares.WalletGrpcMiddleware) {
-		userMiddleware = userGrpcMiddleware
+	if e := s.container.Invoke(func(userGrpcMiddlewareInstance *middlewares.WalletGrpcMiddleware) {
+		userMiddleware = userGrpcMiddlewareInstance
+	}); e != nil {
+		return e
+	}
+	if e := s.container.Invoke(func(cardGrpcMiddlewareInstance *card.GrpcCardMiddleware) {
+		cardMiddleware = cardGrpcMiddlewareInstance
 	}); e != nil {
 		return e
 	}
 	serv := grpc.NewServer(
 		grpcmiddleware.WithUnaryServerChain(
 			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
-			userMiddleware.IsAuthenticatedMiddleware,
+			userMiddleware.CreateWalletAuthenticated,
+			cardMiddleware.CreateCardAuthenticated,
 		),
 	)
 	user_server.RegisterUserServiceServer(serv, userGrpcServer)

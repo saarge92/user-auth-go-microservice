@@ -6,6 +6,7 @@ import (
 	"go-user-microservice/internal/pkg/config"
 	"go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/repositories"
+	sharedServices "go-user-microservice/internal/pkg/services"
 	"go.uber.org/dig"
 )
 
@@ -54,5 +55,12 @@ func ProvideUserServices(container *dig.Container) error {
 	if e != nil {
 		return e
 	}
-	return nil
+	e = container.Provide(
+		func(
+			jwtService *services.JwtService,
+		) *sharedServices.UserAuthContextService {
+			return sharedServices.NewUserAuthContextService(jwtService)
+		},
+	)
+	return e
 }

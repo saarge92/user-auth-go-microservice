@@ -3,7 +3,6 @@ package forms
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
-	v "github.com/go-ozzo/ozzo-validation/v4"
 	"go-user-microservice/pkg/protobuf/card"
 )
 
@@ -24,8 +23,10 @@ func NewCreateCardForm(
 
 func (f *CreateCard) Validate() error {
 	return validation.ValidateStruct(
+		f,
 		validation.Field(&f.CardNumber, validation.Required, is.CreditCard),
 		validation.Field(&f.ExpireMonth, validation.Required, validation.By(f.expMonthValidateRule)),
-		validation.Field(&f.ExpireYear, validation.Required, v.Min(1)),
+		validation.Field(&f.ExpireYear, validation.Required),
+		validation.Field(&f.Cvc, validation.Required),
 	)
 }

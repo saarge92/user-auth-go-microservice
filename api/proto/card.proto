@@ -8,11 +8,10 @@ service CardService{
 
 message CreateCardRequest{
   string card_number = 1;
-  uint32 expire_day = 2;
-  uint32 expire_month = 3;
-  uint32 expire_year = 4;
-  uint32 cvc = 5;
-  bool is_default = 6;
+  uint32 expire_month = 2;
+  uint32 expire_year = 3;
+  uint32 cvc = 4;
+  bool is_default = 5;
 }
 
 message CreateCardResponse{

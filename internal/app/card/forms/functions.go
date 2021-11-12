@@ -8,14 +8,15 @@ import (
 
 func validateExpireMonth() validation.RuleFunc {
 	return func(value interface{}) error {
-		if day, ok := value.(uint32); ok {
-			if day == 0 {
+		if month, ok := value.(uint32); ok {
+			if month == 0 {
 				return fmt.Errorf(errorlists.MustBeMore, "expire_day", 0)
 			}
-			if day > 31 {
-				return fmt.Errorf(errorlists.MustBeLess, "expire_day", 31)
+			if month > 12 {
+				return fmt.Errorf(errorlists.MustBeLess, "expire_day", 12)
 			}
+			return nil
 		}
-		return fmt.Errorf(errorlists.ConvertError, "expire_day")
+		return fmt.Errorf(errorlists.ConvertError, "expire_month")
 	}
 }
