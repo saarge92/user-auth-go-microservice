@@ -7,23 +7,27 @@ import (
 	"go-user-microservice/internal/pkg/services"
 )
 
-type ClientStripeWrapper struct {
-	client         *client.API
+type ClientStripeProvider struct {
+	mainClient     *client.API
 	encryptService *services.EncryptService
 }
 
-func NewClientStripe(
+func NewClientStripeProvider(
 	config *config.Config,
 	encryptService *services.EncryptService,
-) *ClientStripeWrapper {
-	newClientStripeWrapper := &ClientStripeWrapper{
+) *ClientStripeProvider {
+	newClientStripeProvider := &ClientStripeProvider{
 		encryptService: encryptService,
-		client:         &client.API{},
+		mainClient:     &client.API{},
 	}
 	secretKey, e := encryptService.Decrypt([]byte(config.SecretStripeKey), []byte(config.SecretEncryptionKey))
 	if e != nil {
 		log.Error(e)
 	}
-	newClientStripeWrapper.client.Init(string(secretKey), nil)
-	return newClientStripeWrapper
+	newClientStripeProvider.mainClient.Init(string(secretKey), nil)
+	return newClientStripeProvider
+}
+
+func (p *ClientStripeProvider) MainClient() *client.API {
+	return p.mainClient
 }

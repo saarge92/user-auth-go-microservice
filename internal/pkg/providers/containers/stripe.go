@@ -12,21 +12,21 @@ func ProvideStripeService(container *dig.Container) error {
 	if e := container.Provide(
 		func(
 			config *config.Config,
-			encryptService *services.EncryptService) *stripe.ClientStripeWrapper {
-			return stripe.NewClientStripe(config, encryptService)
+			encryptService *services.EncryptService) *stripe.ClientStripeProvider {
+			return stripe.NewClientStripeProvider(config, encryptService)
 		}); e != nil {
 		return e
 	}
 	if e := container.Provide(
-		func(client *stripe.ClientStripeWrapper) stripeInterface.AccountStripeServiceInterface {
-			stripeImpl := stripe.NewAccountStripeService(client)
+		func(clientProvider *stripe.ClientStripeProvider) stripeInterface.AccountStripeServiceInterface {
+			stripeImpl := stripe.NewAccountStripeService(clientProvider.MainClient())
 			return stripeImpl
 		}); e != nil {
 		return e
 	}
 	if e := container.Provide(
-		func(client *stripe.ClientStripeWrapper) stripeInterface.CardStripeServiceInterface {
-			return stripe.NewCardStripeService(client)
+		func(clientProvider *stripe.ClientStripeProvider) stripeInterface.CardStripeServiceInterface {
+			return stripe.NewCardStripeService(clientProvider.MainClient())
 		}); e != nil {
 		return e
 	}

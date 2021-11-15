@@ -2,30 +2,34 @@ package stripe
 
 import (
 	"github.com/stripe/stripe-go/v72"
+	"github.com/stripe/stripe-go/v72/client"
 	"go-user-microservice/internal/pkg/dto"
 	"strconv"
 )
 
 type CardStripeService struct {
-	client *ClientStripeWrapper
+	stripeClient *client.API
 }
 
-func NewCardStripeService(client *ClientStripeWrapper) *CardStripeService {
+func NewCardStripeService(stripeClient *client.API) *CardStripeService {
 	return &CardStripeService{
-		client: client,
+		stripeClient: stripeClient,
 	}
 }
 
 func (s *CardStripeService) CreateCard(cardData *dto.StripeCardCreate) (*stripe.Card, error) {
+	expireMonth := strconv.Itoa(int(cardData.ExpireMonth))
+	expireYear := strconv.Itoa(int(cardData.ExpireYear))
+	cvc := strconv.Itoa(int(cardData.CVC))
 	tokenParams := &stripe.TokenParams{
 		Card: &stripe.CardParams{
 			Number:   stripe.String(cardData.Number),
-			ExpMonth: stripe.String(string(cardData.ExpireMonth)),
-			ExpYear:  stripe.String(string(cardData.ExpireMonth)),
-			CVC:      stripe.String(strconv.Itoa(int(cardData.CVC))),
+			ExpMonth: stripe.String(expireMonth),
+			ExpYear:  stripe.String(expireYear),
+			CVC:      stripe.String(cvc),
 		},
 	}
-	token, e := s.client.client.Tokens.New(tokenParams)
+	token, e := s.stripeClient.Tokens.New(tokenParams)
 	if e != nil {
 		return nil, e
 	}
@@ -33,7 +37,7 @@ func (s *CardStripeService) CreateCard(cardData *dto.StripeCardCreate) (*stripe.
 		Token:   stripe.String(token.ID),
 		Account: stripe.String(cardData.StripePaymentAccountID),
 	}
-	cardStripe, e := s.client.client.Cards.New(cardParams)
+	cardStripe, e := s.stripeClient.Cards.New(cardParams)
 	if e != nil {
 		return nil, e
 	}
