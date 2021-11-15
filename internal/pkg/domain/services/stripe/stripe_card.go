@@ -6,5 +6,5 @@ import (
 )
 
 type CardStripeServiceInterface interface {
-	CreateCard(cardData *dto.StripeCardCreate) (*stripe.Card, error)
+	CreateCard(cardData *dto.StripeCardCreate, syncChannel chan interface{}) (*stripe.Card, error)
 }

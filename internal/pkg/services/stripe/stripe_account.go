@@ -18,10 +18,18 @@ func NewAccountStripeService(client *client.API) *AccountStripeService {
 }
 
 func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Account, error) {
-	accountType := dictionary.StandardStripeAccountType
+	accountType := dictionary.CustomStripeAccountType
 	accountParams := &stripe.AccountParams{
 		Email: &data.Email,
 		Type:  (*string)(&accountType),
+		Capabilities: &stripe.AccountCapabilitiesParams{
+			CardPayments: &stripe.AccountCapabilitiesCardPaymentsParams{
+				Requested: stripe.Bool(data.CardPayments),
+			},
+			Transfers: &stripe.AccountCapabilitiesTransfersParams{
+				Requested: stripe.Bool(data.Transfers),
+			},
+		},
 	}
 	if data.Country != "" {
 		accountParams.Country = &data.Country

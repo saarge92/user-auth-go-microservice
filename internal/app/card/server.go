@@ -29,9 +29,9 @@ func (s *GrpcServerCard) CreateCard(
 	if e := cardForm.Validate(); e != nil {
 		return nil, e
 	}
-	_, e := s.cardService.Create(ctx, cardForm)
+	cardInfo, e := s.cardService.Create(ctx, cardForm)
 	if e != nil {
 		return nil, e
 	}
-	return &card.CreateCardResponse{ExternalId: ""}, nil
+	return &card.CreateCardResponse{ExternalId: cardInfo.ExternalID}, nil
 }

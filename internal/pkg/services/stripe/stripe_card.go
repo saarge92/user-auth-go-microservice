@@ -17,7 +17,11 @@ func NewCardStripeService(stripeClient *client.API) *CardStripeService {
 	}
 }
 
-func (s *CardStripeService) CreateCard(cardData *dto.StripeCardCreate) (*stripe.Card, error) {
+func (s *CardStripeService) CreateCard(
+	cardData *dto.StripeCardCreate,
+	syncChannel chan interface{},
+) (*stripe.Card, error) {
+	defer close(syncChannel)
 	expireMonth := strconv.Itoa(int(cardData.ExpireMonth))
 	expireYear := strconv.Itoa(int(cardData.ExpireYear))
 	cvc := strconv.Itoa(int(cardData.CVC))
@@ -27,6 +31,7 @@ func (s *CardStripeService) CreateCard(cardData *dto.StripeCardCreate) (*stripe.
 			ExpMonth: stripe.String(expireMonth),
 			ExpYear:  stripe.String(expireYear),
 			CVC:      stripe.String(cvc),
+			Currency: stripe.String("USD"),
 		},
 	}
 	token, e := s.stripeClient.Tokens.New(tokenParams)

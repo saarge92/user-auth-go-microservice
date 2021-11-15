@@ -78,8 +78,10 @@ func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
 	}
 
 	stripeAccountData := &dto.StripeAccountCreate{
-		Email:   form.Login,
-		Country: form.Country,
+		Email:        form.Login,
+		Country:      form.Country,
+		CardPayments: true,
+		Transfers:    true,
 	}
 	userEntity := &entities.User{}
 

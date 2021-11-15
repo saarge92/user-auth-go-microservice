@@ -7,6 +7,7 @@ import (
 
 type Card struct {
 	ID                 uint64       `db:"id"`
+	ExternalID         string       `db:"external_id"`
 	Number             string       `db:"number"`
 	ExpireMonth        uint32       `db:"expire_month"`
 	ExpireYear         uint32       `db:"expire_year"`
