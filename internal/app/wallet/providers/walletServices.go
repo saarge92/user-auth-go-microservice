@@ -1,21 +1,23 @@
 package providers
 
 import (
-	repositories2 "go-user-microservice/internal/app/user/repositories"
+	userRepositories "go-user-microservice/internal/app/user/repositories"
 	"go-user-microservice/internal/app/wallet/repositories"
 	"go-user-microservice/internal/app/wallet/services"
-	repositories3 "go-user-microservice/internal/pkg/repositories"
+	"go-user-microservice/internal/pkg/providers"
+	sharedRepositories "go-user-microservice/internal/pkg/repositories"
 	"go.uber.org/dig"
 )
 
 func ProvideWalletServices(container *dig.Container) error {
 	e := container.Provide(
 		func(
-			currencyRepo *repositories3.CurrencyRepository,
+			currencyRepo *sharedRepositories.CurrencyRepository,
 			walletRepo *repositories.WalletRepository,
-			userRepo *repositories2.UserRepository,
+			userRepo *userRepositories.UserRepository,
+			connectionProvider *providers.ConnectionProvider,
 		) *services.WalletService {
-			return services.NewWalletService(walletRepo, userRepo, currencyRepo)
+			return services.NewWalletService(walletRepo, userRepo, currencyRepo, connectionProvider.GetCoreConnection())
 		},
 	)
 	return e

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"go-user-microservice/internal/pkg/errors"
 )
 
 func LastInsertID(result sql.Result) int32 {
@@ -20,4 +21,20 @@ func GetDBTransaction(ctx context.Context) *sqlx.Tx {
 		dbTransaction = tx
 	}
 	return dbTransaction
+}
+
+func HandleTransaction(tx *sqlx.Tx, functionError error) error {
+	if functionError != nil {
+		if rollErr := tx.Rollback(); rollErr != nil {
+			return errors.DatabaseError(rollErr)
+		}
+
+		return errors.DatabaseError(functionError)
+	}
+
+	if e := tx.Commit(); e != nil {
+		return errors.DatabaseError(e)
+	}
+
+	return nil
 }

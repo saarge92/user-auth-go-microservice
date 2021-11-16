@@ -1,11 +1,12 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/pkg/entites"
 	customErrors "go-user-microservice/internal/pkg/errors"
-	repositories2 "go-user-microservice/internal/pkg/repositories"
+	sharedRepositories "go-user-microservice/internal/pkg/repositories"
 	"time"
 )
 
@@ -19,28 +20,83 @@ func NewWalletRepository(db *sqlx.DB) *WalletRepository {
 	}
 }
 
-func (r *WalletRepository) Create(wallet *entites.Wallet) error {
+func (r *WalletRepository) Create(ctx context.Context, wallet *entites.Wallet) error {
 	wallet.UpdatedAt = time.Now()
 	wallet.CreatedAt = time.Now()
-	query := `INSERT INTO wallets(currency_id, user_id, balance, created_at, updated_at)
-				VALUES (:currency_id, :user_id, :balance, :created_at, :updated_at)`
-	result, e := r.db.NamedExec(query, wallet)
-	if e != nil {
-		return customErrors.DatabaseError(e)
+	query := `INSERT INTO wallets(
+                    currency_id, user_id, balance, 
+                    is_default, created_at, updated_at)
+				VALUES (:currency_id, :user_id, :balance,
+				        :is_default, :created_at, :updated_at)`
+	var result sql.Result
+	var dbError error
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	if tx != nil {
+		result, dbError = tx.NamedExec(query, wallet)
+	} else {
+		result, dbError = r.db.NamedExec(query, wallet)
 	}
-	wallet.ID = uint64(repositories2.LastInsertID(result))
+	if dbError != nil {
+		return customErrors.DatabaseError(dbError)
+	}
+	wallet.ID = uint64(sharedRepositories.LastInsertID(result))
 	return nil
 }
 
-func (r *WalletRepository) Exist(userID uint64, currencyID uint32) (bool, error) {
-	query := `SELECT * from wallets WHERE user_id = ? AND currency_id = ?`
+func (r *WalletRepository) Exist(ctx context.Context, userID uint64, currencyID uint32) (bool, error) {
+	query := `SELECT * FROM wallets WHERE user_id = ? AND currency_id = ?`
 	wallet := &entites.Wallet{}
-	e := r.db.Get(wallet, query, userID, currencyID)
-	if e != nil {
-		if e == sql.ErrNoRows {
+
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	var dbError error
+	if tx != nil {
+		dbError = tx.Get(wallet, query, userID, currencyID)
+	} else {
+		dbError = r.db.Get(wallet, query, userID, currencyID)
+	}
+	if dbError != nil {
+		if dbError == sql.ErrNoRows {
 			return false, nil
 		}
-		return false, e
+		return false, dbError
 	}
 	return true, nil
+}
+
+func (r *WalletRepository) ByUserAndDefault(
+	ctx context.Context,
+	userID uint64,
+	isDefault bool,
+) (*entites.Wallet, error) {
+	query := `SELECT * FROM wallets WHERE user_id = ? AND is_default = ?`
+	wallet := &entites.Wallet{}
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	var dbError error
+	if tx != nil {
+		dbError = tx.Get(wallet, query, userID, isDefault)
+	} else {
+		dbError = r.db.Get(wallet, query, userID, isDefault)
+	}
+	if dbError != nil {
+		if dbError == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, customErrors.DatabaseError(dbError)
+	}
+	return wallet, nil
+}
+
+func (r *WalletRepository) UpdateStatusByUserID(ctx context.Context, userID uint64, isDefault bool) error {
+	query := `UPDATE wallets SET is_default = ? WHERE user_id = ?`
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	var dbError error
+	if tx != nil {
+		_, dbError = tx.Exec(query, isDefault, userID)
+	} else {
+		_, dbError = r.db.Exec(query, isDefault, userID)
+	}
+	if dbError != nil {
+		return dbError
+	}
+	return nil
 }
