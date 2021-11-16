@@ -27,7 +27,10 @@ import (
 )
 
 type Server struct {
-	container *dig.Container
+	container        *dig.Container
+	userGrpcServer   *user.GrpcUserServer
+	walletGrpcServer *walletApp.GrpcWalletServer
+	cardGrpcServer   *card.GrpcServerCard
 }
 
 func NewServer() *Server {
@@ -96,29 +99,52 @@ func (s *Server) InitContainer() error {
 	return nil
 }
 
-func (s *Server) Start() error {
-	var configuration *config.Config
-	var userMiddleware *middlewares.WalletGrpcMiddleware
-	var cardMiddleware *card.GrpcCardMiddleware
-	userGrpcServer, e := s.GetUserGrpcServer()
-	if e != nil {
-		return e
-	}
-	walletGrpcServer, e := s.GetWalletGrpcServer()
-	if e != nil {
-		return e
-	}
-	cardGrpcServer, e := s.GetCardGrpcServer()
-	if e != nil {
-		return e
-	}
-	if e := s.container.Invoke(func(config *config.Config) {
-		configuration = config
+func (s *Server) initUserGrpcServer() error {
+	if e := s.container.Invoke(func(userServer *user.GrpcUserServer) {
+		s.userGrpcServer = userServer
 	}); e != nil {
 		return e
 	}
-	if e = s.container.Invoke(func(walletServerInstance *walletApp.GrpcWalletServer) {
-		walletGrpcServer = walletServerInstance
+	return nil
+}
+
+func (s *Server) initWalletGrpcServer() error {
+	if e := s.container.Invoke(func(userServer *walletApp.GrpcWalletServer) {
+		s.walletGrpcServer = userServer
+	}); e != nil {
+		return e
+	}
+	return nil
+}
+
+func (s *Server) initCardGrpcServer() error {
+	if e := s.container.Invoke(func(cardServer *card.GrpcServerCard) {
+		s.cardGrpcServer = cardServer
+	}); e != nil {
+		return e
+	}
+	return nil
+}
+
+func (s *Server) Start() error {
+	if e := s.initUserGrpcServer(); e != nil {
+		return e
+	}
+	if e := s.initWalletGrpcServer(); e != nil {
+		return e
+	}
+	if e := s.initCardGrpcServer(); e != nil {
+		return e
+	}
+	return s.runAndRegisterServers()
+}
+
+func (s *Server) runAndRegisterServers() error {
+	var configuration *config.Config
+	var userMiddleware *middlewares.WalletGrpcMiddleware
+	var cardMiddleware *card.GrpcCardMiddleware
+	if e := s.container.Invoke(func(config *config.Config) {
+		configuration = config
 	}); e != nil {
 		return e
 	}
@@ -139,9 +165,10 @@ func (s *Server) Start() error {
 			cardMiddleware.CreateCardAuthenticated,
 		),
 	)
-	user_server.RegisterUserServiceServer(serv, userGrpcServer)
-	wallet.RegisterWalletServiceServer(serv, walletGrpcServer)
-	cardGrpc.RegisterCardServiceServer(serv, cardGrpcServer)
+
+	user_server.RegisterUserServiceServer(serv, s.userGrpcServer)
+	wallet.RegisterWalletServiceServer(serv, s.walletGrpcServer)
+	cardGrpc.RegisterCardServiceServer(serv, s.cardGrpcServer)
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", configuration.GrpcPort))
 	if e != nil {
 		return e
@@ -154,32 +181,14 @@ func (s *Server) GetDIContainer() *dig.Container {
 	return s.container
 }
 
-func (s *Server) GetUserGrpcServer() (*user.GrpcUserServer, error) {
-	userGrpcServer := new(user.GrpcUserServer)
-	if e := s.container.Invoke(func(userServer *user.GrpcUserServer) {
-		userGrpcServer = userServer
-	}); e != nil {
-		return nil, e
-	}
-	return userGrpcServer, nil
+func (s *Server) GetUserGrpcServer() *user.GrpcUserServer {
+	return s.userGrpcServer
 }
 
-func (s *Server) GetWalletGrpcServer() (*walletApp.GrpcWalletServer, error) {
-	walletGrpcServer := new(walletApp.GrpcWalletServer)
-	if e := s.container.Invoke(func(walletServer *walletApp.GrpcWalletServer) {
-		walletGrpcServer = walletServer
-	}); e != nil {
-		return nil, e
-	}
-	return walletGrpcServer, nil
+func (s *Server) GetWalletGrpcServer() *walletApp.GrpcWalletServer {
+	return s.walletGrpcServer
 }
 
-func (s *Server) GetCardGrpcServer() (*card.GrpcServerCard, error) {
-	cardGrpcServer := new(card.GrpcServerCard)
-	if e := s.container.Invoke(func(cardServer *card.GrpcServerCard) {
-		cardGrpcServer = cardServer
-	}); e != nil {
-		return nil, e
-	}
-	return cardGrpcServer, nil
+func (s *Server) GetCardGrpcServer() *card.GrpcServerCard {
+	return s.cardGrpcServer
 }

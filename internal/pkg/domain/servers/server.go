@@ -12,7 +12,7 @@ type ServerInterface interface {
 	InitContainer() error
 	Start() error
 	GetDIContainer() *dig.Container
-	GetUserGrpcServer() (*user.GrpcUserServer, error)
-	GetWalletGrpcServer() (*wallet.GrpcWalletServer, error)
-	GetCardGrpcServer() (*card.GrpcServerCard, error)
+	GetUserGrpcServer() *user.GrpcUserServer
+	GetWalletGrpcServer() *wallet.GrpcWalletServer
+	GetCardGrpcServer() *card.GrpcServerCard
 }
