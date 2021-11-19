@@ -1,4 +1,4 @@
-package stripe
+package providers
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -8,17 +8,15 @@ import (
 )
 
 type ClientStripeProvider struct {
-	mainClient     *client.API
-	encryptService *services.EncryptService
+	mainClient *client.API
 }
 
 func NewClientStripeProvider(
 	config *config.Config,
-	encryptService *services.EncryptService,
 ) *ClientStripeProvider {
+	encryptService := &services.EncryptService{}
 	newClientStripeProvider := &ClientStripeProvider{
-		encryptService: encryptService,
-		mainClient:     &client.API{},
+		mainClient: &client.API{},
 	}
 	secretKey, e := encryptService.Decrypt([]byte(config.SecretStripeKey), []byte(config.SecretEncryptionKey))
 	if e != nil {

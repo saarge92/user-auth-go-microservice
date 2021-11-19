@@ -8,12 +8,12 @@ import (
 )
 
 type AccountStripeService struct {
-	clientStripe *client.API
+	mainStripe *client.API
 }
 
 func NewAccountStripeService(client *client.API) *AccountStripeService {
 	return &AccountStripeService{
-		clientStripe: client,
+		mainStripe: client,
 	}
 }
 
@@ -34,7 +34,7 @@ func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Ac
 	if data.Country != "" {
 		accountParams.Country = &data.Country
 	}
-	account, e := s.clientStripe.Account.New(accountParams)
+	account, e := s.mainStripe.Account.New(accountParams)
 	if e != nil {
 		return nil, e
 	}

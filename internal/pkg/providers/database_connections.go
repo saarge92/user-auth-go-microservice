@@ -6,22 +6,22 @@ import (
 	"log"
 )
 
-type ConnectionProvider struct {
+type DatabaseConnectionProvider struct {
 	coreConnection *sqlx.DB
 }
 
 func NewConnectionProvider(
 	config *config2.Config,
-) *ConnectionProvider {
+) *DatabaseConnectionProvider {
 	coreConn, e := sqlx.Open(config.DatabaseDriver, config.CoreDatabaseURL)
 	if e != nil {
 		log.Fatal(e)
 	}
-	return &ConnectionProvider{
+	return &DatabaseConnectionProvider{
 		coreConnection: coreConn,
 	}
 }
 
-func (c *ConnectionProvider) GetCoreConnection() *sqlx.DB {
+func (c *DatabaseConnectionProvider) GetCoreConnection() *sqlx.DB {
 	return c.coreConnection
 }

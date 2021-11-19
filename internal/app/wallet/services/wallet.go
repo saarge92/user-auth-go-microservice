@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
+	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/wallet/forms"
 	"go-user-microservice/internal/pkg/dictionary"
@@ -17,14 +18,14 @@ import (
 
 type WalletService struct {
 	walletRepository   repositoryInterface.WalletRepositoryInterface
-	userRepository     repositoryInterface.UserRepositoryInterface
+	userRepository     domain.UserRepositoryInterface
 	currencyRepository repositoryInterface.CurrencyRepositoryInterface
 	coreDB             *sqlx.DB
 }
 
 func NewWalletService(
 	walletRepository repositoryInterface.WalletRepositoryInterface,
-	userRepository repositoryInterface.UserRepositoryInterface,
+	userRepository domain.UserRepositoryInterface,
 	currencyRepository repositoryInterface.CurrencyRepositoryInterface,
 	coreDB *sqlx.DB,
 ) *WalletService {

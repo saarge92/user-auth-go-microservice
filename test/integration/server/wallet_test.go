@@ -13,8 +13,7 @@ func TestCreateWallet(t *testing.T) {
 	serverTest, closeFunc, e := test.CreateTestServer(nil)
 	defer closeFunc()
 	assert.Nil(t, e)
-	walletServer, e := serverTest.GetWalletGrpcServer()
-	assert.Nil(t, e)
+	walletServer := serverTest.GetWalletGrpcServer()
 
 	t.Run("Should Successfully create", func(t *testing.T) {
 		message := &wallet.CreateWalletMessage{

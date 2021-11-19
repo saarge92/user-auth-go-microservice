@@ -3,10 +3,10 @@ package services
 import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
+	sharedRepoInterfaces "go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/config"
-	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
 	"go-user-microservice/internal/pkg/errorlists"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -1,4 +1,4 @@
-package repositories
+package domain
 
 import (
 	"go-user-microservice/internal/app/user/entities"

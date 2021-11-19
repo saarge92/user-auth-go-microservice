@@ -29,31 +29,34 @@ func CreateTestServer(
 	stripeServiceProvider providersFunction.ProvideFunction,
 ) (servers.ServerInterface, func(), error) {
 	serverTest := NewServerTest(stripeServiceProvider)
-	e := serverTest.InitConfig()
-	if e != nil {
+
+	if e := serverTest.InitConfig(); e != nil {
 		return nil, nil, e
 	}
 	var configuration *config.Config
-	e = serverTest.GetDIContainer().Invoke(func(config *config.Config) {
+
+	if e := serverTest.GetDIContainer().Invoke(func(config *config.Config) {
 		configuration = config
-	})
-	if e != nil {
+	}); e != nil {
 		return nil, nil, e
 	}
 	connectionName := fmt.Sprintf(DatabaseName+"_%d", connectionCount)
 	txdb.Register(connectionName, "mysql", configuration.CoreDatabaseURL)
 	connectionCount++
 	configuration.DatabaseDriver = connectionName
-	e = serverTest.InitContainer()
-	if e != nil {
+
+	if e := serverTest.InitContainer(); e != nil {
 		return nil, nil, e
 	}
-	var connectionProvider *providers.ConnectionProvider
-	e = serverTest.GetDIContainer().Invoke(
-		func(connProvider *providers.ConnectionProvider) {
+	var connectionProvider *providers.DatabaseConnectionProvider
+
+	if e := serverTest.GetDIContainer().Invoke(
+		func(connProvider *providers.DatabaseConnectionProvider) {
 			connectionProvider = connProvider
-		})
-	if e != nil {
+		}); e != nil {
+		return nil, nil, e
+	}
+	if e := serverTest.InitGRPCServers(); e != nil {
 		return nil, nil, e
 	}
 	coreConn := connectionProvider.GetCoreConnection()

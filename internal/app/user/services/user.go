@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
 	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
@@ -16,14 +17,14 @@ import (
 )
 
 type ServiceUser struct {
-	userRepository       sharedRepoInterfaces.UserRepositoryInterface
+	userRepository       domain.UserRepositoryInterface
 	countryRepository    sharedRepoInterfaces.CountryRepositoryInterface
 	userRemoteServices   *RemoteUserService
 	stripeAccountService stripeDomain.AccountStripeServiceInterface
 }
 
 func NewUserService(
-	userRepository sharedRepoInterfaces.UserRepositoryInterface,
+	userRepository domain.UserRepositoryInterface,
 	countryRepository sharedRepoInterfaces.CountryRepositoryInterface,
 	userRemoteService *RemoteUserService,
 	stripeAccountService stripeDomain.AccountStripeServiceInterface,

@@ -1,16 +1,16 @@
 package builders
 
 import (
+	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/forms"
-	"go-user-microservice/internal/pkg/domain/repositories"
 	"go-user-microservice/pkg/protobuf/user_server"
 )
 
 type UserFormBuilder struct {
-	userRepository repositories.UserRepositoryInterface
+	userRepository domain.UserRepositoryInterface
 }
 
-func NewUserFormBuilder(userRepository repositories.UserRepositoryInterface) *UserFormBuilder {
+func NewUserFormBuilder(userRepository domain.UserRepositoryInterface) *UserFormBuilder {
 	return &UserFormBuilder{
 		userRepository: userRepository,
 	}

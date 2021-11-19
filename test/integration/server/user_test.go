@@ -16,8 +16,8 @@ func TestUserSignInSignUp(t *testing.T) {
 	server, closeFunc, e := test.CreateTestServer(stripeContainerProvider)
 	assert.Nil(t, e)
 	defer closeFunc()
-	userGrpcServer, e := server.GetUserGrpcServer()
-	assert.Nil(t, e)
+	userGrpcServer := server.GetUserGrpcServer()
+
 	assert.NotNil(t, userGrpcServer)
 	password := faker.Password()
 	var token string
