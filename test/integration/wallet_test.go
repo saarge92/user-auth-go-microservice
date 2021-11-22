@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/pkg/protobuf/wallet"
 	"go-user-microservice/test"
@@ -18,7 +19,10 @@ func TestCreateWallet(t *testing.T) {
 		message := &wallet.CreateWalletMessage{
 			Code: test.CurrencyCode,
 		}
-		requestContext := context.WithValue(context.Background(), dictionary.User, test.UserIDForRealUser)
+		user := &entities.User{
+			ID: test.UserIDForRealUser,
+		}
+		requestContext := context.WithValue(context.Background(), dictionary.User, user)
 		response, e := walletServer.CreateWallet(requestContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)

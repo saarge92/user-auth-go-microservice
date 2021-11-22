@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/pkg/config"
@@ -28,7 +29,6 @@ const (
 )
 
 var connectionCount = 0
-var databaseConnectionInstance *appProvider.DatabaseConnectionProvider
 
 func CreateTestServer(
 	stripeServiceProvider providers.StripeServiceProviderInterface,
@@ -50,27 +50,29 @@ func CreateTestServer(
 	txdb.Register(connectionName, "mysql", appConfig.CoreDatabaseURL)
 	connectionCount++
 	appConfig.DatabaseDriver = connectionName
-	if databaseConnectionInstance == nil {
-		databaseConnectionInstance = appProvider.NewConnectionProvider(appConfig)
+	db, err := sqlx.Open(connectionName, appConfig.CoreDatabaseURL)
+	if err != nil {
+		log.Fatal(err)
 	}
-	repositoryProvider := appProvider.NewRepositoryProvider(databaseConnectionInstance)
+	db.SetMaxIdleConns(1)
+	dbConnProvider := appProvider.NewDatabaseConnectionProvider(appConfig)
+	repositoryProvider := appProvider.NewRepositoryProvider(dbConnProvider)
 	if stripeServiceProvider == nil {
 		stripeServiceProvider = &testProviders.TestStripeServiceProvider{}
 	}
 	serviceProvider := appProvider.NewServiceProvider(
 		appConfig,
 		repositoryProvider,
-		databaseConnectionInstance,
+		dbConnProvider,
 		stripeServiceProvider,
 	)
 
-	coreConn := databaseConnectionInstance.GetCoreConnection()
 	grpcServerProvider := appProvider.NewGrpcServerProvider(serviceProvider)
 
 	return grpcServerProvider, func() {
-		if e := coreConn.Close(); e != nil {
+		if e := db.Close(); e != nil {
 			log.Error(e)
 		}
-		log.Infof("Connection closed: %s", coreConn.DriverName())
+		log.Infof("Connection closed: %s", db.DriverName())
 	}
 }

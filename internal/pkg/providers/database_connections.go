@@ -10,7 +10,7 @@ type DatabaseConnectionProvider struct {
 	coreConnection *sqlx.DB
 }
 
-func NewConnectionProvider(
+func NewDatabaseConnectionProvider(
 	config *config.Config,
 ) *DatabaseConnectionProvider {
 	coreConn, e := sqlx.Open(config.DatabaseDriver, config.CoreDatabaseURL)

@@ -49,7 +49,7 @@ func (s *Server) InitConfig() error {
 func (s *Server) initApp() {
 	appConfig := config.NewConfig()
 	s.mainConfig = appConfig
-	dbConnectionProvider := providers.NewConnectionProvider(appConfig)
+	dbConnectionProvider := providers.NewDatabaseConnectionProvider(appConfig)
 	repositoryProvider := providers.NewRepositoryProvider(dbConnectionProvider)
 	stripeClientProvider := providers.NewClientStripeProvider(appConfig)
 	stripeServiceProvider := providers.NewStripeServiceProvider(stripeClientProvider)
