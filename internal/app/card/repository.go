@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
+	"go-user-microservice/internal/app/card/entities"
 	"go-user-microservice/internal/pkg/errors"
 	"go-user-microservice/internal/pkg/repositories"
 	"time"
@@ -17,7 +18,7 @@ func NewRepositoryCard(db *sqlx.DB) *RepositoryCard {
 	return &RepositoryCard{db: db}
 }
 
-func (r *RepositoryCard) Create(ctx context.Context, card *Card) error {
+func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error {
 	now := time.Now()
 	card.CreatedAt = now
 	card.UpdatedAt = now

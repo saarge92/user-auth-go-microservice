@@ -1,4 +1,4 @@
-package card
+package entities
 
 import (
 	"database/sql"

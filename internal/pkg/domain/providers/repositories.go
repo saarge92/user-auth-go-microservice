@@ -6,7 +6,7 @@ import (
 	"go-user-microservice/internal/pkg/domain/repositories"
 )
 
-type RepositoryProvider interface {
+type RepositoryProviderInterface interface {
 	UserRepository() userDomain.UserRepositoryInterface
 	CurrencyRepository() repositories.CurrencyRepositoryInterface
 	WalletRepository() repositories.WalletRepositoryInterface

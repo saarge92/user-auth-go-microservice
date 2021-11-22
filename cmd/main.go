@@ -13,12 +13,7 @@ func main() {
 	if e := server.InitConfig(); e != nil {
 		log.Fatal(e)
 	}
-	e := server.InitContainer()
-	if e != nil {
-		log.Fatal(e)
-	}
-	e = server.Start()
-	if e != nil {
+	if e := server.Start(); e != nil {
 		log.Fatal(e)
 	}
 }

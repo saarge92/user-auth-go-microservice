@@ -1,9 +1,11 @@
 package providers
 
 import (
+	cardServices "go-user-microservice/internal/app/card/services"
 	userServices "go-user-microservice/internal/app/user/services"
 	walletServices "go-user-microservice/internal/app/wallet/services"
 	"go-user-microservice/internal/pkg/config"
+	"go-user-microservice/internal/pkg/domain/providers"
 	userDomain "go-user-microservice/internal/pkg/domain/services"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/services"
@@ -19,12 +21,13 @@ type ServiceProvider struct {
 	authService            *userServices.AuthService
 	userAuthContextService *services.UserAuthContextService
 	walletService          *walletServices.WalletService
+	cardService            *cardServices.ServiceCard
 }
 
 func NewServiceProvider(
 	config *config.Config,
-	repositoryProvider *RepositoryProvider,
-	dbConnectionProvider *DatabaseConnectionProvider,
+	repositoryProvider providers.RepositoryProviderInterface,
+	dbConnectionProvider providers.DatabaseConnectionProviderInterface,
 	stripeClientProvider *ClientStripeProvider,
 ) *ServiceProvider {
 	// stripe
@@ -53,6 +56,7 @@ func NewServiceProvider(
 		dbConnectionProvider.GetCoreConnection(),
 	)
 	userAuthContextService := services.NewUserAuthContextService(jwtService)
+	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), cardStripeService)
 	return &ServiceProvider{
 		accountStripeService:   accountStripeService,
 		cardStripeService:      cardStripeService,
@@ -62,6 +66,7 @@ func NewServiceProvider(
 		authService:            authService,
 		walletService:          walletService,
 		userAuthContextService: userAuthContextService,
+		cardService:            cardService,
 	}
 }
 
@@ -95,4 +100,8 @@ func (p *ServiceProvider) StripeCardService() stripeDomain.CardStripeServiceInte
 
 func (p *ServiceProvider) UserAuthContextService() *services.UserAuthContextService {
 	return p.userAuthContextService
+}
+
+func (p *ServiceProvider) CardService() *cardServices.ServiceCard {
+	return p.cardService
 }

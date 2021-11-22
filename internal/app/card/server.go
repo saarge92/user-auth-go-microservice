@@ -3,17 +3,18 @@ package card
 import (
 	"context"
 	"go-user-microservice/internal/app/card/forms"
+	"go-user-microservice/internal/app/card/services"
 	"go-user-microservice/pkg/protobuf/card"
 )
 
 type GrpcServerCard struct {
-	cardService     *ServiceCard
+	cardService     *services.ServiceCard
 	cardFormBuilder *forms.CardFormBuilder
 }
 
 func NewGrpcServerCard(
 	cardFormBuilder *forms.CardFormBuilder,
-	cardService *ServiceCard,
+	cardService *services.ServiceCard,
 ) *GrpcServerCard {
 	return &GrpcServerCard{
 		cardService:     cardService,

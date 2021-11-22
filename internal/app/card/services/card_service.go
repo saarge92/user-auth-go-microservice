@@ -1,14 +1,16 @@
-package card
+package services
 
 import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/stripe/stripe-go/v72"
+	"go-user-microservice/internal/app/card/domain"
+	entities2 "go-user-microservice/internal/app/card/entities"
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/dictionary"
-	stripeInterface "go-user-microservice/internal/pkg/domain/services/stripe"
+	stripeServices "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/errorlists"
 	"google.golang.org/grpc/codes"
@@ -16,13 +18,13 @@ import (
 )
 
 type ServiceCard struct {
-	cardRepository    *RepositoryCard
-	cardStripeService stripeInterface.CardStripeServiceInterface
+	cardRepository    domain.CardRepositoryInterface
+	cardStripeService stripeServices.CardStripeServiceInterface
 }
 
 func NewServiceCard(
-	cardRepository *RepositoryCard,
-	cardStripeService stripeInterface.CardStripeServiceInterface,
+	cardRepository domain.CardRepositoryInterface,
+	cardStripeService stripeServices.CardStripeServiceInterface,
 ) *ServiceCard {
 	return &ServiceCard{
 		cardRepository:    cardRepository,
@@ -30,7 +32,7 @@ func NewServiceCard(
 	}
 }
 
-func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*Card, error) {
+func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*entities2.Card, error) {
 	var user *entities.User
 	var convertOk bool
 	if user, convertOk = ctx.Value(dictionary.User).(*entities.User); !convertOk {
@@ -53,7 +55,7 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*
 	if cardError != nil {
 		return nil, cardError
 	}
-	cardEntity := &Card{}
+	cardEntity := &entities2.Card{}
 	cardEntity.Number = cardForm.CardNumber
 	cardEntity.ExpireMonth = cardForm.ExpireMonth
 	cardEntity.ExpireYear = cardForm.ExpireYear

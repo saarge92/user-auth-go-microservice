@@ -6,6 +6,7 @@ import (
 	userDomain "go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/repositories"
 	walletRepositories "go-user-microservice/internal/app/wallet/repositories"
+	"go-user-microservice/internal/pkg/domain/providers"
 	repositoryInterfaces "go-user-microservice/internal/pkg/domain/repositories"
 	sharedRepositories "go-user-microservice/internal/pkg/repositories"
 )
@@ -18,7 +19,7 @@ type RepositoryProvider struct {
 	cardRepository     cardDomain.CardRepositoryInterface
 }
 
-func NewRepositoryProvider(dbConnectionProvider *DatabaseConnectionProvider) *RepositoryProvider {
+func NewRepositoryProvider(dbConnectionProvider providers.DatabaseConnectionProviderInterface) *RepositoryProvider {
 	mainDBConnectionProvider := dbConnectionProvider.GetCoreConnection()
 	return &RepositoryProvider{
 		userRepository:     repositories.NewUserRepository(mainDBConnectionProvider),
