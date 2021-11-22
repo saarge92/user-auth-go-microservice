@@ -62,6 +62,7 @@ func (s *Server) initApp() {
 
 	s.userGrpcServer = grpcServerProvider.UserGrpcServer()
 	s.walletGrpcServer = grpcServerProvider.WalletGrpcServer()
+	s.cardGrpcServer = grpcServerProvider.CardGrpcServer()
 }
 
 func (s *Server) Start() error {
