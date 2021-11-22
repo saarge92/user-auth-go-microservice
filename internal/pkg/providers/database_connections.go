@@ -2,7 +2,7 @@ package providers
 
 import (
 	"github.com/jmoiron/sqlx"
-	config2 "go-user-microservice/internal/pkg/config"
+	"go-user-microservice/internal/pkg/config"
 	"log"
 )
 
@@ -11,7 +11,7 @@ type DatabaseConnectionProvider struct {
 }
 
 func NewConnectionProvider(
-	config *config2.Config,
+	config *config.Config,
 ) *DatabaseConnectionProvider {
 	coreConn, e := sqlx.Open(config.DatabaseDriver, config.CoreDatabaseURL)
 	if e != nil {

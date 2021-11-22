@@ -9,7 +9,6 @@ import (
 	userDomain "go-user-microservice/internal/pkg/domain/services"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/services"
-	"go-user-microservice/internal/pkg/services/stripe"
 )
 
 type ServiceProvider struct {
@@ -28,11 +27,8 @@ func NewServiceProvider(
 	config *config.Config,
 	repositoryProvider providers.RepositoryProviderInterface,
 	dbConnectionProvider providers.DatabaseConnectionProviderInterface,
-	stripeClientProvider *ClientStripeProvider,
+	stripeServiceProvider providers.StripeServiceProviderInterface,
 ) *ServiceProvider {
-	// stripe
-	accountStripeService := stripe.NewAccountStripeService(stripeClientProvider.MainClient())
-	cardStripeService := stripe.NewCardStripeService(stripeClientProvider.MainClient())
 
 	// user
 	remoteUserService := userServices.NewRemoteUserService(config)
@@ -40,7 +36,7 @@ func NewServiceProvider(
 		repositoryProvider.UserRepository(),
 		repositoryProvider.CountryRepository(),
 		remoteUserService,
-		accountStripeService,
+		stripeServiceProvider.Account(),
 	)
 	jwtService := userServices.NewJwtService(
 		config,
@@ -56,10 +52,10 @@ func NewServiceProvider(
 		dbConnectionProvider.GetCoreConnection(),
 	)
 	userAuthContextService := services.NewUserAuthContextService(jwtService)
-	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), cardStripeService)
+	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), stripeServiceProvider.Card())
 	return &ServiceProvider{
-		accountStripeService:   accountStripeService,
-		cardStripeService:      cardStripeService,
+		accountStripeService:   stripeServiceProvider.Account(),
+		cardStripeService:      stripeServiceProvider.Card(),
 		userRemoteService:      remoteUserService,
 		userService:            userService,
 		jwtAuthService:         jwtService,

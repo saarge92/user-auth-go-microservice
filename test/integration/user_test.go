@@ -1,4 +1,4 @@
-package server
+package integration
 
 import (
 	"context"
@@ -7,18 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go-user-microservice/pkg/protobuf/user_server"
 	"go-user-microservice/test"
-	"go-user-microservice/test/test_providers"
+	"go-user-microservice/test/mocks/providers"
+	"go-user-microservice/test/mocks/services"
 	"testing"
 )
 
 func TestUserSignInSignUp(t *testing.T) {
-	stripeContainerProvider := test_providers.ProvideStripe
-	server, closeFunc, e := test.CreateTestServer(stripeContainerProvider)
-	assert.Nil(t, e)
+	stripeServiceProvider := &providers.TestStripeServiceProvider{
+		CardStripeServiceMock:    nil,
+		AccountStripeServiceMock: &services.AccountStripeServiceMock{},
+	}
+	serverProvider, closeFunc := test.CreateTestServer(stripeServiceProvider)
 	defer closeFunc()
-	userGrpcServer := server.GetUserGrpcServer()
+	userGrpcServer := serverProvider.UserGrpcServer()
 
-	assert.NotNil(t, userGrpcServer)
 	password := faker.Password()
 	var token string
 	t.Run("Should return success sign up messages", func(t *testing.T) {

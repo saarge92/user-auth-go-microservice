@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"github.com/DATA-DOG/go-txdb"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/pkg/config"
-	providersFunction "go-user-microservice/internal/pkg/domain/providers"
-	"go-user-microservice/internal/pkg/domain/servers"
-	"go-user-microservice/internal/pkg/providers"
+	"go-user-microservice/internal/pkg/domain/providers"
+	appProvider "go-user-microservice/internal/pkg/providers"
+	testProviders "go-user-microservice/test/mocks/providers"
+	"os"
+	"path"
+	"runtime"
 )
 
 const (
@@ -24,46 +28,49 @@ const (
 )
 
 var connectionCount = 0
+var databaseConnectionInstance *appProvider.DatabaseConnectionProvider
 
 func CreateTestServer(
-	stripeServiceProvider providersFunction.ProvideFunction,
-) (servers.ServerInterface, func(), error) {
-	serverTest := NewServerTest(stripeServiceProvider)
-
-	if e := serverTest.InitConfig(); e != nil {
-		return nil, nil, e
+	stripeServiceProvider providers.StripeServiceProviderInterface,
+) (*appProvider.GrpcServerProvider, func()) {
+	_, filename, _, _ := runtime.Caller(0)
+	dir := path.Join(path.Dir(filename), "..")
+	err := os.Chdir(dir)
+	if err != nil {
+		panic(err)
 	}
-	var configuration *config.Config
 
-	if e := serverTest.GetDIContainer().Invoke(func(config *config.Config) {
-		configuration = config
-	}); e != nil {
-		return nil, nil, e
+	if err = godotenv.Load(".env.test"); err != nil {
+		panic(err)
 	}
+
+	appConfig := config.NewConfig()
+
 	connectionName := fmt.Sprintf(DatabaseName+"_%d", connectionCount)
-	txdb.Register(connectionName, "mysql", configuration.CoreDatabaseURL)
+	txdb.Register(connectionName, "mysql", appConfig.CoreDatabaseURL)
 	connectionCount++
-	configuration.DatabaseDriver = connectionName
+	appConfig.DatabaseDriver = connectionName
+	if databaseConnectionInstance == nil {
+		databaseConnectionInstance = appProvider.NewConnectionProvider(appConfig)
+	}
+	repositoryProvider := appProvider.NewRepositoryProvider(databaseConnectionInstance)
+	if stripeServiceProvider == nil {
+		stripeServiceProvider = &testProviders.TestStripeServiceProvider{}
+	}
+	serviceProvider := appProvider.NewServiceProvider(
+		appConfig,
+		repositoryProvider,
+		databaseConnectionInstance,
+		stripeServiceProvider,
+	)
 
-	if e := serverTest.InitContainer(); e != nil {
-		return nil, nil, e
-	}
-	var connectionProvider *providers.DatabaseConnectionProvider
+	coreConn := databaseConnectionInstance.GetCoreConnection()
+	grpcServerProvider := appProvider.NewGrpcServerProvider(serviceProvider)
 
-	if e := serverTest.GetDIContainer().Invoke(
-		func(connProvider *providers.DatabaseConnectionProvider) {
-			connectionProvider = connProvider
-		}); e != nil {
-		return nil, nil, e
-	}
-	if e := serverTest.InitGRPCServers(); e != nil {
-		return nil, nil, e
-	}
-	coreConn := connectionProvider.GetCoreConnection()
-	return serverTest, func() {
+	return grpcServerProvider, func() {
 		if e := coreConn.Close(); e != nil {
 			log.Error(e)
 		}
 		log.Infof("Connection closed: %s", coreConn.DriverName())
-	}, nil
+	}
 }

@@ -6,8 +6,7 @@ import (
 	"go-user-microservice/internal/pkg/dto"
 )
 
-type AccountStripeServiceMock struct {
-}
+type AccountStripeServiceMock struct{}
 
 func (s *AccountStripeServiceMock) Create(data *dto.StripeAccountCreate) (*stripe.Account, error) {
 	return &stripe.Account{

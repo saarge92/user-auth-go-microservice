@@ -1,4 +1,4 @@
-package server
+package integration
 
 import (
 	"context"
@@ -10,10 +10,9 @@ import (
 )
 
 func TestCreateWallet(t *testing.T) {
-	serverTest, closeFunc, e := test.CreateTestServer(nil)
+	serverTest, closeFunc := test.CreateTestServer(nil)
 	defer closeFunc()
-	assert.Nil(t, e)
-	walletServer := serverTest.GetWalletGrpcServer()
+	walletServer := serverTest.WalletGrpcServer()
 
 	t.Run("Should Successfully create", func(t *testing.T) {
 		message := &wallet.CreateWalletMessage{

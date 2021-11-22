@@ -52,11 +52,12 @@ func (s *Server) initApp() {
 	dbConnectionProvider := providers.NewConnectionProvider(appConfig)
 	repositoryProvider := providers.NewRepositoryProvider(dbConnectionProvider)
 	stripeClientProvider := providers.NewClientStripeProvider(appConfig)
+	stripeServiceProvider := providers.NewStripeServiceProvider(stripeClientProvider)
 	serviceProvider := providers.NewServiceProvider(
 		appConfig,
 		repositoryProvider,
 		dbConnectionProvider,
-		stripeClientProvider,
+		stripeServiceProvider,
 	)
 	grpcServerProvider := providers.NewGrpcServerProvider(serviceProvider)
 
