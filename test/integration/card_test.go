@@ -10,6 +10,7 @@ import (
 	"go-user-microservice/test/mocks/providers"
 	"go-user-microservice/test/mocks/services"
 	"testing"
+	"time"
 )
 
 func TestCardAdd(t *testing.T) {
@@ -26,12 +27,13 @@ func TestCardAdd(t *testing.T) {
 		request := &card.CreateCardRequest{
 			CardNumber:  test.CardNumber,
 			ExpireMonth: test.ExpireMonth,
-			ExpireYear:  test.ExpireYear,
+			ExpireYear:  uint32(time.Now().Year() + 3),
 			Cvc:         test.CVC,
 			IsDefault:   true,
 		}
-		createCard, e := cardServer.CreateCard(ctx, request)
+		cardResponse, e := cardServer.CreateCard(ctx, request)
 		assert.Nil(t, e)
-		assert.IsType(t, &card.CreateCardResponse{}, createCard)
+		assert.IsType(t, &card.CreateCardResponse{}, cardResponse)
+		assert.NotEmpty(t, cardResponse.ExternalId)
 	})
 }

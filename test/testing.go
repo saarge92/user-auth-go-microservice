@@ -28,7 +28,6 @@ const (
 	CurrencyCode                   = "RUB"
 	CardNumber                     = "4000056655665556"
 	ExpireMonth                    = 03
-	ExpireYear                     = 2045
 	CVC                            = 366
 )
 
