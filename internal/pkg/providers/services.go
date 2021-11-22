@@ -29,7 +29,6 @@ func NewServiceProvider(
 	dbConnectionProvider providers.DatabaseConnectionProviderInterface,
 	stripeServiceProvider providers.StripeServiceProviderInterface,
 ) *ServiceProvider {
-
 	// user
 	remoteUserService := userServices.NewRemoteUserService(config)
 	userService := userServices.NewUserService(
@@ -44,7 +43,7 @@ func NewServiceProvider(
 	)
 	authService := userServices.NewAuthService(userService, jwtService)
 
-	//wallet
+	// wallet
 	walletService := walletServices.NewWalletService(
 		repositoryProvider.WalletRepository(),
 		repositoryProvider.UserRepository(),

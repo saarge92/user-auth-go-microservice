@@ -58,16 +58,3 @@ issues:
       # 401 - Detect the usage of DES, RC4, MD5 or SHA1
       # 505 - Import blocklist: crypto/sha1
       text: "G[401,505]"
-
-    - path: internal/app/pkg/providers/*
-      linters:
-        - funlen
-    - path: internal/pkg/providers/*
-      linters:
-        - gocritic
-    - path: internal/app/user/providers/*
-      linters:
-        - gocritic
-    - path: internal/app/card/providers/*
-      linters:
-        - gocritic
