@@ -26,6 +26,10 @@ const (
 	InnForRealUser          uint64 = 7842349892
 	NameForRealUser                = "Ivan"
 	CurrencyCode                   = "RUB"
+	CardNumber                     = "4000056655665556"
+	ExpireMonth                    = 03
+	ExpireYear                     = 2045
+	CVC                            = 366
 )
 
 var connectionCount = 0

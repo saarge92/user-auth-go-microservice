@@ -16,6 +16,14 @@ type TestServiceProvider struct {
 	*providers.ServiceProvider
 }
 
+func (p *TestServiceProvider) Account() stripe.AccountStripeServiceInterface {
+	return p.AccountStripeMock
+}
+
+func (p *TestServiceProvider) Card() stripe.CardStripeServiceInterface {
+	return p.CardStripeServiceMock
+}
+
 func (p *TestServiceProvider) AuthService() *userServices.AuthService {
 	return p.ServiceProvider.AuthService()
 }
