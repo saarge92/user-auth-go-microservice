@@ -1,13 +1,13 @@
-package repositories
+package domain
 
 import (
 	"context"
-	"go-user-microservice/internal/pkg/entites"
+	"go-user-microservice/internal/app/wallet/entities"
 )
 
 type WalletRepositoryInterface interface {
-	Create(ctx context.Context, wallet *entites.Wallet) error
+	Create(ctx context.Context, wallet *entities.Wallet) error
 	Exist(ctx context.Context, userID uint64, currencyID uint32) (bool, error)
-	ByUserAndDefault(ctx context.Context, userID uint64, isDefault bool) (*entites.Wallet, error)
+	ByUserAndDefault(ctx context.Context, userID uint64, isDefault bool) (*entities.Wallet, error)
 	UpdateStatusByUserID(ctx context.Context, userID uint64, isDefault bool) error
 }

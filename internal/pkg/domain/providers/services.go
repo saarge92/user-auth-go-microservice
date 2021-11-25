@@ -5,7 +5,6 @@ import (
 	"go-user-microservice/internal/app/user/services"
 	domainService "go-user-microservice/internal/pkg/domain/services"
 	"go-user-microservice/internal/pkg/domain/services/stripe"
-	sharedServices "go-user-microservice/internal/pkg/services"
 )
 
 type ServiceProviderInterface interface {
@@ -16,6 +15,6 @@ type ServiceProviderInterface interface {
 	WalletService() domainService.WalletServiceInterface
 	StripeAccountService() stripe.AccountStripeServiceInterface
 	StripeCardService() stripe.CardStripeServiceInterface
-	UserAuthContextService() *sharedServices.UserAuthContextService
+	UserAuthContextService() *services.UserAuthContextService
 	CardService() *cardServices.ServiceCard
 }

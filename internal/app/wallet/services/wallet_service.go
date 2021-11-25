@@ -6,6 +6,8 @@ import (
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/entities"
+	walletDomain "go-user-microservice/internal/app/wallet/domain"
+	walletEntities "go-user-microservice/internal/app/wallet/entities"
 	"go-user-microservice/internal/app/wallet/forms"
 	"go-user-microservice/internal/pkg/dictionary"
 	repositoryInterface "go-user-microservice/internal/pkg/domain/repositories"
@@ -17,14 +19,14 @@ import (
 )
 
 type WalletService struct {
-	walletRepository   repositoryInterface.WalletRepositoryInterface
+	walletRepository   walletDomain.WalletRepositoryInterface
 	userRepository     domain.UserRepositoryInterface
 	currencyRepository repositoryInterface.CurrencyRepositoryInterface
 	coreDB             *sqlx.DB
 }
 
 func NewWalletService(
-	walletRepository repositoryInterface.WalletRepositoryInterface,
+	walletRepository walletDomain.WalletRepositoryInterface,
 	userRepository domain.UserRepositoryInterface,
 	currencyRepository repositoryInterface.CurrencyRepositoryInterface,
 	coreDB *sqlx.DB,
@@ -40,7 +42,7 @@ func NewWalletService(
 func (s *WalletService) Create(
 	ctx context.Context,
 	form *forms.WalletCreateForm,
-) (wallet *sharedEntities.Wallet, e error) {
+) (wallet *walletEntities.Wallet, e error) {
 	tx := s.coreDB.MustBegin()
 	defer func() {
 		e = repositories.HandleTransaction(tx, e)
@@ -51,7 +53,7 @@ func (s *WalletService) Create(
 		return nil, e
 	}
 	balance := decimal.NewFromInt(0)
-	wallet = &sharedEntities.Wallet{
+	wallet = &walletEntities.Wallet{
 		UserID:     user.ID,
 		Balance:    balance,
 		CurrencyID: currency.ID,

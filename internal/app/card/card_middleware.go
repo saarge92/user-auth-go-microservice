@@ -2,7 +2,7 @@ package card
 
 import (
 	"context"
-	"go-user-microservice/internal/pkg/services"
+	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/pkg/protobuf/card"
 	"google.golang.org/grpc"
 )

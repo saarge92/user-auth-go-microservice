@@ -5,6 +5,7 @@ import (
 	cardDomain "go-user-microservice/internal/app/card/domain"
 	userDomain "go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/repositories"
+	"go-user-microservice/internal/app/wallet/domain"
 	walletRepositories "go-user-microservice/internal/app/wallet/repositories"
 	"go-user-microservice/internal/pkg/domain/providers"
 	repositoryInterfaces "go-user-microservice/internal/pkg/domain/repositories"
@@ -14,7 +15,7 @@ import (
 type RepositoryProvider struct {
 	userRepository     userDomain.UserRepositoryInterface
 	currencyRepository repositoryInterfaces.CurrencyRepositoryInterface
-	walletRepository   repositoryInterfaces.WalletRepositoryInterface
+	walletRepository   domain.WalletRepositoryInterface
 	countryRepository  repositoryInterfaces.CountryRepositoryInterface
 	cardRepository     cardDomain.CardRepositoryInterface
 }
@@ -38,7 +39,7 @@ func (p *RepositoryProvider) CurrencyRepository() repositoryInterfaces.CurrencyR
 	return p.currencyRepository
 }
 
-func (p *RepositoryProvider) WalletRepository() repositoryInterfaces.WalletRepositoryInterface {
+func (p *RepositoryProvider) WalletRepository() domain.WalletRepositoryInterface {
 	return p.walletRepository
 }
 

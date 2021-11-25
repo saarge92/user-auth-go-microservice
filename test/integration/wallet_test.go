@@ -16,7 +16,7 @@ func TestCreateWallet(t *testing.T) {
 	walletServer := serverTest.WalletGrpcServer()
 
 	t.Run("Should Successfully create", func(t *testing.T) {
-		message := &wallet.CreateWalletMessage{
+		message := &wallet.CreateWalletRequest{
 			Code: test.CurrencyCode,
 		}
 		user := &entities.User{
@@ -26,5 +26,7 @@ func TestCreateWallet(t *testing.T) {
 		response, e := walletServer.CreateWallet(requestContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
+		assert.IsType(t, &wallet.CreateWalletResponse{}, response)
+		assert.NotNil(t, response.ExternalId)
 	})
 }

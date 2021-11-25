@@ -4,12 +4,19 @@ import (
 	"context"
 	"go-user-microservice/internal/app/wallet/forms"
 	"go-user-microservice/internal/pkg/domain/services"
-	"go-user-microservice/pkg/protobuf/wallet"
+	walletGrpcServer "go-user-microservice/pkg/protobuf/wallet"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type GrpcWalletServer struct {
 	walletService services.WalletServiceInterface
+}
+
+func (s *GrpcWalletServer) Wallets(
+	ctx context.Context,
+	empty *emptypb.Empty,
+) (*walletGrpcServer.WalletsResponse, error) {
+	return nil, nil
 }
 
 func NewWalletGrpcServer(
@@ -22,15 +29,17 @@ func NewWalletGrpcServer(
 
 func (s *GrpcWalletServer) CreateWallet(
 	ctx context.Context,
-	message *wallet.CreateWalletMessage,
-) (*emptypb.Empty, error) {
+	message *walletGrpcServer.CreateWalletRequest,
+) (*walletGrpcServer.CreateWalletResponse, error) {
 	walletCreateForm := forms.NewWalletCreateForm(message)
 	if e := walletCreateForm.Validate(); e != nil {
 		return nil, e
 	}
-	_, e := s.walletService.Create(ctx, walletCreateForm)
+	walletEntity, e := s.walletService.Create(ctx, walletCreateForm)
 	if e != nil {
 		return nil, e
 	}
-	return &emptypb.Empty{}, nil
+	return &walletGrpcServer.CreateWalletResponse{
+		ExternalId: walletEntity.ExternalID,
+	}, nil
 }

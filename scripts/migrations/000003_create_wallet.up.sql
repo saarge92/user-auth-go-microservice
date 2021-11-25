@@ -1,6 +1,7 @@
 CREATE TABLE wallets
 (
     id          BIGINT unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    external_id CHAR(36)        NOT NULL UNIQUE,
     user_id     BIGINT UNSIGNED NOT NULL,
     currency_id INT UNSIGNED    NOT NULL,
     balance     DECIMAL(36, 13) NOT NULL,

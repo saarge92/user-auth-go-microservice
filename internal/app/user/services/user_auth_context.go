@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/internal/pkg/errorlists"
 	"google.golang.org/grpc/codes"
@@ -11,10 +10,10 @@ import (
 )
 
 type UserAuthContextService struct {
-	jwtService *services.JwtService
+	jwtService *JwtService
 }
 
-func NewUserAuthContextService(jwtService *services.JwtService) *UserAuthContextService {
+func NewUserAuthContextService(jwtService *JwtService) *UserAuthContextService {
 	return &UserAuthContextService{
 		jwtService: jwtService,
 	}

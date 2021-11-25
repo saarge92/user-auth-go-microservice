@@ -3,6 +3,7 @@ package providers
 import (
 	cardDomain "go-user-microservice/internal/app/card/domain"
 	"go-user-microservice/internal/app/user/domain"
+	domain2 "go-user-microservice/internal/app/wallet/domain"
 	"go-user-microservice/internal/pkg/domain/repositories"
 	"go-user-microservice/internal/pkg/providers"
 )
@@ -10,7 +11,7 @@ import (
 type TestingRepositoryProvider struct {
 	UserRepositoryMock     domain.UserRepositoryInterface
 	CurrencyRepositoryMock repositories.CurrencyRepositoryInterface
-	WalletRepositoryMock   repositories.WalletRepositoryInterface
+	WalletRepositoryMock   domain2.WalletRepositoryInterface
 	CountryRepositoryMock  repositories.CountryRepositoryInterface
 	CardRepositoryMock     cardDomain.CardRepositoryInterface
 	*providers.RepositoryProvider
@@ -30,7 +31,7 @@ func (p *TestingRepositoryProvider) CurrencyRepository() repositories.CurrencyRe
 	return p.RepositoryProvider.CurrencyRepository()
 }
 
-func (p *TestingRepositoryProvider) WalletRepository() repositories.WalletRepositoryInterface {
+func (p *TestingRepositoryProvider) WalletRepository() domain2.WalletRepositoryInterface {
 	if p.WalletRepositoryMock != nil {
 		return p.WalletRepositoryMock
 	}

@@ -8,7 +8,6 @@ import (
 	"go-user-microservice/internal/pkg/domain/providers"
 	userDomain "go-user-microservice/internal/pkg/domain/services"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
-	"go-user-microservice/internal/pkg/services"
 )
 
 type ServiceProvider struct {
@@ -18,7 +17,7 @@ type ServiceProvider struct {
 	userService            *userServices.ServiceUser
 	jwtAuthService         *userServices.JwtService
 	authService            *userServices.AuthService
-	userAuthContextService *services.UserAuthContextService
+	userAuthContextService *userServices.UserAuthContextService
 	walletService          *walletServices.WalletService
 	cardService            *cardServices.ServiceCard
 }
@@ -50,7 +49,7 @@ func NewServiceProvider(
 		repositoryProvider.CurrencyRepository(),
 		dbConnectionProvider.GetCoreConnection(),
 	)
-	userAuthContextService := services.NewUserAuthContextService(jwtService)
+	userAuthContextService := userServices.NewUserAuthContextService(jwtService)
 	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), stripeServiceProvider.Card())
 	return &ServiceProvider{
 		accountStripeService:   stripeServiceProvider.Account(),
@@ -93,7 +92,7 @@ func (p *ServiceProvider) StripeCardService() stripeDomain.CardStripeServiceInte
 	return p.cardStripeService
 }
 
-func (p *ServiceProvider) UserAuthContextService() *services.UserAuthContextService {
+func (p *ServiceProvider) UserAuthContextService() *userServices.UserAuthContextService {
 	return p.userAuthContextService
 }
 

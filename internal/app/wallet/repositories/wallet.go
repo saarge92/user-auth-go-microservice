@@ -3,8 +3,9 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"go-user-microservice/internal/pkg/entites"
+	"go-user-microservice/internal/app/wallet/entities"
 	customErrors "go-user-microservice/internal/pkg/errors"
 	sharedRepositories "go-user-microservice/internal/pkg/repositories"
 	"time"
@@ -20,14 +21,15 @@ func NewWalletRepository(db *sqlx.DB) *WalletRepository {
 	}
 }
 
-func (r *WalletRepository) Create(ctx context.Context, wallet *entites.Wallet) error {
+func (r *WalletRepository) Create(ctx context.Context, wallet *entities.Wallet) error {
 	wallet.UpdatedAt = time.Now()
 	wallet.CreatedAt = time.Now()
+	wallet.ExternalID = uuid.New().String()
 	query := `INSERT INTO wallets(
                     currency_id, user_id, balance, 
-                    is_default, created_at, updated_at)
+                    external_id, is_default, created_at, updated_at)
 				VALUES (:currency_id, :user_id, :balance,
-				        :is_default, :created_at, :updated_at)`
+				       :external_id, :is_default, :created_at, :updated_at)`
 	var result sql.Result
 	var dbError error
 	tx := sharedRepositories.GetDBTransaction(ctx)
@@ -45,7 +47,7 @@ func (r *WalletRepository) Create(ctx context.Context, wallet *entites.Wallet) e
 
 func (r *WalletRepository) Exist(ctx context.Context, userID uint64, currencyID uint32) (bool, error) {
 	query := `SELECT * FROM wallets WHERE user_id = ? AND currency_id = ?`
-	wallet := &entites.Wallet{}
+	wallet := &entities.Wallet{}
 
 	tx := sharedRepositories.GetDBTransaction(ctx)
 	var dbError error
@@ -67,9 +69,9 @@ func (r *WalletRepository) ByUserAndDefault(
 	ctx context.Context,
 	userID uint64,
 	isDefault bool,
-) (*entites.Wallet, error) {
+) (*entities.Wallet, error) {
 	query := `SELECT * FROM wallets WHERE user_id = ? AND is_default = ?`
-	wallet := &entites.Wallet{}
+	wallet := &entities.Wallet{}
 	tx := sharedRepositories.GetDBTransaction(ctx)
 	var dbError error
 	if tx != nil {

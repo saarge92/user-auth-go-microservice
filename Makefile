@@ -25,3 +25,7 @@ migrate-test-up:
 migrate-test-down:
 	migrate -path scripts/migrations -database "mysql://test:test@(localhost:3312)/user-platform?charset=utf8&parseTime=true" \
       -verbose down
+
+.PHONY: test
+test:
+	go test -v ./test/...

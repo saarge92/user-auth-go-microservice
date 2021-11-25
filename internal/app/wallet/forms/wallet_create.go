@@ -7,15 +7,15 @@ import (
 )
 
 type WalletCreateForm struct {
-	*wallet.CreateWalletMessage
+	*wallet.CreateWalletRequest
 	UserID uint64
 }
 
 func NewWalletCreateForm(
-	message *wallet.CreateWalletMessage,
+	message *wallet.CreateWalletRequest,
 ) *WalletCreateForm {
 	return &WalletCreateForm{
-		CreateWalletMessage: message,
+		CreateWalletRequest: message,
 	}
 }
 

@@ -6,7 +6,6 @@ import (
 	"go-user-microservice/internal/pkg/domain/services"
 	"go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/providers"
-	sharedServices "go-user-microservice/internal/pkg/services"
 )
 
 type TestServiceProvider struct {
@@ -58,7 +57,7 @@ func (p *TestServiceProvider) StripeCardService() stripe.CardStripeServiceInterf
 	return p.ServiceProvider.StripeCardService()
 }
 
-func (p *TestServiceProvider) UserAuthContextService() *sharedServices.UserAuthContextService {
+func (p *TestServiceProvider) UserAuthContextService() *userServices.UserAuthContextService {
 	return p.ServiceProvider.UserAuthContextService()
 }
 
