@@ -80,6 +80,7 @@ func (s *Server) Start() error {
 			grpcRecovery.UnaryServerInterceptor(),
 			s.grpcMiddlewareProvider.Card().CreateCardAuthenticated,
 			s.grpcMiddlewareProvider.Wallet().CreateWalletAuthenticated,
+			s.grpcMiddlewareProvider.Wallet().WalletsListAuthenticated,
 		),
 	)
 	user_server.RegisterUserServiceServer(server, s.userGrpcServer)

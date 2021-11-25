@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"go-user-microservice/internal/app/wallet/dto"
 	"go-user-microservice/internal/app/wallet/entities"
 	customErrors "go-user-microservice/internal/pkg/errors"
 	sharedRepositories "go-user-microservice/internal/pkg/repositories"
@@ -101,4 +102,39 @@ func (r *WalletRepository) UpdateStatusByUserID(ctx context.Context, userID uint
 		return dbError
 	}
 	return nil
+}
+
+func (r *WalletRepository) List(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error) {
+	query := `SELECT 
+				wallets.id "wallet.id",
+       			wallets.external_id "wallet.external_id",
+       			wallets.balance "wallet.balance",
+       			wallets.is_default "wallet.balance",
+       			currencies.code "currency.code"
+				FROM wallets 
+				INNER JOIN currencies ON wallets.currency_id = currencies.id
+				WHERE wallets.user_id = ?
+			`
+	var walletsCurrencies []dto.WalletCurrencyDto
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	var dbError error
+	var result *sqlx.Rows
+	if tx != nil {
+		result, dbError = tx.Queryx(query, userID)
+	} else {
+		result, dbError = r.db.Queryx(query, userID)
+	}
+	defer result.Close()
+	if dbError != nil {
+		return nil, customErrors.DatabaseError(dbError)
+	}
+	for result.Next() {
+		var walletCurrencyDto dto.WalletCurrencyDto
+		if e := result.StructScan(&walletCurrencyDto); e != nil {
+			return nil, customErrors.DatabaseError(e)
+		}
+		walletsCurrencies = append(walletsCurrencies, walletCurrencyDto)
+	}
+
+	return walletsCurrencies, nil
 }

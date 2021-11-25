@@ -34,3 +34,19 @@ func (m *GrpcWalletMiddleware) CreateWalletAuthenticated(
 	}
 	return handler(ctx, request)
 }
+
+func (m *GrpcWalletMiddleware) WalletsListAuthenticated(
+	ctx context.Context,
+	request interface{},
+	_ *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
+	if _, ok := request.(*wallet.MyWalletsRequest); ok {
+		newContext, e := m.authContextService.VerifyUserFromRequest(ctx)
+		if e != nil {
+			return nil, e
+		}
+		return handler(newContext, request)
+	}
+	return handler(ctx, request)
+}

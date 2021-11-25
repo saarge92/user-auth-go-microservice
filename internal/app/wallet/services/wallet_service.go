@@ -7,6 +7,7 @@ import (
 	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/entities"
 	walletDomain "go-user-microservice/internal/app/wallet/domain"
+	"go-user-microservice/internal/app/wallet/dto"
 	walletEntities "go-user-microservice/internal/app/wallet/entities"
 	"go-user-microservice/internal/app/wallet/forms"
 	"go-user-microservice/internal/pkg/dictionary"
@@ -102,4 +103,17 @@ func (s *WalletService) checkCreateWalletData(
 		return nil, nil, status.Error(codes.AlreadyExists, errorlists.UserWalletAlreadyExist)
 	}
 	return user, currency, nil
+}
+
+func (s *WalletService) Wallets(ctx context.Context) ([]dto.WalletCurrencyDto, error) {
+	var user *entities.User
+	var ok bool
+	if user, ok = ctx.Value(dictionary.User).(*entities.User); !ok {
+		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
+	}
+	wallets, e := s.walletRepository.List(ctx, user.ID)
+	if e != nil {
+		return nil, e
+	}
+	return wallets, nil
 }
