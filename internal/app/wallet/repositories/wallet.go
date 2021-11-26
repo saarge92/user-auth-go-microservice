@@ -104,7 +104,7 @@ func (r *WalletRepository) UpdateStatusByUserID(ctx context.Context, userID uint
 	return nil
 }
 
-func (r *WalletRepository) List(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error) {
+func (r *WalletRepository) ListByUserID(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error) {
 	query := `SELECT 
 				wallets.id "wallet.id",
        			wallets.external_id "wallet.external_id",

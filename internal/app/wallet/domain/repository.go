@@ -11,5 +11,5 @@ type WalletRepositoryInterface interface {
 	Exist(ctx context.Context, userID uint64, currencyID uint32) (bool, error)
 	ByUserAndDefault(ctx context.Context, userID uint64, isDefault bool) (*entities.Wallet, error)
 	UpdateStatusByUserID(ctx context.Context, userID uint64, isDefault bool) error
-	List(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error)
+	ListByUserID(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error)
 }

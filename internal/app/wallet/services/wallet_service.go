@@ -111,7 +111,7 @@ func (s *WalletService) Wallets(ctx context.Context) ([]dto.WalletCurrencyDto, e
 	if user, ok = ctx.Value(dictionary.User).(*entities.User); !ok {
 		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
 	}
-	wallets, e := s.walletRepository.List(ctx, user.ID)
+	wallets, e := s.walletRepository.ListByUserID(ctx, user.ID)
 	if e != nil {
 		return nil, e
 	}
