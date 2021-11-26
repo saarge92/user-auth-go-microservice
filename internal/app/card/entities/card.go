@@ -16,5 +16,5 @@ type Card struct {
 	IsDefault          bool         `db:"is_default"`
 	CreatedAt          time.Time    `db:"created_at"`
 	UpdatedAt          time.Time    `db:"updated_at"`
-	DeleteAt           sql.NullTime `db:"updated_at"`
+	DeleteAt           sql.NullTime `db:"deleted_at"`
 }

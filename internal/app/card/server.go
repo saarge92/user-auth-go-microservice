@@ -36,3 +36,14 @@ func (s *GrpcServerCard) CreateCard(
 	}
 	return &card.CreateCardResponse{ExternalId: cardInfo.ExternalID}, nil
 }
+
+func (s *GrpcServerCard) MyCards(
+	ctx context.Context,
+	_ *card.MyCardsRequest,
+) (*card.MyCardsResponse, error) {
+	cards, e := s.cardService.MyCards(ctx)
+	if e != nil {
+		return nil, e
+	}
+	return CardsListToGrpc(cards), nil
+}

@@ -41,3 +41,19 @@ func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error 
 	card.ID = uint64(repositories.LastInsertID(result))
 	return nil
 }
+
+func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]entities.Card, error) {
+	query := `SELECT * FROM cards WHERE user_id = ?`
+	var cards []entities.Card
+	tx := repositories.GetDBTransaction(ctx)
+	var dbError error
+	if tx != nil {
+		dbError = tx.Select(&cards, query, userID)
+	} else {
+		dbError = r.db.Select(&cards, query, userID)
+	}
+	if dbError != nil {
+		return nil, errors.DatabaseError(dbError)
+	}
+	return cards, dbError
+}

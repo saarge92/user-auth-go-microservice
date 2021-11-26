@@ -78,7 +78,7 @@ func (s *Server) Start() error {
 		grpcMiddleware.WithUnaryServerChain(
 			grpcLogrus.UnaryServerInterceptor(log.NewEntry(log.StandardLogger())),
 			grpcRecovery.UnaryServerInterceptor(),
-			s.grpcMiddlewareProvider.Card().CreateCardAuthenticated,
+			s.grpcMiddlewareProvider.Card().CardsRequestAuthenticated,
 			s.grpcMiddlewareProvider.Wallet().WalletsRequestsAuthenticated,
 		),
 	)
