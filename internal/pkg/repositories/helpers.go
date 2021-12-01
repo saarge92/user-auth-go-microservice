@@ -3,15 +3,13 @@ package repositories
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/pkg/errors"
 )
 
-func LastInsertID(result sql.Result) int32 {
+func LastInsertID(result sql.Result) int64 {
 	id, _ := result.LastInsertId()
-	fmt.Println(id)
-	return int32(id)
+	return id
 }
 
 func GetDBTransaction(ctx context.Context) *sqlx.Tx {
