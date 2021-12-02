@@ -59,6 +59,7 @@ func NewServiceProvider(
 		repositoryProvider.WalletRepository(),
 		repositoryProvider.CardRepository(),
 		stripeServiceProvider.Charge(),
+		dbConnectionProvider.GetCoreConnection(),
 	)
 	return &ServiceProvider{
 		accountStripeService:   stripeServiceProvider.Account(),

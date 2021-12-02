@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/wallet/dto"
 	"go-user-microservice/internal/app/wallet/entities"
 	customErrors "go-user-microservice/internal/pkg/errors"
@@ -166,4 +167,21 @@ func (r *WalletRepository) OneByExternalIDAndUserID(
 		return nil, customErrors.DatabaseError(dbError)
 	}
 	return walletWithCurrencyDto, nil
+}
+
+func (r *WalletRepository) IncreaseBalanceByID(ctx context.Context, id uint64, amount decimal.Decimal) error {
+	updatedAt := time.Now()
+	query := `UPDATE wallets SET balance = balance + ?,
+				updated_at = ? WHERE id = ?`
+	var dbError error
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	if tx != nil {
+		_, dbError = tx.Exec(query, amount, updatedAt, id)
+	} else {
+		_, dbError = r.db.Exec(query, amount, updatedAt, id)
+	}
+	if dbError != nil {
+		return customErrors.DatabaseError(dbError)
+	}
+	return nil
 }
