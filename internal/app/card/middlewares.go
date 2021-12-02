@@ -27,19 +27,22 @@ func NewGrpcCardMiddleware(authUserContextService *services.UserAuthContextServi
 func (m *GrpcCardMiddleware) CardsRequestAuthenticated(
 	ctx context.Context,
 	request interface{},
-	_ *grpc.UnaryServerInfo,
+	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
-	for _, messageType := range m.messageTypesAuthenticated {
-		requestReflectType := reflect.TypeOf(request)
-		messageReflectType := reflect.TypeOf(messageType)
-		if requestReflectType == messageReflectType {
-			newContext, e := m.authUserContextService.VerifyUserFromRequest(ctx)
-			if e != nil {
-				return nil, e
+	if _, isCardServer := info.Server.(*GrpcServerCard); isCardServer {
+		for _, messageType := range m.messageTypesAuthenticated {
+			requestReflectType := reflect.TypeOf(request)
+			messageReflectType := reflect.TypeOf(messageType)
+			if requestReflectType == messageReflectType {
+				newContext, e := m.authUserContextService.VerifyUserFromRequest(ctx)
+				if e != nil {
+					return nil, e
+				}
+				return handler(newContext, request)
 			}
-			return handler(newContext, request)
 		}
+		return handler(ctx, request)
 	}
 	return handler(ctx, request)
 }

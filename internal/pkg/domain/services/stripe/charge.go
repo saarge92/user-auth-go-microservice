@@ -5,6 +5,6 @@ import (
 	"go-user-microservice/internal/pkg/dto"
 )
 
-type AccountStripeService interface {
-	Create(data *dto.StripeAccountCreate) (*stripe.Account, error)
+type ChargeService interface {
+	CardCharge(cardInfo *dto.StripeCardChargeCreate) (*stripe.Charge, error)
 }

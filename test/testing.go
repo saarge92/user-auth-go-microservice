@@ -33,7 +33,7 @@ const (
 var connectionCount = 0
 
 func CreateTestServer(
-	stripeServiceProvider providers.StripeServiceProviderInterface,
+	stripeServiceProvider providers.StripeServiceProvider,
 ) (*appProvider.GrpcServerProvider, func()) {
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "..")

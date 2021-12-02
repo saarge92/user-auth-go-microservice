@@ -20,16 +20,16 @@ import (
 )
 
 type WalletService struct {
-	walletRepository   walletDomain.WalletRepositoryInterface
-	userRepository     domain.UserRepositoryInterface
-	currencyRepository repositoryInterface.CurrencyRepositoryInterface
+	walletRepository   walletDomain.WalletRepository
+	userRepository     domain.UserRepository
+	currencyRepository repositoryInterface.CurrencyRepository
 	coreDB             *sqlx.DB
 }
 
 func NewWalletService(
-	walletRepository walletDomain.WalletRepositoryInterface,
-	userRepository domain.UserRepositoryInterface,
-	currencyRepository repositoryInterface.CurrencyRepositoryInterface,
+	walletRepository walletDomain.WalletRepository,
+	userRepository domain.UserRepository,
+	currencyRepository repositoryInterface.CurrencyRepository,
 	coreDB *sqlx.DB,
 ) *WalletService {
 	return &WalletService{

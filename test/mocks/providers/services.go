@@ -9,17 +9,17 @@ import (
 )
 
 type TestServiceProvider struct {
-	AccountStripeMock        stripe.AccountStripeServiceInterface
-	CardStripeServiceMock    stripe.CardStripeServiceInterface
-	AccountStripeServiceMock stripe.AccountStripeServiceInterface
+	AccountStripeMock        stripe.AccountStripeService
+	CardStripeServiceMock    stripe.CardStripeService
+	AccountStripeServiceMock stripe.AccountStripeService
 	*providers.ServiceProvider
 }
 
-func (p *TestServiceProvider) Account() stripe.AccountStripeServiceInterface {
+func (p *TestServiceProvider) Account() stripe.AccountStripeService {
 	return p.AccountStripeMock
 }
 
-func (p *TestServiceProvider) Card() stripe.CardStripeServiceInterface {
+func (p *TestServiceProvider) Card() stripe.CardStripeService {
 	return p.CardStripeServiceMock
 }
 
@@ -31,7 +31,7 @@ func (p *TestServiceProvider) JwtService() *userServices.JwtService {
 	return p.ServiceProvider.JwtService()
 }
 
-func (p *TestServiceProvider) RemoteUserService() services.RemoteUserServiceInterface {
+func (p *TestServiceProvider) RemoteUserService() services.RemoteUserService {
 	return p.ServiceProvider.RemoteUserService()
 }
 
@@ -39,18 +39,18 @@ func (p *TestServiceProvider) UserService() *userServices.ServiceUser {
 	return p.ServiceProvider.UserService()
 }
 
-func (p *TestServiceProvider) WalletService() services.WalletServiceInterface {
+func (p *TestServiceProvider) WalletService() services.WalletService {
 	return p.ServiceProvider.WalletService()
 }
 
-func (p *TestServiceProvider) StripeAccountService() stripe.AccountStripeServiceInterface {
+func (p *TestServiceProvider) StripeAccountService() stripe.AccountStripeService {
 	if p.AccountStripeServiceMock != nil {
 		return p.AccountStripeServiceMock
 	}
 	return p.ServiceProvider.StripeAccountService()
 }
 
-func (p *TestServiceProvider) StripeCardService() stripe.CardStripeServiceInterface {
+func (p *TestServiceProvider) StripeCardService() stripe.CardStripeService {
 	if p.CardStripeServiceMock != nil {
 		return p.CardStripeServiceMock
 	}

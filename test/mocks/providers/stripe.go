@@ -5,14 +5,14 @@ import (
 )
 
 type TestStripeServiceProvider struct {
-	AccountStripeServiceMock stripe.AccountStripeServiceInterface
-	CardStripeServiceMock    stripe.CardStripeServiceInterface
+	AccountStripeServiceMock stripe.AccountStripeService
+	CardStripeServiceMock    stripe.CardStripeService
 }
 
-func (p *TestStripeServiceProvider) Account() stripe.AccountStripeServiceInterface {
+func (p *TestStripeServiceProvider) Account() stripe.AccountStripeService {
 	return p.AccountStripeServiceMock
 }
 
-func (p *TestStripeServiceProvider) Card() stripe.CardStripeServiceInterface {
+func (p *TestStripeServiceProvider) Card() stripe.CardStripeService {
 	return p.CardStripeServiceMock
 }

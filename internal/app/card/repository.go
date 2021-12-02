@@ -57,3 +57,26 @@ func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]ent
 	}
 	return cards, dbError
 }
+
+func (r *RepositoryCard) OneByCardAndUserID(
+	ctx context.Context,
+	externalID string,
+	userID uint64,
+) (*entities.Card, error) {
+	query := `SELECT * FROM cards WHERE external_id = ? AND user_id = ?`
+	card := new(entities.Card)
+	tx := repositories.GetDBTransaction(ctx)
+	var dbError error
+	if tx != nil {
+		dbError = tx.Get(card, query, externalID, userID)
+	} else {
+		dbError = r.db.Get(card, query, externalID, userID)
+	}
+	if dbError != nil {
+		if dbError == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.DatabaseError(dbError)
+	}
+	return card, nil
+}

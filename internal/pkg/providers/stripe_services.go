@@ -6,8 +6,9 @@ import (
 )
 
 type StripeServiceProvider struct {
-	accountService stripe.AccountStripeServiceInterface
-	cardService    stripe.CardStripeServiceInterface
+	accountService stripe.AccountStripeService
+	cardService    stripe.CardStripeService
+	chargeService  stripe.ChargeService
 }
 
 func NewStripeServiceProvider(
@@ -15,16 +16,22 @@ func NewStripeServiceProvider(
 ) *StripeServiceProvider {
 	accountService := stripeServices.NewAccountStripeService(stripeClientProvider.MainClient())
 	cardService := stripeServices.NewCardStripeService(stripeClientProvider.MainClient())
+	chargeService := stripeServices.NewChargeStripeService(stripeClientProvider.MainClient())
 	return &StripeServiceProvider{
 		accountService: accountService,
 		cardService:    cardService,
+		chargeService:  chargeService,
 	}
 }
 
-func (p *StripeServiceProvider) Account() stripe.AccountStripeServiceInterface {
+func (p *StripeServiceProvider) Account() stripe.AccountStripeService {
 	return p.accountService
 }
 
-func (p *StripeServiceProvider) Card() stripe.CardStripeServiceInterface {
+func (p *StripeServiceProvider) Card() stripe.CardStripeService {
 	return p.cardService
+}
+
+func (p *StripeServiceProvider) Charge() stripe.ChargeService {
+	return p.chargeService
 }

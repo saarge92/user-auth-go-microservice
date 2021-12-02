@@ -2,6 +2,8 @@ package providers
 
 import (
 	cardServices "go-user-microservice/internal/app/card/services"
+	"go-user-microservice/internal/app/payment/domain"
+	"go-user-microservice/internal/app/payment/services"
 	userServices "go-user-microservice/internal/app/user/services"
 	walletServices "go-user-microservice/internal/app/wallet/services"
 	"go-user-microservice/internal/pkg/config"
@@ -11,22 +13,23 @@ import (
 )
 
 type ServiceProvider struct {
-	accountStripeService   stripeDomain.AccountStripeServiceInterface
-	cardStripeService      stripeDomain.CardStripeServiceInterface
-	userRemoteService      userDomain.RemoteUserServiceInterface
+	accountStripeService   stripeDomain.AccountStripeService
+	cardStripeService      stripeDomain.CardStripeService
+	userRemoteService      userDomain.RemoteUserService
 	userService            *userServices.ServiceUser
 	jwtAuthService         *userServices.JwtService
 	authService            *userServices.AuthService
 	userAuthContextService *userServices.UserAuthContextService
 	walletService          *walletServices.WalletService
 	cardService            *cardServices.ServiceCard
+	paymentService         domain.PaymentService
 }
 
 func NewServiceProvider(
 	config *config.Config,
-	repositoryProvider providers.RepositoryProviderInterface,
-	dbConnectionProvider providers.DatabaseConnectionProviderInterface,
-	stripeServiceProvider providers.StripeServiceProviderInterface,
+	repositoryProvider providers.RepositoryProvider,
+	dbConnectionProvider providers.DatabaseConnectionProvider,
+	stripeServiceProvider providers.StripeServiceProvider,
 ) *ServiceProvider {
 	// user
 	remoteUserService := userServices.NewRemoteUserService(config)
@@ -51,6 +54,12 @@ func NewServiceProvider(
 	)
 	userAuthContextService := userServices.NewUserAuthContextService(jwtService)
 	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), stripeServiceProvider.Card())
+	paymentService := services.NewPaymentService(
+		repositoryProvider.OperationStory(),
+		repositoryProvider.WalletRepository(),
+		repositoryProvider.CardRepository(),
+		stripeServiceProvider.Charge(),
+	)
 	return &ServiceProvider{
 		accountStripeService:   stripeServiceProvider.Account(),
 		cardStripeService:      stripeServiceProvider.Card(),
@@ -61,6 +70,7 @@ func NewServiceProvider(
 		walletService:          walletService,
 		userAuthContextService: userAuthContextService,
 		cardService:            cardService,
+		paymentService:         paymentService,
 	}
 }
 
@@ -72,7 +82,7 @@ func (p *ServiceProvider) JwtService() *userServices.JwtService {
 	return p.jwtAuthService
 }
 
-func (p *ServiceProvider) RemoteUserService() userDomain.RemoteUserServiceInterface {
+func (p *ServiceProvider) RemoteUserService() userDomain.RemoteUserService {
 	return p.userRemoteService
 }
 
@@ -80,15 +90,15 @@ func (p *ServiceProvider) UserService() *userServices.ServiceUser {
 	return p.userService
 }
 
-func (p *ServiceProvider) WalletService() userDomain.WalletServiceInterface {
+func (p *ServiceProvider) WalletService() userDomain.WalletService {
 	return p.walletService
 }
 
-func (p *ServiceProvider) StripeAccountService() stripeDomain.AccountStripeServiceInterface {
+func (p *ServiceProvider) StripeAccountService() stripeDomain.AccountStripeService {
 	return p.accountStripeService
 }
 
-func (p *ServiceProvider) StripeCardService() stripeDomain.CardStripeServiceInterface {
+func (p *ServiceProvider) StripeCardService() stripeDomain.CardStripeService {
 	return p.cardStripeService
 }
 
@@ -98,4 +108,8 @@ func (p *ServiceProvider) UserAuthContextService() *userServices.UserAuthContext
 
 func (p *ServiceProvider) CardService() *cardServices.ServiceCard {
 	return p.cardService
+}
+
+func (p *ServiceProvider) PaymentService() domain.PaymentService {
+	return p.paymentService
 }

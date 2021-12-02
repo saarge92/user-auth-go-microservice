@@ -8,11 +8,11 @@ import (
 )
 
 type GrpcWalletServer struct {
-	walletService services.WalletServiceInterface
+	walletService services.WalletService
 }
 
 func NewWalletGrpcServer(
-	walletService services.WalletServiceInterface,
+	walletService services.WalletService,
 ) *GrpcWalletServer {
 	return &GrpcWalletServer{
 		walletService: walletService,

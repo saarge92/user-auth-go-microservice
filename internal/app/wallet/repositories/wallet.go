@@ -138,3 +138,32 @@ func (r *WalletRepository) ListByUserID(ctx context.Context, userID uint64) ([]d
 
 	return walletsCurrencies, nil
 }
+
+func (r *WalletRepository) OneByExternalIDAndUserID(
+	ctx context.Context,
+	externalID string,
+	userID uint64,
+) (*dto.WalletCurrencyDto, error) {
+	query := `SELECT 
+				wallets.id "wallet.id",
+       			wallets.external_id "wallet.external_id",
+       			wallets.balance "wallet.balance",
+       			wallets.is_default "wallet.balance",
+       			currencies.code "currency.code"
+				FROM wallets 
+				INNER JOIN currencies ON wallets.currency_id = currencies.id
+				WHERE wallets.user_id = ? AND wallets.external_id = ?
+			`
+	walletWithCurrencyDto := new(dto.WalletCurrencyDto)
+	var dbError error
+	tx := sharedRepositories.GetDBTransaction(ctx)
+	if tx != nil {
+		dbError = tx.Get(walletWithCurrencyDto, query, userID, externalID)
+	} else {
+		dbError = r.db.Get(walletWithCurrencyDto, query, userID, externalID)
+	}
+	if dbError != nil {
+		return nil, customErrors.DatabaseError(dbError)
+	}
+	return walletWithCurrencyDto, nil
+}

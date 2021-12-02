@@ -1,10 +1,11 @@
 package domain
 
 import (
+	"context"
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
 )
 
-type PaymentServiceInterface interface {
-	Deposit(depositInfo *form.Deposit) (*entities.Transaction, error)
+type PaymentService interface {
+	Deposit(ctx context.Context, depositInfo *form.Deposit) (*entities.OperationStory, error)
 }

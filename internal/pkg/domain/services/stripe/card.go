@@ -5,6 +5,6 @@ import (
 	"go-user-microservice/internal/pkg/dto"
 )
 
-type CardStripeServiceInterface interface {
+type CardStripeService interface {
 	CreateCard(cardData *dto.StripeCardCreate, syncChannel chan interface{}) (*stripe.Card, error)
 }

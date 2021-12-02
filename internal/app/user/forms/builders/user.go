@@ -7,10 +7,10 @@ import (
 )
 
 type UserFormBuilder struct {
-	userRepository domain.UserRepositoryInterface
+	userRepository domain.UserRepository
 }
 
-func NewUserFormBuilder(userRepository domain.UserRepositoryInterface) *UserFormBuilder {
+func NewUserFormBuilder(userRepository domain.UserRepository) *UserFormBuilder {
 	return &UserFormBuilder{
 		userRepository: userRepository,
 	}

@@ -2,23 +2,27 @@ package providers
 
 import (
 	"go-user-microservice/internal/app/card"
+	"go-user-microservice/internal/app/payment"
 	"go-user-microservice/internal/app/wallet"
 	"go-user-microservice/internal/pkg/domain/providers"
 )
 
 type GrpcMiddlewareProvider struct {
-	wallet *wallet.GrpcWalletMiddleware
-	card   *card.GrpcCardMiddleware
+	wallet  *wallet.GrpcWalletMiddleware
+	card    *card.GrpcCardMiddleware
+	payment *payment.GrpcPaymentMiddleware
 }
 
 func NewGrpcMiddlewareProvider(
-	serviceProvider providers.ServiceProviderInterface,
+	serviceProvider providers.ServiceProvider,
 ) *GrpcMiddlewareProvider {
 	walletGrpcMiddleware := wallet.NewWalletGrpcServerMiddleware(serviceProvider.UserAuthContextService())
 	cardGrpcMiddleware := card.NewGrpcCardMiddleware(serviceProvider.UserAuthContextService())
+	paymentGrpcMiddleware := payment.NewGrpcPaymentMiddleware(serviceProvider.UserAuthContextService())
 	return &GrpcMiddlewareProvider{
-		wallet: walletGrpcMiddleware,
-		card:   cardGrpcMiddleware,
+		wallet:  walletGrpcMiddleware,
+		card:    cardGrpcMiddleware,
+		payment: paymentGrpcMiddleware,
 	}
 }
 
@@ -28,4 +32,8 @@ func (p *GrpcMiddlewareProvider) Wallet() *wallet.GrpcWalletMiddleware {
 
 func (p *GrpcMiddlewareProvider) Card() *card.GrpcCardMiddleware {
 	return p.card
+}
+
+func (p *GrpcMiddlewareProvider) Payment() *payment.GrpcPaymentMiddleware {
+	return p.payment
 }

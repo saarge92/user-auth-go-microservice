@@ -2,19 +2,21 @@ package providers
 
 import (
 	cardServices "go-user-microservice/internal/app/card/services"
+	"go-user-microservice/internal/app/payment/domain"
 	"go-user-microservice/internal/app/user/services"
 	domainService "go-user-microservice/internal/pkg/domain/services"
 	"go-user-microservice/internal/pkg/domain/services/stripe"
 )
 
-type ServiceProviderInterface interface {
+type ServiceProvider interface {
 	AuthService() *services.AuthService
 	JwtService() *services.JwtService
-	RemoteUserService() domainService.RemoteUserServiceInterface
+	RemoteUserService() domainService.RemoteUserService
 	UserService() *services.ServiceUser
-	WalletService() domainService.WalletServiceInterface
-	StripeAccountService() stripe.AccountStripeServiceInterface
-	StripeCardService() stripe.CardStripeServiceInterface
+	WalletService() domainService.WalletService
+	StripeAccountService() stripe.AccountStripeService
+	StripeCardService() stripe.CardStripeService
 	UserAuthContextService() *services.UserAuthContextService
 	CardService() *cardServices.ServiceCard
+	PaymentService() domain.PaymentService
 }

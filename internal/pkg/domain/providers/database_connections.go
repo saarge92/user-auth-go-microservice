@@ -2,6 +2,6 @@ package providers
 
 import "github.com/jmoiron/sqlx"
 
-type DatabaseConnectionProviderInterface interface {
+type DatabaseConnectionProvider interface {
 	GetCoreConnection() *sqlx.DB
 }

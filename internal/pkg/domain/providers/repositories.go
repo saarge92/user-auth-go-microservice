@@ -2,15 +2,17 @@ package providers
 
 import (
 	"go-user-microservice/internal/app/card/domain"
+	paymentDomain "go-user-microservice/internal/app/payment/domain"
 	userDomain "go-user-microservice/internal/app/user/domain"
-	domain2 "go-user-microservice/internal/app/wallet/domain"
+	walletDomain "go-user-microservice/internal/app/wallet/domain"
 	"go-user-microservice/internal/pkg/domain/repositories"
 )
 
-type RepositoryProviderInterface interface {
-	UserRepository() userDomain.UserRepositoryInterface
-	CurrencyRepository() repositories.CurrencyRepositoryInterface
-	WalletRepository() domain2.WalletRepositoryInterface
-	CountryRepository() repositories.CountryRepositoryInterface
-	CardRepository() domain.CardRepositoryInterface
+type RepositoryProvider interface {
+	UserRepository() userDomain.UserRepository
+	CurrencyRepository() repositories.CurrencyRepository
+	WalletRepository() walletDomain.WalletRepository
+	CountryRepository() repositories.CountryRepository
+	CardRepository() domain.CardRepository
+	OperationStory() paymentDomain.OperationStoryRepository
 }

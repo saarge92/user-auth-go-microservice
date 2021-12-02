@@ -5,6 +5,6 @@ import (
 	"go-user-microservice/internal/pkg/entites"
 )
 
-type CountryRepositoryInterface interface {
+type CountryRepository interface {
 	GetByCodeTwo(ctx context.Context, code string) (*entites.Country, error)
 }

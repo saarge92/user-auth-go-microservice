@@ -8,12 +8,14 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/app/card"
+	"go-user-microservice/internal/app/payment"
 	"go-user-microservice/internal/app/user"
 	"go-user-microservice/internal/app/wallet"
 	"go-user-microservice/internal/pkg/config"
 	domainProviders "go-user-microservice/internal/pkg/domain/providers"
 	"go-user-microservice/internal/pkg/providers"
 	cardServer "go-user-microservice/pkg/protobuf/card"
+	paymentServer "go-user-microservice/pkg/protobuf/payment"
 	"go-user-microservice/pkg/protobuf/user_server"
 	walletServer "go-user-microservice/pkg/protobuf/wallet"
 	"google.golang.org/grpc"
@@ -28,7 +30,8 @@ type Server struct {
 	userGrpcServer         *user.GrpcUserServer
 	walletGrpcServer       *wallet.GrpcWalletServer
 	cardGrpcServer         *card.GrpcServerCard
-	serviceProvider        domainProviders.ServiceProviderInterface
+	paymentGrpcServer      *payment.GrpcServerPayment
+	serviceProvider        domainProviders.ServiceProvider
 	grpcMiddlewareProvider *providers.GrpcMiddlewareProvider
 }
 
@@ -68,7 +71,7 @@ func (s *Server) initApp() {
 	s.userGrpcServer = grpcServerProvider.UserGrpcServer()
 	s.walletGrpcServer = grpcServerProvider.WalletGrpcServer()
 	s.cardGrpcServer = grpcServerProvider.CardGrpcServer()
-
+	s.paymentGrpcServer = grpcServerProvider.PaymentGrpcServer()
 	s.grpcMiddlewareProvider = providers.NewGrpcMiddlewareProvider(serviceProvider)
 }
 
@@ -80,11 +83,13 @@ func (s *Server) Start() error {
 			grpcRecovery.UnaryServerInterceptor(),
 			s.grpcMiddlewareProvider.Card().CardsRequestAuthenticated,
 			s.grpcMiddlewareProvider.Wallet().WalletsRequestsAuthenticated,
+			s.grpcMiddlewareProvider.Payment().PaymentsRequestsAuthenticated,
 		),
 	)
 	user_server.RegisterUserServiceServer(server, s.userGrpcServer)
 	walletServer.RegisterWalletServiceServer(server, s.walletGrpcServer)
 	cardServer.RegisterCardServiceServer(server, s.cardGrpcServer)
+	paymentServer.RegisterPaymentServiceServer(server, s.paymentGrpcServer)
 
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", s.mainConfig.GrpcPort))
 	if e != nil {

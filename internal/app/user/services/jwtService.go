@@ -15,12 +15,12 @@ import (
 
 type JwtService struct {
 	config         *config.Config
-	userRepository sharedRepoInterfaces.UserRepositoryInterface
+	userRepository sharedRepoInterfaces.UserRepository
 }
 
 func NewJwtService(
 	config *config.Config,
-	userRepository sharedRepoInterfaces.UserRepositoryInterface,
+	userRepository sharedRepoInterfaces.UserRepository,
 ) *JwtService {
 	return &JwtService{
 		config:         config,

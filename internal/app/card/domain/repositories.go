@@ -5,7 +5,8 @@ import (
 	"go-user-microservice/internal/app/card/entities"
 )
 
-type CardRepositoryInterface interface {
+type CardRepository interface {
 	Create(ctx context.Context, card *entities.Card) error
 	ListByCardID(ctx context.Context, userID uint64) ([]entities.Card, error)
+	OneByCardAndUserID(ctx context.Context, externalID string, userID uint64) (*entities.Card, error)
 }

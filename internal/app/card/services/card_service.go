@@ -18,13 +18,13 @@ import (
 )
 
 type ServiceCard struct {
-	cardRepository    domain.CardRepositoryInterface
-	cardStripeService stripeServices.CardStripeServiceInterface
+	cardRepository    domain.CardRepository
+	cardStripeService stripeServices.CardStripeService
 }
 
 func NewServiceCard(
-	cardRepository domain.CardRepositoryInterface,
-	cardStripeService stripeServices.CardStripeServiceInterface,
+	cardRepository domain.CardRepository,
+	cardStripeService stripeServices.CardStripeService,
 ) *ServiceCard {
 	return &ServiceCard{
 		cardRepository:    cardRepository,

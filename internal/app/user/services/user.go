@@ -17,17 +17,17 @@ import (
 )
 
 type ServiceUser struct {
-	userRepository       domain.UserRepositoryInterface
-	countryRepository    sharedRepoInterfaces.CountryRepositoryInterface
+	userRepository       domain.UserRepository
+	countryRepository    sharedRepoInterfaces.CountryRepository
 	userRemoteServices   *RemoteUserService
-	stripeAccountService stripeDomain.AccountStripeServiceInterface
+	stripeAccountService stripeDomain.AccountStripeService
 }
 
 func NewUserService(
-	userRepository domain.UserRepositoryInterface,
-	countryRepository sharedRepoInterfaces.CountryRepositoryInterface,
+	userRepository domain.UserRepository,
+	countryRepository sharedRepoInterfaces.CountryRepository,
 	userRemoteService *RemoteUserService,
-	stripeAccountService stripeDomain.AccountStripeServiceInterface,
+	stripeAccountService stripeDomain.AccountStripeService,
 ) *ServiceUser {
 	return &ServiceUser{
 		userRepository:       userRepository,

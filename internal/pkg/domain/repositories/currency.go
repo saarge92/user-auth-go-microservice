@@ -5,6 +5,6 @@ import (
 	"go-user-microservice/internal/pkg/entites"
 )
 
-type CurrencyRepositoryInterface interface {
+type CurrencyRepository interface {
 	GetByCode(ctx context.Context, code string) (*entites.Currency, error)
 }
