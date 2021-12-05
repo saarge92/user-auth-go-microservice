@@ -24,7 +24,7 @@ func NewOperationStoryRepository(db *sqlx.DB) *OperationStoryRepository {
 func (r *OperationStoryRepository) Create(ctx context.Context, operationStory *entities.OperationStory) error {
 	operationStory.ExternalID = uuid.New().String()
 	operationStory.CreatedAt = time.Now()
-	query := ` INSERT INTO operation_stories 
+	query := ` INSERT INTO operations_stories 
      			(
      			 	external_id, user_id, card_id, amount, balance_before, balance_after,
 					external_provider_id, operation_type_id, created_at

@@ -2,9 +2,10 @@ package dto
 
 import "github.com/shopspring/decimal"
 
-type StripeCardChargeCreate struct {
+type StripeCardCustomerChargeCreate struct {
 	Amount      decimal.Decimal
 	Currency    string
-	Token       string
+	CardID      string
+	CustomerID  string
 	Description string
 }

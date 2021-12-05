@@ -3,6 +3,7 @@ package payment
 import (
 	"context"
 	"go-user-microservice/internal/app/payment/domain"
+	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
 	"go-user-microservice/pkg/protobuf/payment"
 )
@@ -24,9 +25,17 @@ func (s *GrpcServerPayment) Deposit(
 	request *payment.DepositRequest,
 ) (*payment.DepositResponse, error) {
 	depositInfo := &form.Deposit{DepositRequest: request}
-	_, e := s.paymentService.Deposit(ctx, depositInfo)
-	if e != nil {
-		return nil, e
+	var operationStory *entities.OperationStory
+	var depositError error
+	syncChannel := make(chan interface{})
+	go func() {
+		operationStory, depositError = s.paymentService.Deposit(ctx, depositInfo, syncChannel)
+	}()
+	<-syncChannel
+	if depositError != nil {
+		return nil, depositError
 	}
-	return nil, nil
+	return &payment.DepositResponse{
+		TransactionId: operationStory.ExternalID,
+	}, nil
 }

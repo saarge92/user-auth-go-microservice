@@ -7,5 +7,5 @@ import (
 )
 
 type PaymentService interface {
-	Deposit(ctx context.Context, depositInfo *form.Deposit) (*entities.OperationStory, error)
+	Deposit(ctx context.Context, depositInfo *form.Deposit, syncChannel chan<- interface{}) (*entities.OperationStory, error)
 }

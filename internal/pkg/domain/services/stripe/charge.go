@@ -6,5 +6,5 @@ import (
 )
 
 type ChargeService interface {
-	CardCharge(cardInfo *dto.StripeCardChargeCreate) (*stripe.Charge, error)
+	CardCharge(cardInfo *dto.StripeCardCustomerChargeCreate) (*stripe.Charge, error)
 }

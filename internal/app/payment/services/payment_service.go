@@ -46,7 +46,9 @@ func NewPaymentService(
 func (s *PaymentService) Deposit(
 	ctx context.Context,
 	depositInfo *form.Deposit,
+	syncChannel chan<- interface{},
 ) (operationStory *entities.OperationStory, e error) {
+	defer close(syncChannel)
 	var user *userEntities.User
 	var ok bool
 	if user, ok = ctx.Value(dictionary.User).(*userEntities.User); !ok {
@@ -70,14 +72,29 @@ func (s *PaymentService) Deposit(
 	}
 	amount := decimal.NewFromFloat(depositInfo.Amount)
 	e = s.walletRepository.IncreaseBalanceByID(newCtx, walletWithCurrencyDto.Wallet.ID, amount)
-	cardChargeDto := &dto.StripeCardChargeCreate{
-		Amount:   amount,
-		Currency: walletWithCurrencyDto.Currency.Code,
-		Token:    card.ExternalProviderID,
+	cardChargeDto := &dto.StripeCardCustomerChargeCreate{
+		Amount:     amount,
+		Currency:   walletWithCurrencyDto.Currency.Code,
+		CardID:     card.ExternalProviderID,
+		CustomerID: user.ProviderPaymentID,
 	}
-	_, e = s.stripeChargeService.CardCharge(cardChargeDto)
+	chargeResponse, e := s.stripeChargeService.CardCharge(cardChargeDto)
 	if e != nil {
 		return nil, e
 	}
-	return nil, nil
+	operationType := entities.DepositOperationType
+	balanceAfter := walletWithCurrencyDto.Balance.Add(amount)
+	operationStory = &entities.OperationStory{
+		Amount:             amount,
+		UserID:             user.ID,
+		OperationTypeID:    operationType,
+		CardID:             card.ID,
+		BalanceBefore:      walletWithCurrencyDto.Balance,
+		BalanceAfter:       balanceAfter,
+		ExternalProviderID: chargeResponse.ID,
+	}
+	if operationStoryError := s.operationStoryRepository.Create(newCtx, operationStory); operationStoryError != nil {
+		return nil, operationStoryError
+	}
+	return operationStory, nil
 }
