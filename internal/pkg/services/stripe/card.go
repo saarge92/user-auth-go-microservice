@@ -41,8 +41,8 @@ func (s *CardStripeService) CreateCard(
 		return nil, e
 	}
 	cardParams := &stripe.CardParams{
-		Token:   stripe.String(token.ID),
-		Account: stripe.String(cardData.AccountProviderID),
+		Token:    stripe.String(token.ID),
+		Customer: stripe.String(cardData.CustomerProviderID),
 	}
 	cardStripe, e := s.stripeClient.Cards.New(cardParams)
 	if e != nil {
