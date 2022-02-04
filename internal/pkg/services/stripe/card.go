@@ -27,6 +27,7 @@ func (s *CardStripeService) CreateCard(
 	cvc := strconv.Itoa(int(cardData.CVC))
 	tokenParams := &stripe.TokenParams{
 		Card: &stripe.CardParams{
+			Account:  stripe.String(cardData.AccountProviderID),
 			Number:   stripe.String(cardData.Number),
 			ExpMonth: stripe.String(expireMonth),
 			ExpYear:  stripe.String(expireYear),
