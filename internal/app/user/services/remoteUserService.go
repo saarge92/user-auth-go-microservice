@@ -26,7 +26,7 @@ func NewRemoteUserService(config *config2.Config) *RemoteUserService {
 
 func (s *RemoteUserService) CheckRemoteUser(inn uint64) (r bool, e error) {
 	baseURL := s.config.RemoteUserURL + "/4_1/rs/findById/party"
-	token := "CardID " + s.config.AuthUserRemoteKey
+	token := "Token " + s.config.AuthUserRemoteKey
 	postBody, e := json.Marshal(map[string]interface{}{
 		"query": inn,
 	})
@@ -72,8 +72,7 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint64) (r bool, e error) {
 		return false, e
 	}
 	var responseMap map[string]interface{}
-	e = json.Unmarshal(responseBody, &responseMap)
-	if e != nil {
+	if e = json.Unmarshal(responseBody, &responseMap); e != nil {
 		return false, e
 	}
 	if isVerified := s.verifyResponse(responseMap); !isVerified {

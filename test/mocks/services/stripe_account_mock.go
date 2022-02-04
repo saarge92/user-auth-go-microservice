@@ -8,11 +8,15 @@ import (
 
 type AccountStripeServiceMock struct{}
 
-func (s *AccountStripeServiceMock) Create(data *dto.StripeAccountCreate) (*stripe.Account, error) {
-	return &stripe.Account{
+func (s *AccountStripeServiceMock) Create(data *dto.StripeAccountCreate) (*stripe.Account, *stripe.Customer, error) {
+	account := &stripe.Account{
 		ID:           uuid.New().String(),
 		Email:        data.Email,
 		Country:      data.Country,
 		Capabilities: nil,
-	}, nil
+	}
+	customer := &stripe.Customer{
+		ID: uuid.New().String(),
+	}
+	return account, customer, nil
 }

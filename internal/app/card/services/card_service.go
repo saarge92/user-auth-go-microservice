@@ -39,11 +39,12 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*
 		return nil, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
 	}
 	cardStripeDto := &dto.StripeCardCreate{
-		Number:                 cardForm.CardNumber,
-		ExpireMonth:            uint8(cardForm.ExpireMonth),
-		ExpireYear:             cardForm.ExpireYear,
-		CVC:                    cardForm.Cvc,
-		StripePaymentAccountID: user.ProviderPaymentID,
+		Number:             cardForm.CardNumber,
+		ExpireMonth:        uint8(cardForm.ExpireMonth),
+		ExpireYear:         cardForm.ExpireYear,
+		CVC:                cardForm.Cvc,
+		AccountProviderID:  user.AccountProviderID,
+		CustomerProviderID: user.CustomerProviderID,
 	}
 	var cardStripe *stripe.Card
 	var cardError error

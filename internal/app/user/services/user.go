@@ -37,6 +37,63 @@ func NewUserService(
 	}
 }
 
+func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
+	var country *entites.Country
+	var checkError error
+	if country, checkError = s.checkUserDataWithCountryResponse(form); checkError != nil {
+		return nil, checkError
+	}
+
+	stripeAccountData := &dto.StripeAccountCreate{
+		Email:        form.Login,
+		Country:      form.Country,
+		CardPayments: true,
+		Transfers:    true,
+	}
+	userEntity := &entities.User{}
+
+	if country != nil {
+		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
+		stripeAccountData.Country = country.CodeTwo
+	}
+	accountResponse, customerResponse, e := s.stripeAccountService.Create(stripeAccountData)
+	if e != nil {
+		return nil, e
+	}
+	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
+	if e != nil {
+		return nil, e
+	}
+	userEntity.Password = string(passwordHash)
+	userEntity.Login = form.Login
+	userEntity.Name = form.Name
+	userEntity.Inn = form.Inn
+	userEntity.AccountProviderID = accountResponse.ID
+	userEntity.CustomerProviderID = customerResponse.ID
+	if e = s.userRepository.Create(userEntity); e != nil {
+		return nil, e
+	}
+	return userEntity, nil
+}
+
+func (s *ServiceUser) SignIn(form *forms.SignIn) (*entities.User, error) {
+	userEntity, e := s.userRepository.GetUser(form.Login)
+	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
+	if e != nil {
+		return nil, e
+	}
+	if userEntity == nil {
+		return nil, unAuthError
+	}
+	hashPasswordBytes := []byte(userEntity.Password)
+	sourcePasswordBytes := []byte(form.Password)
+	if e = bcrypt.CompareHashAndPassword(hashPasswordBytes, sourcePasswordBytes); e != nil {
+		return nil, unAuthError
+	}
+
+	return userEntity, nil
+}
+
 func (s *ServiceUser) checkUserDataWithCountryResponse(form *forms.SignUp) (*entites.Country, error) {
 	userExist, e := s.userRepository.UserExist(form.Login)
 	if e != nil {
@@ -69,60 +126,4 @@ func (s *ServiceUser) checkUserDataWithCountryResponse(form *forms.SignUp) (*ent
 		return country, nil
 	}
 	return nil, nil
-}
-
-func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
-	var country *entites.Country
-	var checkError error
-	if country, checkError = s.checkUserDataWithCountryResponse(form); checkError != nil {
-		return nil, checkError
-	}
-
-	stripeAccountData := &dto.StripeAccountCreate{
-		Email:        form.Login,
-		Country:      form.Country,
-		CardPayments: true,
-		Transfers:    true,
-	}
-	userEntity := &entities.User{}
-
-	if country != nil {
-		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
-		stripeAccountData.Country = country.CodeTwo
-	}
-	responseAccount, e := s.stripeAccountService.Create(stripeAccountData)
-	if e != nil {
-		return nil, e
-	}
-	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
-	if e != nil {
-		return nil, e
-	}
-	userEntity.Password = string(passwordHash)
-	userEntity.Login = form.Login
-	userEntity.Name = form.Name
-	userEntity.Inn = form.Inn
-	userEntity.ProviderPaymentID = responseAccount.ID
-	if e = s.userRepository.Create(userEntity); e != nil {
-		return nil, e
-	}
-	return userEntity, nil
-}
-
-func (s *ServiceUser) SignIn(form *forms.SignIn) (*entities.User, error) {
-	userEntity, e := s.userRepository.GetUser(form.Login)
-	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
-	if e != nil {
-		return nil, e
-	}
-	if userEntity == nil {
-		return nil, unAuthError
-	}
-	hashPasswordBytes := []byte(userEntity.Password)
-	sourcePasswordBytes := []byte(form.Password)
-	if e = bcrypt.CompareHashAndPassword(hashPasswordBytes, sourcePasswordBytes); e != nil {
-		return nil, unAuthError
-	}
-
-	return userEntity, nil
 }

@@ -76,7 +76,7 @@ func (s *PaymentService) Deposit(
 		Amount:     amount,
 		Currency:   walletWithCurrencyDto.Currency.Code,
 		CardID:     card.ExternalProviderID,
-		CustomerID: user.ProviderPaymentID,
+		CustomerID: user.CustomerProviderID,
 	}
 	chargeResponse, e := s.stripeChargeService.CardCharge(cardChargeDto)
 	if e != nil {

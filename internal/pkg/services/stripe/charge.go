@@ -25,11 +25,12 @@ func (s *ChargeStripeService) CardCharge(cardInfo *dto.StripeCardCustomerChargeC
 		Amount:      stripe.Int64(amount),
 		Currency:    stripe.String(cardInfo.Currency),
 		Description: stripe.String(cardInfo.Description),
+		Customer:    stripe.String(cardInfo.CustomerID),
 		Source: &stripe.SourceParams{
 			Card: &stripe.CardParams{
-				ID:      cardInfo.CardID,
-				Account: &cardInfo.CustomerID,
-			}},
+				ID: cardInfo.CardID,
+			},
+		},
 	}
 	chargeResponse, e := s.stripeClient.Charges.New(cardChargeParams)
 	if e != nil {

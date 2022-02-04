@@ -17,7 +17,7 @@ func NewAccountStripeService(client *client.API) *AccountStripeService {
 	}
 }
 
-func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Account, error) {
+func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Account, *stripe.Customer, error) {
 	accountType := dictionary.CustomStripeAccountType
 	accountParams := &stripe.AccountParams{
 		Email: &data.Email,
@@ -36,7 +36,14 @@ func (s *AccountStripeService) Create(data *dto.StripeAccountCreate) (*stripe.Ac
 	}
 	account, e := s.mainStripeClient.Account.New(accountParams)
 	if e != nil {
-		return nil, e
+		return nil, nil, e
 	}
-	return account, e
+	customerParams := &stripe.CustomerParams{
+		Email: stripe.String(data.Email),
+	}
+	customer, e := s.mainStripeClient.Customers.New(customerParams)
+	if e != nil {
+		return nil, nil, e
+	}
+	return account, customer, nil
 }

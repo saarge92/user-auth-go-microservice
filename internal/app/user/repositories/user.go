@@ -21,10 +21,10 @@ func (r *UserRepository) Create(user *entities.User) error {
 	now := time.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now
-	query := `INSERT INTO users (name, login, inn, password, payment_provider_account_id,
-    								created_at, updated_at)
-				VALUES (:name, :login, :inn, :password, :payment_provider_account_id,
-				        	:created_at, :updated_at)`
+	query := `INSERT INTO users (name, login, inn, password, account_provider_id,
+    								customer_provider_id, created_at, updated_at)
+				VALUES (:name, :login, :inn, :password, :account_provider_id,
+				        	:customer_provider_id, :created_at, :updated_at)`
 	result, e := r.db.NamedExec(query, user)
 	if e != nil {
 		return e

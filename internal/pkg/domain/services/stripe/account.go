@@ -6,5 +6,5 @@ import (
 )
 
 type AccountStripeService interface {
-	Create(data *dto.StripeAccountCreate) (*stripe.Account, error)
+	Create(data *dto.StripeAccountCreate) (*stripe.Account, *stripe.Customer, error)
 }
