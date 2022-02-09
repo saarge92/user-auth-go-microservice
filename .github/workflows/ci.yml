@@ -10,6 +10,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
       - uses: arduino/setup-protoc@v1
-        run: |
+      - run: |
           find -L api/proto/ -name "*.proto" -exec protoc -I api/proto
           --go-grpc_out=require_unimplemented_servers=false:pkg --go_out=pkg {} +
