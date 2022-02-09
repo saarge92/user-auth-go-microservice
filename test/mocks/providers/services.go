@@ -9,10 +9,15 @@ import (
 )
 
 type TestServiceProvider struct {
-	AccountStripeMock        stripe.AccountStripeService
-	CardStripeServiceMock    stripe.CardStripeService
-	AccountStripeServiceMock stripe.AccountStripeService
+	AccountStripeMock           stripe.AccountStripeService
+	CardStripeServiceMock       stripe.CardStripeService
+	AccountStripeServiceMock    stripe.AccountStripeService
+	CardStripeChargeServiceMock stripe.ChargeService
 	*providers.ServiceProvider
+}
+
+func (p *TestServiceProvider) Charge() stripe.ChargeService {
+	return p.CardStripeChargeServiceMock
 }
 
 func (p *TestServiceProvider) Account() stripe.AccountStripeService {

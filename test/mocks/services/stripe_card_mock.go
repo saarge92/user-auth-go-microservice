@@ -6,8 +6,7 @@ import (
 	"go-user-microservice/internal/pkg/dto"
 )
 
-type StripeCardServiceMock struct {
-}
+type StripeCardServiceMock struct{}
 
 func (s StripeCardServiceMock) CreateCard(cardData *dto.StripeCardCreate, syncChannel chan interface{}) (*stripe.Card, error) {
 	defer close(syncChannel)

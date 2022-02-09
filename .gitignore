@@ -1,5 +1,5 @@
 pkg/*
 .env
 mysql-user-database
-.env.test
 mysql-user-database-test
+.env.test
