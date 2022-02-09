@@ -6,8 +6,10 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Setup go'
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-      - uses: arduino/setup-protoc@v1
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+      - name: 'Set up go'
+        uses: actions/setup-go@v2
+      - name: 'Install protoc'
+        uses: arduino/setup-protoc@v1
+        run: echo "🖥️ The workflow is now ready to test your code on the runner."
