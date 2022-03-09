@@ -7,7 +7,7 @@ CREATE TABLE currencies
     updated_at  TIMESTAMP    NOT NULL
 );
 
-INSERT INTO currencies (code, description, created_at, updated_at)
-VALUES ('RUB', 'Russian rouble', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-       ('USD', 'American dollar', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
-       ('EUR', 'European currency', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())
+INSERT INTO currencies (id, code, description, created_at, updated_at)
+VALUES (1, 'RUB', 'Russian rouble', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+       (2, 'USD', 'American dollar', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP()),
+       (3, 'EUR', 'European currency', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())

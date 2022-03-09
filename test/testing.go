@@ -28,6 +28,10 @@ const (
 	CardNumber                     = "4000056655665556"
 	ExpireMonth                    = 03
 	CVC                            = 366
+	CardNumberForRealUser          = "5200828282828210"
+	ExternalIDForCard              = "949fcc24-1f5e-45a3-a057-770c04475eb8"
+	ExternalIDForWallet            = "fe65292c-3d24-4536-97b7-57f4d3ba63b5"
+	USDCurrencyID                  = 2
 )
 
 var connectionCount = 0
