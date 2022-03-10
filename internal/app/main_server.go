@@ -18,6 +18,7 @@ import (
 	paymentServer "go-user-microservice/pkg/protobuf/payment"
 	"go-user-microservice/pkg/protobuf/user_server"
 	walletServer "go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/scripts"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -42,8 +43,8 @@ func NewServer() *Server {
 func (s *Server) InitConfig() error {
 	var _, filename, _, _ = runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "../../")
-	e := os.Chdir(dir)
-	if e != nil {
+
+	if e := os.Chdir(dir); e != nil {
 		panic(e)
 	}
 	if e := godotenv.Load(".env"); e != nil {
@@ -55,6 +56,7 @@ func (s *Server) InitConfig() error {
 func (s *Server) initApp() {
 	appConfig := config.NewConfig()
 	s.mainConfig = appConfig
+	scripts.Migrate(appConfig)
 	dbConnectionProvider := providers.NewDatabaseConnectionProvider(appConfig)
 	repositoryProvider := providers.NewRepositoryProvider(dbConnectionProvider)
 	stripeClientProvider := providers.NewClientStripeProvider(appConfig)
