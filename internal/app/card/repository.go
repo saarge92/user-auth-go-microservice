@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/app/card/entities"
+	"go-user-microservice/internal/pkg/errorlists"
 	"go-user-microservice/internal/pkg/errors"
 	"go-user-microservice/internal/pkg/repositories"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -74,7 +77,7 @@ func (r *RepositoryCard) OneByCardAndUserID(
 	}
 	if dbError != nil {
 		if dbError == sql.ErrNoRows {
-			return nil, nil
+			return nil, status.Error(codes.NotFound, errorlists.CardNotFound)
 		}
 		return nil, errors.DatabaseError(dbError)
 	}

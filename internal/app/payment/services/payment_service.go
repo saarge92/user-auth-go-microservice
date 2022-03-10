@@ -63,15 +63,14 @@ func (s *PaymentService) Deposit(
 	if e != nil {
 		return nil, e
 	}
-	if card == nil {
-		return nil, status.Error(codes.NotFound, errorlists.CardNotFound)
-	}
 	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(newCtx, depositInfo.WalletExternalId, user.ID)
 	if e != nil {
 		return nil, e
 	}
 	amount := decimal.NewFromFloat(depositInfo.Amount)
-	e = s.walletRepository.IncreaseBalanceByID(newCtx, walletWithCurrencyDto.Wallet.ID, amount)
+	if e = s.walletRepository.IncreaseBalanceByID(newCtx, walletWithCurrencyDto.Wallet.ID, amount); e != nil {
+		return nil, e
+	}
 	cardChargeDto := &dto.StripeCardCustomerChargeCreate{
 		Amount:     amount,
 		Currency:   walletWithCurrencyDto.Currency.Code,
