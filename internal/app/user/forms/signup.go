@@ -6,7 +6,7 @@ import (
 	"github.com/go-ozzo/ozzo-validation/is"
 	v "github.com/go-ozzo/ozzo-validation/v4"
 	"go-user-microservice/internal/app/user/entities"
-	"go-user-microservice/pkg/protobuf/user_server"
+	"go-user-microservice/pkg/protobuf/core"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"regexp"
@@ -14,11 +14,11 @@ import (
 )
 
 type SignUp struct {
-	*user_server.SignUpMessage
+	*core.SignUpMessage
 }
 
 func NewSignUpForm(
-	request *user_server.SignUpMessage,
+	request *core.SignUpMessage,
 ) *SignUp {
 	return &SignUp{
 		request,

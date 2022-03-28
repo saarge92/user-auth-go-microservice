@@ -3,7 +3,7 @@ package payment
 import (
 	"context"
 	sharedServices "go-user-microservice/internal/app/user/services"
-	"go-user-microservice/pkg/protobuf/payment"
+	"go-user-microservice/pkg/protobuf/core"
 	"google.golang.org/grpc"
 	"reflect"
 )
@@ -17,7 +17,7 @@ func NewGrpcPaymentMiddleware(
 	authContextService *sharedServices.UserAuthContextService,
 ) *GrpcPaymentMiddleware {
 	messagesTypes := []interface{}{
-		&payment.DepositRequest{},
+		&core.DepositRequest{},
 	}
 	return &GrpcPaymentMiddleware{
 		authContextService:        authContextService,

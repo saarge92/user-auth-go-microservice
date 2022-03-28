@@ -1,7 +1,7 @@
 package form
 
-import "go-user-microservice/pkg/protobuf/payment"
+import "go-user-microservice/pkg/protobuf/core"
 
 type Deposit struct {
-	*payment.DepositRequest
+	*core.DepositRequest
 }

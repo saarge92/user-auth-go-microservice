@@ -4,7 +4,7 @@ import (
 	"context"
 	"go-user-microservice/internal/app/wallet/forms"
 	"go-user-microservice/internal/pkg/domain/services"
-	walletGrpcServer "go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcWalletServer struct {
@@ -21,8 +21,8 @@ func NewWalletGrpcServer(
 
 func (s *GrpcWalletServer) CreateWallet(
 	ctx context.Context,
-	message *walletGrpcServer.CreateWalletRequest,
-) (*walletGrpcServer.CreateWalletResponse, error) {
+	message *core.CreateWalletRequest,
+) (*core.CreateWalletResponse, error) {
 	walletCreateForm := forms.NewWalletCreateForm(message)
 	if e := walletCreateForm.Validate(); e != nil {
 		return nil, e
@@ -31,15 +31,15 @@ func (s *GrpcWalletServer) CreateWallet(
 	if e != nil {
 		return nil, e
 	}
-	return &walletGrpcServer.CreateWalletResponse{
+	return &core.CreateWalletResponse{
 		ExternalId: walletEntity.ExternalID,
 	}, nil
 }
 
 func (s *GrpcWalletServer) MyWallets(
 	ctx context.Context,
-	_ *walletGrpcServer.MyWalletsRequest,
-) (*walletGrpcServer.WalletsResponse, error) {
+	_ *core.MyWalletsRequest,
+) (*core.WalletsResponse, error) {
 	wallets, e := s.walletService.Wallets(ctx)
 	if e != nil {
 		return nil, e

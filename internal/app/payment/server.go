@@ -5,7 +5,7 @@ import (
 	"go-user-microservice/internal/app/payment/domain"
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
-	"go-user-microservice/pkg/protobuf/payment"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcServerPayment struct {
@@ -22,8 +22,8 @@ func NewGrpcPaymentServer(
 
 func (s *GrpcServerPayment) Deposit(
 	ctx context.Context,
-	request *payment.DepositRequest,
-) (*payment.DepositResponse, error) {
+	request *core.DepositRequest,
+) (*core.DepositResponse, error) {
 	depositInfo := &form.Deposit{DepositRequest: request}
 	var operationStory *entities.OperationStory
 	var depositError error
@@ -35,7 +35,7 @@ func (s *GrpcServerPayment) Deposit(
 	if depositError != nil {
 		return nil, depositError
 	}
-	return &payment.DepositResponse{
+	return &core.DepositResponse{
 		TransactionId: operationStory.ExternalID,
 	}, nil
 }

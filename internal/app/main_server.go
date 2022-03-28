@@ -14,10 +14,7 @@ import (
 	"go-user-microservice/internal/pkg/config"
 	domainProviders "go-user-microservice/internal/pkg/domain/providers"
 	"go-user-microservice/internal/pkg/providers"
-	cardServer "go-user-microservice/pkg/protobuf/card"
-	paymentServer "go-user-microservice/pkg/protobuf/payment"
-	"go-user-microservice/pkg/protobuf/user_server"
-	walletServer "go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/pkg/protobuf/core"
 	"go-user-microservice/scripts"
 	"google.golang.org/grpc"
 	"net"
@@ -88,10 +85,10 @@ func (s *Server) Start() error {
 			s.grpcMiddlewareProvider.Payment().PaymentsRequestsAuthenticated,
 		),
 	)
-	user_server.RegisterUserServiceServer(server, s.userGrpcServer)
-	walletServer.RegisterWalletServiceServer(server, s.walletGrpcServer)
-	cardServer.RegisterCardServiceServer(server, s.cardGrpcServer)
-	paymentServer.RegisterPaymentServiceServer(server, s.paymentGrpcServer)
+	core.RegisterUserServiceServer(server, s.userGrpcServer)
+	core.RegisterWalletServiceServer(server, s.walletGrpcServer)
+	core.RegisterCardServiceServer(server, s.cardGrpcServer)
+	core.RegisterPaymentServiceServer(server, s.paymentGrpcServer)
 
 	listener, e := net.Listen("tcp", fmt.Sprintf(":%s", s.mainConfig.GrpcPort))
 	if e != nil {

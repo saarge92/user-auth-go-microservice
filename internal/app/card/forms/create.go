@@ -3,16 +3,16 @@ package forms
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
-	"go-user-microservice/pkg/protobuf/card"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
 type CreateCard struct {
-	*card.CreateCardRequest
+	*core.CreateCardRequest
 	expMonthValidateRule validation.RuleFunc
 }
 
 func NewCreateCardForm(
-	request *card.CreateCardRequest,
+	request *core.CreateCardRequest,
 	expMonthValidateRule validation.RuleFunc,
 ) *CreateCard {
 	return &CreateCard{

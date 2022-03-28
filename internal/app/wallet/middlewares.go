@@ -3,7 +3,7 @@ package wallet
 import (
 	"context"
 	sharedServices "go-user-microservice/internal/app/user/services"
-	"go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/pkg/protobuf/core"
 	"google.golang.org/grpc"
 	"reflect"
 )
@@ -17,8 +17,8 @@ func NewWalletGrpcServerMiddleware(
 	authContextService *sharedServices.UserAuthContextService,
 ) *GrpcWalletMiddleware {
 	messageTypesAuthenticated := []interface{}{
-		&wallet.CreateWalletRequest{},
-		&wallet.MyWalletsRequest{},
+		&core.CreateWalletRequest{},
+		&core.MyWalletsRequest{},
 	}
 	return &GrpcWalletMiddleware{
 		authContextService:        authContextService,

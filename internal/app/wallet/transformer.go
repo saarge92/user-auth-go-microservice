@@ -2,13 +2,13 @@ package wallet
 
 import (
 	"go-user-microservice/internal/app/wallet/dto"
-	walletGrpcServer "go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
-func WalletsDtoToGrpc(walletsDto []dto.WalletCurrencyDto) *walletGrpcServer.WalletsResponse {
-	walletsResponse := make([]*walletGrpcServer.Wallet, 0, len(walletsDto))
+func WalletsDtoToGrpc(walletsDto []dto.WalletCurrencyDto) *core.WalletsResponse {
+	walletsResponse := make([]*core.Wallet, 0, len(walletsDto))
 	for _, walletDto := range walletsDto {
-		walletResponseElement := &walletGrpcServer.Wallet{
+		walletResponseElement := &core.Wallet{
 			ExternalId: walletDto.ExternalID,
 			Currency:   walletDto.Code,
 			Balance:    walletDto.Balance.String(),
@@ -16,7 +16,7 @@ func WalletsDtoToGrpc(walletsDto []dto.WalletCurrencyDto) *walletGrpcServer.Wall
 		}
 		walletsResponse = append(walletsResponse, walletResponseElement)
 	}
-	return &walletGrpcServer.WalletsResponse{
+	return &core.WalletsResponse{
 		Wallets: walletsResponse,
 	}
 }

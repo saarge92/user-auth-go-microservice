@@ -3,7 +3,7 @@ package card
 import (
 	"context"
 	"go-user-microservice/internal/app/user/services"
-	"go-user-microservice/pkg/protobuf/card"
+	"go-user-microservice/pkg/protobuf/core"
 	"google.golang.org/grpc"
 	"reflect"
 )
@@ -15,8 +15,8 @@ type GrpcCardMiddleware struct {
 
 func NewGrpcCardMiddleware(authUserContextService *services.UserAuthContextService) *GrpcCardMiddleware {
 	messageTypesAuthenticated := []interface{}{
-		&card.CreateCardRequest{},
-		&card.MyCardsRequest{},
+		&core.CreateCardRequest{},
+		&core.MyCardsRequest{},
 	}
 	return &GrpcCardMiddleware{
 		authUserContextService:    authUserContextService,

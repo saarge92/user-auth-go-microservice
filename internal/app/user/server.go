@@ -5,7 +5,7 @@ import (
 	"go-user-microservice/internal/app/user/entities"
 	userFormBuilders "go-user-microservice/internal/app/user/forms/builders"
 	"go-user-microservice/internal/app/user/services"
-	"go-user-microservice/pkg/protobuf/user_server"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcUserServer struct {
@@ -25,8 +25,8 @@ func NewUserGrpcServer(
 
 func (s *GrpcUserServer) Signup(
 	_ context.Context,
-	request *user_server.SignUpMessage,
-) (*user_server.SignUpResponse, error) {
+	request *core.SignUpMessage,
+) (*core.SignUpResponse, error) {
 	form := s.userFormBuilder.Signup(request)
 	if e := form.Validate(); e != nil {
 		return nil, e
@@ -42,7 +42,7 @@ func (s *GrpcUserServer) Signup(
 	if errorResponse != nil {
 		return nil, errorResponse
 	}
-	return &user_server.SignUpResponse{
+	return &core.SignUpResponse{
 		Id:    userResponse.ID,
 		Token: tokenResponse,
 	}, nil
@@ -50,14 +50,14 @@ func (s *GrpcUserServer) Signup(
 
 func (s *GrpcUserServer) VerifyToken(
 	_ context.Context,
-	request *user_server.VerifyMessage,
-) (*user_server.VerifyMessageResponse, error) {
+	request *core.VerifyMessage,
+) (*core.VerifyMessageResponse, error) {
 	userEntity, e := s.authService.VerifyAndReturnPayloadToken(request.Token)
 	if e != nil {
 		return nil, e
 	}
-	return &user_server.VerifyMessageResponse{
-		User: &user_server.UserMessageResponse{
+	return &core.VerifyMessageResponse{
+		User: &core.UserMessageResponse{
 			Login: userEntity.Login,
 			Id:    userEntity.ID,
 			Roles: nil,
@@ -67,8 +67,8 @@ func (s *GrpcUserServer) VerifyToken(
 
 func (s *GrpcUserServer) SignIn(
 	_ context.Context,
-	request *user_server.SignInMessage,
-) (*user_server.SignInResponse, error) {
+	request *core.SignInMessage,
+) (*core.SignInResponse, error) {
 	form := s.userFormBuilder.SignIn(request)
 	signInChan := make(chan interface{})
 	var signInError error
@@ -81,7 +81,7 @@ func (s *GrpcUserServer) SignIn(
 	if signInError != nil {
 		return nil, signInError
 	}
-	return &user_server.SignInResponse{
+	return &core.SignInResponse{
 		Id:    userResponse.ID,
 		Token: token,
 	}, nil

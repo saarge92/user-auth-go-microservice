@@ -3,16 +3,16 @@ package forms
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
-	"go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
 type WalletCreateForm struct {
-	*wallet.CreateWalletRequest
+	*core.CreateWalletRequest
 	UserID uint64
 }
 
 func NewWalletCreateForm(
-	message *wallet.CreateWalletRequest,
+	message *core.CreateWalletRequest,
 ) *WalletCreateForm {
 	return &WalletCreateForm{
 		CreateWalletRequest: message,

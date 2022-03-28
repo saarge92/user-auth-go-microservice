@@ -4,7 +4,7 @@ import (
 	"context"
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/card/services"
-	"go-user-microservice/pkg/protobuf/card"
+	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcServerCard struct {
@@ -24,8 +24,8 @@ func NewGrpcServerCard(
 
 func (s *GrpcServerCard) CreateCard(
 	ctx context.Context,
-	request *card.CreateCardRequest,
-) (*card.CreateCardResponse, error) {
+	request *core.CreateCardRequest,
+) (*core.CreateCardResponse, error) {
 	cardForm := s.cardFormBuilder.CreateCreateForm(request)
 	if e := cardForm.Validate(); e != nil {
 		return nil, e
@@ -34,13 +34,13 @@ func (s *GrpcServerCard) CreateCard(
 	if e != nil {
 		return nil, e
 	}
-	return &card.CreateCardResponse{ExternalId: cardInfo.ExternalID}, nil
+	return &core.CreateCardResponse{ExternalId: cardInfo.ExternalID}, nil
 }
 
 func (s *GrpcServerCard) MyCards(
 	ctx context.Context,
-	_ *card.MyCardsRequest,
-) (*card.MyCardsResponse, error) {
+	_ *core.MyCardsRequest,
+) (*core.MyCardsResponse, error) {
 	cards, e := s.cardService.MyCards(ctx)
 	if e != nil {
 		return nil, e
