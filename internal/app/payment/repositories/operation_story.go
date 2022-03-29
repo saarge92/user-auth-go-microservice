@@ -5,9 +5,12 @@ import (
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	"go-user-microservice/internal/app/payment/dto"
 	"go-user-microservice/internal/app/payment/entities"
+	"go-user-microservice/internal/app/payment/filter"
 	customErrors "go-user-microservice/internal/pkg/errors"
 	"go-user-microservice/internal/pkg/repositories"
+	"strings"
 	"time"
 )
 
@@ -48,4 +51,54 @@ func (r *OperationStoryRepository) Create(ctx context.Context, operationStory *e
 	}
 	operationStory.ID = uint64(repositories.LastInsertID(result))
 	return nil
+}
+
+func (r *OperationStoryRepository) List(
+	ctx context.Context,
+	queryFilter *filter.OperationStoryFilter,
+) ([]dto.OperationStory, int64, error) {
+	var operationStoriesDto []dto.OperationStory
+	innerJoinSelect := "FROM operations_stories os INNER JOIN cards c on c.id = os.card_id"
+	query := "SELECT * " + innerJoinSelect
+	queryCount := "SELECT COUNT(*)" + innerJoinSelect
+
+	var conditions []string
+	params := make(map[string]interface{})
+	if queryFilter.OperationType != nil {
+		conditions = append(conditions, "os.operation_type_id = :operation_type_id")
+		params["operation_type_id"] = queryFilter.OperationType
+	}
+
+	query += strings.Join(conditions, " AND ")
+	queryCount += strings.Join(conditions, " AND ")
+
+	namedQuery, args, e := sqlx.Named(query, params)
+	if e != nil {
+		return nil, 0, e
+	}
+	tx := repositories.GetDBTransaction(ctx)
+	var dbError error
+	if tx != nil {
+		dbError = tx.Select(&operationStoriesDto, namedQuery, args...)
+	} else {
+		dbError = r.db.Select(&operationStoriesDto, namedQuery, args...)
+	}
+	if dbError != nil {
+		return nil, 0, dbError
+	}
+
+	var count int64
+	namedQueryCount, args, e := sqlx.Named(queryCount, params)
+	if e != nil {
+		return nil, 0, e
+	}
+	if tx != nil {
+		dbError = tx.Get(&count, namedQueryCount, args...)
+	}
+
+	if dbError != nil {
+		return nil, 0, dbError
+	}
+
+	return operationStoriesDto, 0, nil
 }

@@ -2,18 +2,23 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 	cardDomain "go-user-microservice/internal/app/card/domain"
 	"go-user-microservice/internal/app/payment/domain"
+	paymentDto "go-user-microservice/internal/app/payment/dto"
 	"go-user-microservice/internal/app/payment/entities"
+	"go-user-microservice/internal/app/payment/filter"
 	"go-user-microservice/internal/app/payment/form"
+	"go-user-microservice/internal/app/payment/transformers"
 	userEntities "go-user-microservice/internal/app/user/entities"
 	walletDomain "go-user-microservice/internal/app/wallet/domain"
 	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/errorlists"
+	sharedFilter "go-user-microservice/internal/pkg/filter"
 	"go-user-microservice/internal/pkg/repositories"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -96,4 +101,27 @@ func (s *PaymentService) Deposit(
 		return nil, operationStoryError
 	}
 	return operationStory, nil
+}
+
+func (s *PaymentService) List(
+	ctx context.Context,
+	request *form.ListPayment,
+) (*paymentDto.OperationStory, error) {
+	var user *userEntities.User
+	var convertOk bool
+	if user, convertOk = ctx.Value(dictionary.User).(*userEntities.User); !convertOk {
+		return nil, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
+	}
+
+	operationType := transformers.FromGRPCOperationType(request.OperationType)
+	paymentFilter := &filter.OperationStoryFilter{
+		UserID:        user.ID,
+		OperationType: operationType,
+		Pagination: sharedFilter.Pagination{
+			Page:    request.Pagination.Page,
+			PerPage: request.Pagination.PerPage,
+		},
+	}
+	fmt.Println(paymentFilter)
+	return nil, nil
 }

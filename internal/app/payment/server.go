@@ -2,6 +2,7 @@ package payment
 
 import (
 	"context"
+	"fmt"
 	"go-user-microservice/internal/app/payment/domain"
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
@@ -38,4 +39,17 @@ func (s *GrpcServerPayment) Deposit(
 	return &core.DepositResponse{
 		TransactionId: operationStory.ExternalID,
 	}, nil
+}
+
+func (s *GrpcServerPayment) List(
+	ctx context.Context,
+	request *core.ListRequest,
+) (*core.ListResponse, error) {
+	listRequest := &form.ListPayment{ListRequest: request}
+	response, e := s.paymentService.List(context.Background(), listRequest)
+	if e != nil {
+		return nil, e
+	}
+	fmt.Println(response)
+	return &core.ListResponse{}, nil
 }
