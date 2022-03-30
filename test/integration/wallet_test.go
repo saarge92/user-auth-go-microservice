@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/dictionary"
-	"go-user-microservice/pkg/protobuf/wallet"
+	"go-user-microservice/pkg/protobuf/core"
 	"go-user-microservice/test"
 	"testing"
 )
@@ -16,7 +16,7 @@ func TestCreateWallet(t *testing.T) {
 	walletServer := serverTest.WalletGrpcServer()
 
 	t.Run("Should Successfully create", func(t *testing.T) {
-		message := &wallet.CreateWalletRequest{
+		message := &core.CreateWalletRequest{
 			Code: test.CurrencyCode,
 		}
 		user := &entities.User{
@@ -26,7 +26,7 @@ func TestCreateWallet(t *testing.T) {
 		response, e := walletServer.CreateWallet(requestContext, message)
 		assert.Nil(t, e)
 		assert.NotNil(t, response)
-		assert.IsType(t, &wallet.CreateWalletResponse{}, response)
+		assert.IsType(t, &core.CreateWalletResponse{}, response)
 		assert.NotNil(t, response.ExternalId)
 	})
 }

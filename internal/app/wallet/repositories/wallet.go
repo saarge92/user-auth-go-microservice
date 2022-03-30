@@ -12,7 +12,6 @@ import (
 	"go-user-microservice/internal/pkg/errorlists"
 	customErrors "go-user-microservice/internal/pkg/errors"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"time"
 )
 
@@ -76,7 +75,7 @@ func (r *WalletRepository) ByUserAndDefault(
 
 	if dbError := dbConn.Get(wallet, query, userID, isDefault); dbError != nil {
 		if dbError == sql.ErrNoRows {
-			return nil, status.New(codes.NotFound, errorlists.WalletNotFound).Err()
+			return nil, nil
 		}
 		return nil, customErrors.DatabaseError(dbError)
 	}

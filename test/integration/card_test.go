@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/dictionary"
-	"go-user-microservice/pkg/protobuf/card"
+	"go-user-microservice/pkg/protobuf/core"
 	"go-user-microservice/test"
 	"go-user-microservice/test/mocks/providers"
 	"go-user-microservice/test/mocks/services"
@@ -24,7 +24,7 @@ func TestCardAdd(t *testing.T) {
 	t.Run("Add Card For User", func(t *testing.T) {
 		user := &entities.User{ID: test.UserIDForRealUser}
 		ctx := context.WithValue(context.Background(), dictionary.User, user)
-		request := &card.CreateCardRequest{
+		request := &core.CreateCardRequest{
 			CardNumber:  test.CardNumber,
 			ExpireMonth: test.ExpireMonth,
 			ExpireYear:  uint32(time.Now().Year() + 3),
@@ -33,7 +33,7 @@ func TestCardAdd(t *testing.T) {
 		}
 		cardResponse, e := cardServer.CreateCard(ctx, request)
 		assert.Nil(t, e)
-		assert.IsType(t, &card.CreateCardResponse{}, cardResponse)
+		assert.IsType(t, &core.CreateCardResponse{}, cardResponse)
 		assert.NotEmpty(t, cardResponse.ExternalId)
 	})
 }
