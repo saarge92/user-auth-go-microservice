@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
+	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/entites"
 	customErrors "go-user-microservice/internal/pkg/errors"
 )
@@ -17,16 +18,12 @@ func NewCurrencyRepository(db *sqlx.DB) *CurrencyRepository {
 }
 
 func (r *CurrencyRepository) GetByCode(ctx context.Context, code string) (*entites.Currency, error) {
+	dbConn := db.GetDBConnection(ctx, r.db)
+
 	query := `SELECT * FROM currencies WHERE code = ?`
 	currency := &entites.Currency{}
-	var dbError error
-	tx := GetDBTransaction(ctx)
-	if tx != nil {
-		dbError = tx.Get(currency, query, code)
-	} else {
-		dbError = r.db.Get(currency, query, code)
-	}
-	if dbError != nil {
+
+	if dbError := dbConn.Get(currency, query, code); dbError != nil {
 		if dbError == sql.ErrNoRows {
 			return nil, nil
 		}

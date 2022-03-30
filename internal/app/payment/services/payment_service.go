@@ -19,7 +19,6 @@ import (
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/errorlists"
 	sharedFilter "go-user-microservice/internal/pkg/filter"
-	"go-user-microservice/internal/pkg/repositories"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -59,21 +58,17 @@ func (s *PaymentService) Deposit(
 	if user, ok = ctx.Value(dictionary.User).(*userEntities.User); !ok {
 		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
 	}
-	tx := s.coreDB.MustBegin()
-	defer func() {
-		e = repositories.HandleTransaction(tx, e)
-	}()
-	newCtx := context.WithValue(ctx, repositories.CurrentTransaction, tx)
-	card, e := s.cardRepository.OneByCardAndUserID(newCtx, depositInfo.CardExternalId, user.ID)
+
+	card, e := s.cardRepository.OneByCardAndUserID(ctx, depositInfo.CardExternalId, user.ID)
 	if e != nil {
 		return nil, e
 	}
-	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(newCtx, depositInfo.WalletExternalId, user.ID)
+	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(ctx, depositInfo.WalletExternalId, user.ID)
 	if e != nil {
 		return nil, e
 	}
 	amount := decimal.NewFromFloat(depositInfo.Amount)
-	if e = s.walletRepository.IncreaseBalanceByID(newCtx, walletWithCurrencyDto.Wallet.ID, amount); e != nil {
+	if e = s.walletRepository.IncreaseBalanceByID(ctx, walletWithCurrencyDto.Wallet.ID, amount); e != nil {
 		return nil, e
 	}
 	cardChargeDto := &dto.StripeCardCustomerChargeCreate{
@@ -97,7 +92,7 @@ func (s *PaymentService) Deposit(
 		BalanceAfter:       balanceAfter,
 		ExternalProviderID: chargeResponse.ID,
 	}
-	if operationStoryError := s.operationStoryRepository.Create(newCtx, operationStory); operationStoryError != nil {
+	if operationStoryError := s.operationStoryRepository.Create(ctx, operationStory); operationStoryError != nil {
 		return nil, operationStoryError
 	}
 	return operationStory, nil
@@ -107,12 +102,6 @@ func (s *PaymentService) List(
 	ctx context.Context,
 	request *form.ListPayment,
 ) (response []paymentDto.OperationStory, count int64, e error) {
-	tx := s.coreDB.MustBegin()
-	defer func() {
-		e = repositories.HandleTransaction(tx, e)
-	}()
-	newCtx := context.WithValue(ctx, repositories.CurrentTransaction, tx)
-
 	var user *userEntities.User
 	var convertOk bool
 	if user, convertOk = ctx.Value(dictionary.User).(*userEntities.User); !convertOk {
@@ -129,5 +118,5 @@ func (s *PaymentService) List(
 		},
 	}
 
-	return s.operationStoryRepository.List(newCtx, paymentFilter)
+	return s.operationStoryRepository.List(ctx, paymentFilter)
 }

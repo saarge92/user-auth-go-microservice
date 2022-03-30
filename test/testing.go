@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/pkg/config"
+	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/domain/providers"
 	appProvider "go-user-microservice/internal/pkg/providers"
 	testProviders "go-user-microservice/test/mocks/providers"
@@ -70,7 +71,8 @@ func CreateTestServer(
 		stripeServiceProvider,
 	)
 
-	grpcServerProvider := appProvider.NewGrpcServerProvider(serviceProvider)
+	transactionHandler := db.NewTransactionHandler(dbConnProvider.GetCoreConnection())
+	grpcServerProvider := appProvider.NewGrpcServerProvider(serviceProvider, transactionHandler)
 
 	return grpcServerProvider, func() {
 		if e := mainConnection.Close(); e != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
+	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/errors"
 )
 
@@ -14,7 +15,7 @@ func LastInsertID(result sql.Result) int64 {
 
 func GetDBTransaction(ctx context.Context) *sqlx.Tx {
 	var dbTransaction *sqlx.Tx
-	tx, ok := ctx.Value(CurrentTransaction).(*sqlx.Tx)
+	tx, ok := ctx.Value(db.CurrentTransaction).(*sqlx.Tx)
 	if ok {
 		dbTransaction = tx
 	}

@@ -6,35 +6,44 @@ import (
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
 	"go-user-microservice/internal/app/wallet/transformer"
+	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcServerPayment struct {
-	paymentService domain.PaymentService
+	paymentService     domain.PaymentService
+	transactionHandler *db.TransactionHandlerDB
 }
 
 func NewGrpcPaymentServer(
 	paymentService domain.PaymentService,
+	transactionHandler *db.TransactionHandlerDB,
 ) *GrpcServerPayment {
 	return &GrpcServerPayment{
-		paymentService: paymentService,
+		paymentService:     paymentService,
+		transactionHandler: transactionHandler,
 	}
 }
 
 func (s *GrpcServerPayment) Deposit(
 	ctx context.Context,
 	request *core.DepositRequest,
-) (*core.DepositResponse, error) {
+) (response *core.DepositResponse, e error) {
+	ctx, handleFunc := db.MakeConnectionContext(ctx, s.transactionHandler)
+	defer func() {
+		e = handleFunc(e)
+	}()
+
 	depositInfo := &form.Deposit{DepositRequest: request}
 	var operationStory *entities.OperationStory
-	var depositError error
 	syncChannel := make(chan interface{})
 	go func() {
-		operationStory, depositError = s.paymentService.Deposit(ctx, depositInfo, syncChannel)
+		operationStory, e = s.paymentService.Deposit(ctx, depositInfo, syncChannel)
 	}()
 	<-syncChannel
-	if depositError != nil {
-		return nil, depositError
+
+	if e != nil {
+		return nil, e
 	}
 	return &core.DepositResponse{
 		TransactionId: operationStory.ExternalID,

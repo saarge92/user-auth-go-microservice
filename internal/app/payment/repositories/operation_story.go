@@ -8,8 +8,8 @@ import (
 	"go-user-microservice/internal/app/payment/dto"
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/filter"
+	"go-user-microservice/internal/pkg/db"
 	customErrors "go-user-microservice/internal/pkg/errors"
-	"go-user-microservice/internal/pkg/repositories"
 	"strings"
 	"time"
 )
@@ -25,8 +25,11 @@ func NewOperationStoryRepository(db *sqlx.DB) *OperationStoryRepository {
 }
 
 func (r *OperationStoryRepository) Create(ctx context.Context, operationStory *entities.OperationStory) error {
+	dbConn := db.GetDBConnection(ctx, r.db)
+
 	operationStory.ExternalID = uuid.New().String()
 	operationStory.CreatedAt = time.Now()
+
 	query := ` INSERT INTO operations_stories 
      			(
      			 	external_id, user_id, card_id, amount, balance_before, balance_after,
@@ -38,18 +41,17 @@ func (r *OperationStoryRepository) Create(ctx context.Context, operationStory *e
 					:external_provider_id, :operation_type_id, :created_at
 				)
 				`
-	tx := repositories.GetDBTransaction(ctx)
+
 	var dbError error
 	var result sql.Result
-	if tx != nil {
-		result, dbError = tx.NamedExec(query, operationStory)
-	} else {
-		result, dbError = r.db.NamedExec(query, operationStory)
-	}
+	result, dbError = dbConn.NamedExec(query, operationStory)
+
 	if dbError != nil {
 		return customErrors.DatabaseError(dbError)
 	}
-	operationStory.ID = uint64(repositories.LastInsertID(result))
+
+	operationStory.ID = uint64(db.LastInsertID(result))
+
 	return nil
 }
 
@@ -57,6 +59,8 @@ func (r *OperationStoryRepository) List(
 	ctx context.Context,
 	queryFilter *filter.OperationStoryFilter,
 ) ([]dto.OperationStory, int64, error) {
+	dbConn := db.GetDBConnection(ctx, r.db)
+
 	var operationStoriesDto []dto.OperationStory
 	innerJoinSelect := " FROM operations_stories os INNER JOIN cards c on c.id = os.card_id "
 	query := "SELECT * " + innerJoinSelect
@@ -64,6 +68,7 @@ func (r *OperationStoryRepository) List(
 
 	var conditions []string
 	params := make(map[string]interface{})
+
 	if queryFilter.OperationType != nil {
 		conditions = append(conditions, "os.operation_type_id = :operation_type_id")
 		params["operation_type_id"] = queryFilter.OperationType
@@ -76,14 +81,8 @@ func (r *OperationStoryRepository) List(
 	if e != nil {
 		return nil, 0, e
 	}
-	tx := repositories.GetDBTransaction(ctx)
-	var dbError error
-	if tx != nil {
-		dbError = tx.Select(&operationStoriesDto, namedQuery, args...)
-	} else {
-		dbError = r.db.Select(&operationStoriesDto, namedQuery, args...)
-	}
-	if dbError != nil {
+
+	if dbError := dbConn.Select(&operationStoriesDto, namedQuery, args...); dbError != nil {
 		return nil, 0, dbError
 	}
 
@@ -92,11 +91,8 @@ func (r *OperationStoryRepository) List(
 	if e != nil {
 		return nil, 0, e
 	}
-	if tx != nil {
-		dbError = tx.Get(&count, namedQueryCount, args...)
-	}
 
-	if dbError != nil {
+	if dbError := dbConn.Get(&count, namedQueryCount, args...); dbError != nil {
 		return nil, 0, dbError
 	}
 

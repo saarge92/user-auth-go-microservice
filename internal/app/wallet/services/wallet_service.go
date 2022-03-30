@@ -14,7 +14,6 @@ import (
 	repositoryInterface "go-user-microservice/internal/pkg/domain/repositories"
 	sharedEntities "go-user-microservice/internal/pkg/entites"
 	"go-user-microservice/internal/pkg/errorlists"
-	"go-user-microservice/internal/pkg/repositories"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -44,12 +43,7 @@ func (s *WalletService) Create(
 	ctx context.Context,
 	form *forms.WalletCreateForm,
 ) (wallet *walletEntities.Wallet, e error) {
-	tx := s.coreDB.MustBegin()
-	defer func() {
-		e = repositories.HandleTransaction(tx, e)
-	}()
-	newCtx := context.WithValue(ctx, repositories.CurrentTransaction, tx)
-	user, currency, e := s.checkCreateWalletData(newCtx, form)
+	user, currency, e := s.checkCreateWalletData(ctx, form)
 	if e != nil {
 		return nil, e
 	}
@@ -61,19 +55,19 @@ func (s *WalletService) Create(
 		IsDefault:  form.IsDefault,
 	}
 	if form.IsDefault {
-		defaultWallet, e := s.walletRepository.ByUserAndDefault(newCtx, user.ID, true)
+		defaultWallet, e := s.walletRepository.ByUserAndDefault(ctx, user.ID, true)
 		if e != nil {
 			return nil, e
 		}
 		if defaultWallet != nil {
-			e := s.walletRepository.UpdateStatusByUserID(newCtx, user.ID, false)
+			e := s.walletRepository.UpdateStatusByUserID(ctx, user.ID, false)
 			if e != nil {
 				return nil, e
 			}
 		}
 	}
 
-	if e = s.walletRepository.Create(newCtx, wallet); e != nil {
+	if e = s.walletRepository.Create(ctx, wallet); e != nil {
 		return nil, e
 	}
 	return wallet, nil

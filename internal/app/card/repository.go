@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/app/card/entities"
+	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/errorlists"
 	"go-user-microservice/internal/pkg/errors"
-	"go-user-microservice/internal/pkg/repositories"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"time"
@@ -22,6 +22,7 @@ func NewRepositoryCard(db *sqlx.DB) *RepositoryCard {
 }
 
 func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error {
+	dbConn := db.GetDBConnection(ctx, r.db)
 	now := time.Now()
 	card.CreatedAt = now
 	card.UpdatedAt = now
@@ -30,35 +31,27 @@ func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error 
                 expire_month, expire_year, created_at, updated_at)
 				VALUES (:user_id, :is_default, :number, :external_provider_id, :external_id,
 				     	:expire_month, :expire_year, :created_at, :updated_at)`
-	tx := repositories.GetDBTransaction(ctx)
+
 	var result sql.Result
 	var dbError error
-	if tx != nil {
-		result, dbError = tx.NamedExec(query, card)
-	} else {
-		result, dbError = r.db.NamedExec(query, card)
-	}
+	result, dbError = dbConn.NamedExec(query, card)
 	if dbError != nil {
-		return errors.DatabaseError(dbError)
+		return dbError
 	}
-	card.ID = uint64(repositories.LastInsertID(result))
+	card.ID = uint64(db.LastInsertID(result))
 	return nil
 }
 
 func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]entities.Card, error) {
+	dbConn := db.GetDBConnection(ctx, r.db)
+
 	query := `SELECT * FROM cards WHERE user_id = ?`
 	var cards []entities.Card
-	tx := repositories.GetDBTransaction(ctx)
-	var dbError error
-	if tx != nil {
-		dbError = tx.Select(&cards, query, userID)
-	} else {
-		dbError = r.db.Select(&cards, query, userID)
+	if e := dbConn.Select(&cards, query, userID); e != nil {
+		return nil, e
 	}
-	if dbError != nil {
-		return nil, errors.DatabaseError(dbError)
-	}
-	return cards, dbError
+
+	return cards, nil
 }
 
 func (r *RepositoryCard) OneByCardAndUserID(
@@ -66,20 +59,17 @@ func (r *RepositoryCard) OneByCardAndUserID(
 	externalID string,
 	userID uint64,
 ) (*entities.Card, error) {
+	dbConn := db.GetDBConnection(ctx, r.db)
+
 	query := `SELECT * FROM cards WHERE external_id = ? AND user_id = ?`
 	card := new(entities.Card)
-	tx := repositories.GetDBTransaction(ctx)
-	var dbError error
-	if tx != nil {
-		dbError = tx.Get(card, query, externalID, userID)
-	} else {
-		dbError = r.db.Get(card, query, externalID, userID)
-	}
-	if dbError != nil {
-		if dbError == sql.ErrNoRows {
+
+	if e := dbConn.Get(card, query, externalID, userID); e != nil {
+		if e == sql.ErrNoRows {
 			return nil, status.Error(codes.NotFound, errorlists.CardNotFound)
 		}
-		return nil, errors.DatabaseError(dbError)
+		return nil, errors.DatabaseError(e)
 	}
+
 	return card, nil
 }
