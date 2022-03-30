@@ -58,7 +58,7 @@ func (r *OperationStoryRepository) List(
 	queryFilter *filter.OperationStoryFilter,
 ) ([]dto.OperationStory, int64, error) {
 	var operationStoriesDto []dto.OperationStory
-	innerJoinSelect := "FROM operations_stories os INNER JOIN cards c on c.id = os.card_id"
+	innerJoinSelect := " FROM operations_stories os INNER JOIN cards c on c.id = os.card_id "
 	query := "SELECT * " + innerJoinSelect
 	queryCount := "SELECT COUNT(*)" + innerJoinSelect
 
@@ -69,8 +69,8 @@ func (r *OperationStoryRepository) List(
 		params["operation_type_id"] = queryFilter.OperationType
 	}
 
-	query += strings.Join(conditions, " AND ")
-	queryCount += strings.Join(conditions, " AND ")
+	query += " WHERE " + strings.Join(conditions, " AND ")
+	queryCount += " WHERE " + strings.Join(conditions, " AND ")
 
 	namedQuery, args, e := sqlx.Named(query, params)
 	if e != nil {
@@ -100,5 +100,5 @@ func (r *OperationStoryRepository) List(
 		return nil, 0, dbError
 	}
 
-	return operationStoriesDto, 0, nil
+	return operationStoriesDto, count, nil
 }

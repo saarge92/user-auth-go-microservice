@@ -13,5 +13,5 @@ type PaymentService interface {
 		depositInfo *form.Deposit,
 		syncChannel chan<- interface{},
 	) (*entities.OperationStory, error)
-	List(ctx context.Context, request *form.ListPayment) (*dto.OperationStory, error)
+	List(ctx context.Context, request *form.ListPayment) ([]dto.OperationStory, int64, error)
 }

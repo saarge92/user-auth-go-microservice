@@ -1,4 +1,4 @@
-package wallet
+package transformer
 
 import (
 	"go-user-microservice/internal/app/wallet/dto"

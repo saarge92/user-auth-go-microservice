@@ -3,6 +3,7 @@ package wallet
 import (
 	"context"
 	"go-user-microservice/internal/app/wallet/forms"
+	"go-user-microservice/internal/app/wallet/transformer"
 	"go-user-microservice/internal/pkg/domain/services"
 	"go-user-microservice/pkg/protobuf/core"
 )
@@ -44,5 +45,5 @@ func (s *GrpcWalletServer) MyWallets(
 	if e != nil {
 		return nil, e
 	}
-	return WalletsDtoToGrpc(wallets), nil
+	return transformer.WalletsDtoToGrpc(wallets), nil
 }

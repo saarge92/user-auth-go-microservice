@@ -106,11 +106,17 @@ func (s *PaymentService) Deposit(
 func (s *PaymentService) List(
 	ctx context.Context,
 	request *form.ListPayment,
-) (*paymentDto.OperationStory, error) {
+) (response []paymentDto.OperationStory, count int64, e error) {
+	tx := s.coreDB.MustBegin()
+	defer func() {
+		e = repositories.HandleTransaction(tx, e)
+	}()
+	newCtx := context.WithValue(ctx, repositories.CurrentTransaction, tx)
+
 	var user *userEntities.User
 	var convertOk bool
 	if user, convertOk = ctx.Value(dictionary.User).(*userEntities.User); !convertOk {
-		return nil, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
+		return nil, 0, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
 	}
 
 	operationType := transformers.FromGRPCOperationType(request.OperationType)
@@ -122,6 +128,6 @@ func (s *PaymentService) List(
 			PerPage: request.Pagination.PerPage,
 		},
 	}
-	fmt.Println(paymentFilter)
-	return nil, nil
+
+	return s.operationStoryRepository.List(newCtx, paymentFilter)
 }

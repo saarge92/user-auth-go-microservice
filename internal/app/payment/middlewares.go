@@ -18,6 +18,7 @@ func NewGrpcPaymentMiddleware(
 ) *GrpcPaymentMiddleware {
 	messagesTypes := []interface{}{
 		&core.DepositRequest{},
+		&core.ListRequest{},
 	}
 	return &GrpcPaymentMiddleware{
 		authContextService:        authContextService,

@@ -2,10 +2,10 @@ package payment
 
 import (
 	"context"
-	"fmt"
 	"go-user-microservice/internal/app/payment/domain"
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
+	"go-user-microservice/internal/app/wallet/transformer"
 	"go-user-microservice/pkg/protobuf/core"
 )
 
@@ -46,10 +46,15 @@ func (s *GrpcServerPayment) List(
 	request *core.ListRequest,
 ) (*core.ListResponse, error) {
 	listRequest := &form.ListPayment{ListRequest: request}
-	response, e := s.paymentService.List(context.Background(), listRequest)
+	response, count, e := s.paymentService.List(ctx, listRequest)
 	if e != nil {
 		return nil, e
 	}
-	fmt.Println(response)
-	return &core.ListResponse{}, nil
+
+	responseGrpc := transformer.FromOperationStoriesDtoToGRPCResponse(
+		response,
+		count,
+	)
+
+	return responseGrpc, nil
 }
