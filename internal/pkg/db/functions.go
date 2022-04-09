@@ -3,9 +3,11 @@ package db
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"go-user-microservice/internal/pkg/domain"
 	"go-user-microservice/internal/pkg/errors"
+	"go-user-microservice/internal/pkg/filter"
 )
 
 type TransactionKey int
@@ -33,11 +35,11 @@ func MakeConnectionContext(
 	newCtx := context.WithValue(ctx, CurrentTransaction, tx)
 
 	return newCtx, func(e error) error {
-		return HandleTransaction(tx, e)
+		return handleTransaction(tx, e)
 	}
 }
 
-func HandleTransaction(tx *sqlx.Tx, functionError error) error {
+func handleTransaction(tx *sqlx.Tx, functionError error) error {
 	if functionError != nil {
 		if rollErr := tx.Rollback(); rollErr != nil {
 			return errors.DatabaseError(rollErr)
@@ -56,4 +58,11 @@ func HandleTransaction(tx *sqlx.Tx, functionError error) error {
 func LastInsertID(result sql.Result) int32 {
 	id, _ := result.LastInsertId()
 	return int32(id)
+}
+
+func AddPagination(query string, pagination filter.Pagination) string {
+	if pagination.Page == 0 {
+		return query + fmt.Sprintf(" LIMIT %d", pagination.PerPage)
+	}
+	return query + fmt.Sprintf(" LIMIT %d, %d", (pagination.Page-1)*pagination.PerPage, pagination.PerPage)
 }

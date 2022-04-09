@@ -79,6 +79,8 @@ func (r *OperationStoryRepository) List(
 		queryCount += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
+	query = db.AddPagination(query, queryFilter.Pagination)
+
 	namedQuery, args, e := sqlx.Named(query, params)
 	if e != nil {
 		return nil, 0, e
