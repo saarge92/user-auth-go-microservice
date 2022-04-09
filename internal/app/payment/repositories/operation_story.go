@@ -74,8 +74,10 @@ func (r *OperationStoryRepository) List(
 		params["operation_type_id"] = queryFilter.OperationType
 	}
 
-	query += " WHERE " + strings.Join(conditions, " AND ")
-	queryCount += " WHERE " + strings.Join(conditions, " AND ")
+	if conditions != nil {
+		query += " WHERE " + strings.Join(conditions, " AND ")
+		queryCount += " WHERE " + strings.Join(conditions, " AND ")
+	}
 
 	namedQuery, args, e := sqlx.Named(query, params)
 	if e != nil {

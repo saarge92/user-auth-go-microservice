@@ -10,7 +10,7 @@ func FromOperationStoriesDtoToGRPCResponse(
 	count int64,
 ) *core.ListResponse {
 	response := &core.ListResponse{}
-	operationsGrpcElements := make([]*core.ListResponse_OperationInfo, len(operations))
+	operationsGrpcElements := make([]*core.ListResponse_OperationInfo, 0, len(operations))
 	for _, operation := range operations {
 		card := operation.Card
 		operationStory := operation.OperationStory

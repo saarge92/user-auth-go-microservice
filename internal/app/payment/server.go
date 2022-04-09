@@ -55,6 +55,10 @@ func (s *GrpcServerPayment) List(
 	request *core.ListRequest,
 ) (*core.ListResponse, error) {
 	listRequest := &form.ListPayment{ListRequest: request}
+	if e := listRequest.Validate(); e != nil {
+		return nil, e
+	}
+
 	response, count, e := s.paymentService.List(ctx, listRequest)
 	if e != nil {
 		return nil, e
