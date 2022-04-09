@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 	cardDomain "go-user-microservice/internal/app/card/domain"
@@ -12,15 +11,11 @@ import (
 	"go-user-microservice/internal/app/payment/filter"
 	"go-user-microservice/internal/app/payment/form"
 	"go-user-microservice/internal/app/payment/transformers"
-	userEntities "go-user-microservice/internal/app/user/entities"
 	walletDomain "go-user-microservice/internal/app/wallet/domain"
-	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
-	"go-user-microservice/internal/pkg/errorlists"
 	sharedFilter "go-user-microservice/internal/pkg/filter"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"go-user-microservice/internal/pkg/grpc"
 )
 
 type PaymentService struct {
@@ -53,10 +48,10 @@ func (s *PaymentService) Deposit(
 	syncChannel chan<- interface{},
 ) (operationStory *entities.OperationStory, e error) {
 	defer close(syncChannel)
-	var user *userEntities.User
-	var ok bool
-	if user, ok = ctx.Value(dictionary.User).(*userEntities.User); !ok {
-		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
+
+	user, e := grpc.GetUserFromContext(ctx)
+	if e != nil {
+		return nil, e
 	}
 
 	card, e := s.cardRepository.OneByCardAndUserID(ctx, depositInfo.CardExternalId, user.ID)
@@ -102,10 +97,9 @@ func (s *PaymentService) List(
 	ctx context.Context,
 	request *form.ListPayment,
 ) (response []paymentDto.OperationStory, count int64, e error) {
-	var user *userEntities.User
-	var convertOk bool
-	if user, convertOk = ctx.Value(dictionary.User).(*userEntities.User); !convertOk {
-		return nil, 0, status.Error(codes.Internal, fmt.Sprintf(errorlists.ConvertError, "user_id"))
+	user, e := grpc.GetUserFromContext(ctx)
+	if e != nil {
+		return nil, 0, e
 	}
 
 	operationType := transformers.FromGRPCOperationType(request.OperationType)
