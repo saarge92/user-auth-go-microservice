@@ -33,6 +33,7 @@ func NewGrpcServerProvider(
 	cardGrpcServer := card.NewGrpcServerCard(
 		&forms.CardFormBuilder{},
 		serviceProvider.CardService(),
+		transactionHandler,
 	)
 	paymentGrpcServer := payment.NewGrpcPaymentServer(serviceProvider.PaymentService(), transactionHandler)
 	return &GrpcServerProvider{

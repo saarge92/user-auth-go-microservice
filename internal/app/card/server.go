@@ -4,32 +4,42 @@ import (
 	"context"
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/card/services"
+	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcServerCard struct {
-	cardService     *services.ServiceCard
-	cardFormBuilder *forms.CardFormBuilder
+	cardService        *services.ServiceCard
+	cardFormBuilder    *forms.CardFormBuilder
+	transactionHandler *db.TransactionHandlerDB
 }
 
 func NewGrpcServerCard(
 	cardFormBuilder *forms.CardFormBuilder,
 	cardService *services.ServiceCard,
+	transactionHandler *db.TransactionHandlerDB,
 ) *GrpcServerCard {
 	return &GrpcServerCard{
-		cardService:     cardService,
-		cardFormBuilder: cardFormBuilder,
+		cardService:        cardService,
+		cardFormBuilder:    cardFormBuilder,
+		transactionHandler: transactionHandler,
 	}
 }
 
 func (s *GrpcServerCard) CreateCard(
 	ctx context.Context,
 	request *core.CreateCardRequest,
-) (*core.CreateCardResponse, error) {
+) (response *core.CreateCardResponse, e error) {
 	cardForm := s.cardFormBuilder.CreateCreateForm(request)
 	if e := cardForm.Validate(); e != nil {
 		return nil, e
 	}
+
+	ctx, transactionFunc := db.MakeConnectionContext(ctx, s.transactionHandler)
+	defer func() {
+		e = transactionFunc(e)
+	}()
+
 	cardInfo, e := s.cardService.Create(ctx, cardForm)
 	if e != nil {
 		return nil, e
