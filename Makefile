@@ -23,7 +23,7 @@ migrate-test-up:
      	-verbose up
 
 migrate-test-down:
-	migrate -path scripts/migrations -database "mysql://test:test@(localhost:3312)/user-platform?charset=utf8&parseTime=true" \
+	migrate -path scripts/migrations -database "mysql://test:test@(localhost:3312)/user-test?charset=utf8&parseTime=true" \
       -verbose down
 
 .PHONY: test

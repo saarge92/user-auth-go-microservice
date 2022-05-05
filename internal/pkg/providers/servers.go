@@ -5,7 +5,6 @@ import (
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/payment"
 	"go-user-microservice/internal/app/user"
-	"go-user-microservice/internal/app/user/forms/builders"
 	"go-user-microservice/internal/app/wallet"
 	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/domain/providers"
@@ -27,7 +26,6 @@ func NewGrpcServerProvider(
 		transactionHandler,
 	)
 	userGrpcServer := user.NewUserGrpcServer(
-		&builders.UserFormBuilder{},
 		serviceProvider.AuthService(),
 	)
 	cardGrpcServer := card.NewGrpcServerCard(

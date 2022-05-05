@@ -16,9 +16,9 @@ type ServiceProvider struct {
 	accountStripeService   stripeDomain.AccountStripeService
 	cardStripeService      stripeDomain.CardStripeService
 	userRemoteService      userDomain.RemoteUserService
-	userService            *userServices.ServiceUser
+	userService            *userServices.User
 	jwtAuthService         *userServices.JwtService
-	authService            *userServices.AuthService
+	authService            *userServices.Auth
 	userAuthContextService *userServices.UserAuthContextService
 	walletService          *walletServices.WalletService
 	cardService            *cardServices.ServiceCard
@@ -38,6 +38,7 @@ func NewServiceProvider(
 		repositoryProvider.CountryRepository(),
 		remoteUserService,
 		stripeServiceProvider.Account(),
+		repositoryProvider.RoleRepository(),
 	)
 	jwtService := userServices.NewJwtService(
 		config,
@@ -75,7 +76,7 @@ func NewServiceProvider(
 	}
 }
 
-func (p *ServiceProvider) AuthService() *userServices.AuthService {
+func (p *ServiceProvider) AuthService() *userServices.Auth {
 	return p.authService
 }
 
@@ -87,7 +88,7 @@ func (p *ServiceProvider) RemoteUserService() userDomain.RemoteUserService {
 	return p.userRemoteService
 }
 
-func (p *ServiceProvider) UserService() *userServices.ServiceUser {
+func (p *ServiceProvider) UserService() *userServices.User {
 	return p.userService
 }
 

@@ -28,7 +28,7 @@ func (p *TestServiceProvider) Card() stripe.CardStripeService {
 	return p.CardStripeServiceMock
 }
 
-func (p *TestServiceProvider) AuthService() *userServices.AuthService {
+func (p *TestServiceProvider) AuthService() *userServices.Auth {
 	return p.ServiceProvider.AuthService()
 }
 
@@ -40,7 +40,7 @@ func (p *TestServiceProvider) RemoteUserService() services.RemoteUserService {
 	return p.ServiceProvider.RemoteUserService()
 }
 
-func (p *TestServiceProvider) UserService() *userServices.ServiceUser {
+func (p *TestServiceProvider) UserService() *userServices.User {
 	return p.ServiceProvider.UserService()
 }
 

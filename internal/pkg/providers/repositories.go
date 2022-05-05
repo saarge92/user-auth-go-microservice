@@ -21,6 +21,7 @@ type RepositoryProvider struct {
 	countryRepository        repositoryInterfaces.CountryRepository
 	cardRepository           cardDomain.CardRepository
 	operationStoryRepository paymentDomain.OperationStoryRepository
+	roleRepository           *repositories.Role
 }
 
 func NewRepositoryProvider(dbConnectionProvider providers.DatabaseConnectionProvider) *RepositoryProvider {
@@ -32,6 +33,7 @@ func NewRepositoryProvider(dbConnectionProvider providers.DatabaseConnectionProv
 		countryRepository:        sharedRepositories.NewCountryRepository(mainDBConnection),
 		cardRepository:           card.NewRepositoryCard(mainDBConnection),
 		operationStoryRepository: paymentRepositories.NewOperationStoryRepository(mainDBConnection),
+		roleRepository:           repositories.NewRoleRepository(mainDBConnection),
 	}
 }
 
@@ -57,4 +59,8 @@ func (p *RepositoryProvider) CardRepository() cardDomain.CardRepository {
 
 func (p *RepositoryProvider) OperationStory() paymentDomain.OperationStoryRepository {
 	return p.operationStoryRepository
+}
+
+func (p *RepositoryProvider) RoleRepository() *repositories.Role {
+	return p.roleRepository
 }

@@ -9,10 +9,10 @@ import (
 )
 
 type ServiceProvider interface {
-	AuthService() *services.AuthService
+	AuthService() *services.Auth
 	JwtService() *services.JwtService
 	RemoteUserService() domainService.RemoteUserService
-	UserService() *services.ServiceUser
+	UserService() *services.User
 	WalletService() domainService.WalletService
 	StripeAccountService() stripe.AccountStripeService
 	StripeCardService() stripe.CardStripeService

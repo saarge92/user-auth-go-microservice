@@ -3,30 +3,26 @@ services:
   database:
     container_name: user_database
     image: percona/percona-server:latest
-    env_file:
-      - .env
     ports:
       - 3311:3306
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=user-platform
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+      - MYSQL_ROOT_PASSWORD=terrible
     volumes:
       - mysql-user-database:/var/lib/mysql
 
   database-test:
     container_name: user_database_test
     image: percona/percona-server:latest
-    env_file:
-      - .env.test
     ports:
       - 3312:3306
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=user-test
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+      - MYSQL_ROOT_PASSWORD=terrible
     volumes:
       - mysql-user-database-test:/var/lib/mysql
 volumes:

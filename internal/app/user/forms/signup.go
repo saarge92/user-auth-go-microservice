@@ -17,14 +17,6 @@ type SignUp struct {
 	*core.SignUpMessage
 }
 
-func NewSignUpForm(
-	request *core.SignUpMessage,
-) *SignUp {
-	return &SignUp{
-		request,
-	}
-}
-
 func (f *SignUp) Validate() error {
 	emailPattern := "^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,4}$"
 	innPattern := fmt.Sprintf(`^\d{%d}$`, entities.InnLength)

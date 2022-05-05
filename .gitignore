@@ -1,4 +1,4 @@
-pkg/*
+pkg/protobuf
 .env
 mysql-user-database
 mysql-user-database-test

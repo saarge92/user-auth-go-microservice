@@ -3,23 +3,20 @@ package user
 import (
 	"context"
 	"go-user-microservice/internal/app/user/entities"
-	userFormBuilders "go-user-microservice/internal/app/user/forms/builders"
+	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcUserServer struct {
-	authService     *services.AuthService
-	userFormBuilder *userFormBuilders.UserFormBuilder
+	authService *services.Auth
 }
 
 func NewUserGrpcServer(
-	userFormBuilder *userFormBuilders.UserFormBuilder,
-	authService *services.AuthService,
+	authService *services.Auth,
 ) *GrpcUserServer {
 	return &GrpcUserServer{
-		userFormBuilder: userFormBuilder,
-		authService:     authService,
+		authService: authService,
 	}
 }
 
@@ -27,8 +24,8 @@ func (s *GrpcUserServer) Signup(
 	_ context.Context,
 	request *core.SignUpMessage,
 ) (*core.SignUpResponse, error) {
-	form := s.userFormBuilder.Signup(request)
-	if e := form.Validate(); e != nil {
+	formRequest := &forms.SignUp{SignUpMessage: request}
+	if e := formRequest.Validate(); e != nil {
 		return nil, e
 	}
 	channelResponse := make(chan interface{})
@@ -36,7 +33,7 @@ func (s *GrpcUserServer) Signup(
 	var tokenResponse string
 	var errorResponse error
 	go func() {
-		userResponse, tokenResponse, errorResponse = s.authService.SignUp(form, channelResponse)
+		userResponse, tokenResponse, errorResponse = s.authService.SignUp(formRequest, channelResponse)
 	}()
 	<-channelResponse
 	if errorResponse != nil {
@@ -69,13 +66,13 @@ func (s *GrpcUserServer) SignIn(
 	_ context.Context,
 	request *core.SignInMessage,
 ) (*core.SignInResponse, error) {
-	form := s.userFormBuilder.SignIn(request)
+	formRequest := &forms.SignIn{SignInMessage: request}
 	signInChan := make(chan interface{})
 	var signInError error
 	var userResponse *entities.User
 	var token string
 	go func() {
-		userResponse, token, signInError = s.authService.SignIn(form, signInChan)
+		userResponse, token, signInError = s.authService.SignIn(formRequest, signInChan)
 	}()
 	<-signInChan
 	if signInError != nil {

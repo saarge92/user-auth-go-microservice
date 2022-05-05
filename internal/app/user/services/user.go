@@ -6,6 +6,7 @@ import (
 	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
+	"go-user-microservice/internal/app/user/repositories"
 	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
@@ -16,11 +17,12 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type ServiceUser struct {
+type User struct {
 	userRepository       domain.UserRepository
 	countryRepository    sharedRepoInterfaces.CountryRepository
 	userRemoteServices   *RemoteUserService
 	stripeAccountService stripeDomain.AccountStripeService
+	userRolesRepository  *repositories.Role
 }
 
 func NewUserService(
@@ -28,16 +30,18 @@ func NewUserService(
 	countryRepository sharedRepoInterfaces.CountryRepository,
 	userRemoteService *RemoteUserService,
 	stripeAccountService stripeDomain.AccountStripeService,
-) *ServiceUser {
-	return &ServiceUser{
+	userRolesRepository *repositories.Role,
+) *User {
+	return &User{
 		userRepository:       userRepository,
 		userRemoteServices:   userRemoteService,
 		countryRepository:    countryRepository,
 		stripeAccountService: stripeAccountService,
+		userRolesRepository:  userRolesRepository,
 	}
 }
 
-func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
+func (s *User) SignUp(form *forms.SignUp) (*entities.User, error) {
 	var country *entites.Country
 	var checkError error
 	if country, checkError = s.checkUserDataWithCountryResponse(form); checkError != nil {
@@ -73,10 +77,13 @@ func (s *ServiceUser) SignUp(form *forms.SignUp) (*entities.User, error) {
 	if e = s.userRepository.Create(userEntity); e != nil {
 		return nil, e
 	}
+	if e = s.userRolesRepository.AddUserToRole(context.Background(), userEntity.ID, entities.UserRoleID); e != nil {
+		return nil, e
+	}
 	return userEntity, nil
 }
 
-func (s *ServiceUser) SignIn(form *forms.SignIn) (*entities.User, error) {
+func (s *User) SignIn(form *forms.SignIn) (*entities.User, error) {
 	userEntity, e := s.userRepository.GetUser(form.Login)
 	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
 	if e != nil {
@@ -94,7 +101,7 @@ func (s *ServiceUser) SignIn(form *forms.SignIn) (*entities.User, error) {
 	return userEntity, nil
 }
 
-func (s *ServiceUser) checkUserDataWithCountryResponse(form *forms.SignUp) (*entites.Country, error) {
+func (s *User) checkUserDataWithCountryResponse(form *forms.SignUp) (*entites.Country, error) {
 	userExist, e := s.userRepository.UserExist(form.Login)
 	if e != nil {
 		return nil, e
