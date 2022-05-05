@@ -12,19 +12,19 @@ import (
 	"net/url"
 )
 
-type RemoteUserService struct {
+type RemoteUser struct {
 	config     *config2.Config
 	httpClient *http.Client
 }
 
-func NewRemoteUserService(config *config2.Config) *RemoteUserService {
-	return &RemoteUserService{
+func NewRemoteUserService(config *config2.Config) *RemoteUser {
+	return &RemoteUser{
 		config:     config,
 		httpClient: &http.Client{},
 	}
 }
 
-func (s *RemoteUserService) CheckRemoteUser(inn uint64) (r bool, e error) {
+func (s *RemoteUser) CheckRemoteUser(inn uint64) (r bool, e error) {
 	baseURL := s.config.RemoteUserURL + "/4_1/rs/findById/party"
 	token := "Token " + s.config.AuthUserRemoteKey
 	postBody, e := json.Marshal(map[string]interface{}{
@@ -81,7 +81,7 @@ func (s *RemoteUserService) CheckRemoteUser(inn uint64) (r bool, e error) {
 	return true, nil
 }
 
-func (s *RemoteUserService) verifyResponse(responseMap map[string]interface{}) bool {
+func (s *RemoteUser) verifyResponse(responseMap map[string]interface{}) bool {
 	if _, ok := responseMap["suggestions"]; !ok {
 		return false
 	}

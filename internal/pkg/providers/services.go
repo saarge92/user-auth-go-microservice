@@ -30,9 +30,15 @@ func NewServiceProvider(
 	repositoryProvider providers.RepositoryProvider,
 	dbConnectionProvider providers.DatabaseConnectionProvider,
 	stripeServiceProvider providers.StripeServiceProvider,
+	userRemoteServiceDep userDomain.RemoteUserService,
 ) *ServiceProvider {
 	// user
-	remoteUserService := userServices.NewRemoteUserService(config)
+	var remoteUserService userDomain.RemoteUserService
+	if userRemoteServiceDep != nil {
+		remoteUserService = userRemoteServiceDep
+	} else {
+		remoteUserService = userServices.NewRemoteUserService(config)
+	}
 	userService := userServices.NewUserService(
 		repositoryProvider.UserRepository(),
 		repositoryProvider.CountryRepository(),

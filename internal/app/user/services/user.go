@@ -8,6 +8,7 @@ import (
 	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/repositories"
 	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
+	userDomain "go-user-microservice/internal/pkg/domain/services"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/entites"
@@ -20,7 +21,7 @@ import (
 type User struct {
 	userRepository       domain.UserRepository
 	countryRepository    sharedRepoInterfaces.CountryRepository
-	userRemoteServices   *RemoteUserService
+	userRemoteServices   userDomain.RemoteUserService
 	stripeAccountService stripeDomain.AccountStripeService
 	userRolesRepository  *repositories.Role
 }
@@ -28,7 +29,7 @@ type User struct {
 func NewUserService(
 	userRepository domain.UserRepository,
 	countryRepository sharedRepoInterfaces.CountryRepository,
-	userRemoteService *RemoteUserService,
+	userRemoteService userDomain.RemoteUserService,
 	stripeAccountService stripeDomain.AccountStripeService,
 	userRolesRepository *repositories.Role,
 ) *User {

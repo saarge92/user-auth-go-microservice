@@ -17,6 +17,7 @@ func TestUserSignInSignUp(t *testing.T) {
 		CardStripeServiceMock:    nil,
 		AccountStripeServiceMock: &services.AccountStripeServiceMock{},
 	}
+
 	serverProvider, closeFunc := test.CreateTestServer(stripeServiceProvider)
 	defer closeFunc()
 	userGrpcServer := serverProvider.UserGrpcServer()

@@ -11,6 +11,7 @@ import (
 	"go-user-microservice/internal/pkg/domain/providers"
 	appProvider "go-user-microservice/internal/pkg/providers"
 	testProviders "go-user-microservice/test/mocks/providers"
+	"go-user-microservice/test/mocks/services"
 	"os"
 	"path"
 	"runtime"
@@ -69,6 +70,7 @@ func CreateTestServer(
 		repositoryProvider,
 		dbConnProvider,
 		stripeServiceProvider,
+		&services.UserRemoteMock{},
 	)
 
 	transactionHandler := db.NewTransactionHandler(dbConnProvider.GetCoreConnection())

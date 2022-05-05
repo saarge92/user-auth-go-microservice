@@ -64,6 +64,7 @@ func (s *Server) initApp() {
 		repositoryProvider,
 		dbConnectionProvider,
 		stripeServiceProvider,
+		nil,
 	)
 	transactionHandler := db.NewTransactionHandler(dbConnectionProvider.GetCoreConnection())
 	s.serviceProvider = serviceProvider
