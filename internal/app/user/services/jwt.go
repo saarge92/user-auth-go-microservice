@@ -1,11 +1,11 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	sharedRepoInterfaces "go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/dto"
-	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/config"
 	"go-user-microservice/internal/pkg/errorlists"
 	"google.golang.org/grpc/codes"
@@ -48,7 +48,7 @@ func (s *JwtService) CreateToken(userName string) (string, error) {
 	return stringToken, nil
 }
 
-func (s *JwtService) VerifyTokenAndReturnUser(token string) (*entities.User, error) {
+func (s *JwtService) VerifyTokenAndReturnUser(ctx context.Context, token string) (*dto.UserRole, error) {
 	jwtToken, e := jwt.ParseWithClaims(token, &dto.UserPayLoad{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -59,7 +59,7 @@ func (s *JwtService) VerifyTokenAndReturnUser(token string) (*entities.User, err
 		return nil, status.Error(codes.InvalidArgument, errorlists.TokenInvalid)
 	}
 	payloadClaims := jwtToken.Claims.(*dto.UserPayLoad)
-	user, e := s.checkClaims(payloadClaims)
+	user, e := s.checkClaims(ctx, payloadClaims)
 	if e != nil {
 		return nil, e
 	}
@@ -67,10 +67,10 @@ func (s *JwtService) VerifyTokenAndReturnUser(token string) (*entities.User, err
 	return user, nil
 }
 
-func (s *JwtService) checkClaims(claims *dto.UserPayLoad) (*entities.User, error) {
+func (s *JwtService) checkClaims(ctx context.Context, claims *dto.UserPayLoad) (*dto.UserRole, error) {
 	tokenInvalidError := status.Error(codes.InvalidArgument, errorlists.TokenInvalid)
 	login := claims.UserName
-	user, e := s.userRepository.GetUser(login)
+	user, e := s.userRepository.GetUserWithRoles(ctx, login)
 	if e != nil {
 		return nil, e
 	}

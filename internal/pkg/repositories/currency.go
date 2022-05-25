@@ -3,31 +3,37 @@ package repositories
 import (
 	"context"
 	"database/sql"
-	"github.com/jmoiron/sqlx"
-	"go-user-microservice/internal/pkg/db"
+	"errors"
+	"github.com/blockloop/scan"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/entites"
+	"go-user-microservice/internal/pkg/errorlists"
 	customErrors "go-user-microservice/internal/pkg/errors"
 )
 
 type CurrencyRepository struct {
-	db *sqlx.DB
+	databaseInstance database.Database
 }
 
-func NewCurrencyRepository(db *sqlx.DB) *CurrencyRepository {
-	return &CurrencyRepository{db: db}
+func NewCurrencyRepository(databaseInstance database.Database) *CurrencyRepository {
+	return &CurrencyRepository{databaseInstance: databaseInstance}
 }
 
 func (r *CurrencyRepository) GetByCode(ctx context.Context, code string) (*entites.Currency, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	query := `SELECT * FROM currencies WHERE code = ?`
 	currency := &entites.Currency{}
 
-	if dbError := dbConn.Get(currency, query, code); dbError != nil {
-		if dbError == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, customErrors.DatabaseError(dbError)
+	currencyRow, currencyError := r.databaseInstance.QueryContext(ctx, query, code)
+	if currencyError != nil {
+		return nil, customErrors.DatabaseError(currencyError)
 	}
+
+	if e := scan.Row(currency, currencyRow); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, errorlists.CurrencyNotFoundErr
+		}
+		return nil, customErrors.DatabaseError(e)
+	}
+
 	return currency, nil
 }

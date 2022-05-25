@@ -3,59 +3,40 @@ package services
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
-	"crypto/sha256"
 	"encoding/base64"
-	"errors"
-	"io"
 )
 
-type EncryptService struct{}
-
-func (s *EncryptService) Encrypt(sourceString, key string) ([]byte, error) {
-	k := sha256.Sum256([]byte(key))
-	block, err := aes.NewCipher(k[:])
-	if err != nil {
-		return nil, err
-	}
-
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, err
-	}
-
-	nonce := make([]byte, gcm.NonceSize())
-	_, err = io.ReadFull(rand.Reader, nonce)
-	if err != nil {
-		return nil, err
-	}
-
-	return gcm.Seal(nonce, nonce, []byte(sourceString), nil), nil
+type EncryptService struct {
+	gcm cipher.AEAD
 }
 
-func (s *EncryptService) Decrypt(ciphertext []byte, key []byte) (plaintext []byte, err error) {
-	k := sha256.Sum256(key)
-	block, err := aes.NewCipher(k[:])
+func NewCryptoService(key []byte) (*EncryptService, error) {
+	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
-
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
+	return &EncryptService{
+		gcm: gcm,
+	}, nil
+}
 
-	decryptBytes, err := base64.StdEncoding.DecodeString(string(ciphertext))
+func (s *EncryptService) Decrypt(cipherTextParam []byte) (plaintext []byte, err error) {
+	cipherSource := make([]byte, base64.StdEncoding.DecodedLen(len(cipherTextParam)))
+	_, err = base64.StdEncoding.Decode(cipherSource, cipherTextParam)
 	if err != nil {
 		return nil, err
 	}
-	if len(decryptBytes) < gcm.NonceSize() {
-		return nil, errors.New("malformed ciphertext")
-	}
 
-	return gcm.Open(nil,
-		decryptBytes[:gcm.NonceSize()],
-		decryptBytes[gcm.NonceSize():],
-		nil,
-	)
+	nonce := cipherSource[0:s.gcm.NonceSize()]
+	ciphertext := cipherSource[s.gcm.NonceSize():]
+
+	plain, err := s.gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return nil, err
+	}
+	return plain, err
 }

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
 )
@@ -21,10 +23,12 @@ func NewAuthService(
 }
 
 func (s *Auth) SignUp(
-	f *forms.SignUp, chanResp chan<- interface{},
+	ctx context.Context,
+	formRequest *forms.SignUp,
+	signUpResponseChannel chan<- interface{},
 ) (*entities.User, string, error) {
-	userEntity, e := s.UserService.SignUp(f)
-	defer close(chanResp)
+	userEntity, e := s.UserService.SignUp(ctx, formRequest)
+	defer close(signUpResponseChannel)
 	if e != nil {
 		return nil, "", e
 	}
@@ -37,20 +41,22 @@ func (s *Auth) SignUp(
 }
 
 func (s *Auth) SignIn(
-	f *forms.SignIn, chanResp chan<- interface{},
-) (*entities.User, string, error) {
-	userEntity, e := s.UserService.SignIn(f)
-	defer close(chanResp)
+	ctx context.Context,
+	formRequest *forms.SignIn,
+	signInResponseChannel chan<- interface{},
+) (*dto.UserRole, string, error) {
+	defer close(signInResponseChannel)
+	userEntity, e := s.UserService.SignIn(ctx, formRequest)
 	if e != nil {
 		return nil, "", e
 	}
-	token, e := s.jwtService.CreateToken(userEntity.Login)
+	token, e := s.jwtService.CreateToken(userEntity.User.Login)
 	if e != nil {
 		return nil, "", e
 	}
 	return userEntity, token, nil
 }
 
-func (s *Auth) VerifyAndReturnPayloadToken(token string) (*entities.User, error) {
-	return s.jwtService.VerifyTokenAndReturnUser(token)
+func (s *Auth) VerifyAndReturnPayloadToken(ctx context.Context, token string) (*dto.UserRole, error) {
+	return s.jwtService.VerifyTokenAndReturnUser(ctx, token)
 }

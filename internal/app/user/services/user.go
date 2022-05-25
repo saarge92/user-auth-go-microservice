@@ -3,8 +3,11 @@ package services
 import (
 	"context"
 	"database/sql"
+	"github.com/stripe/stripe-go/v72"
 	"go-user-microservice/internal/app/user/domain"
+	userDto "go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
+	userErrors "go-user-microservice/internal/app/user/errors"
 	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/repositories"
 	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
@@ -42,11 +45,9 @@ func NewUserService(
 	}
 }
 
-func (s *User) SignUp(form *forms.SignUp) (*entities.User, error) {
-	var country *entites.Country
-	var checkError error
-	if country, checkError = s.checkUserDataWithCountryResponse(form); checkError != nil {
-		return nil, checkError
+func (s *User) SignUp(ctx context.Context, form *forms.SignUp) (*entities.User, error) {
+	if checkUserError := s.checkUserDataExistence(ctx, form.Login, form.Inn); checkUserError != nil {
+		return nil, checkUserError
 	}
 
 	stripeAccountData := &dto.StripeAccountCreate{
@@ -57,35 +58,29 @@ func (s *User) SignUp(form *forms.SignUp) (*entities.User, error) {
 	}
 	userEntity := &entities.User{}
 
+	country, countryError := s.checkCountry(ctx, form.Country)
+	if countryError != nil {
+		return nil, countryError
+	}
 	if country != nil {
 		userEntity.CountryID = sql.NullInt64{Int64: int64(country.ID), Valid: true}
 		stripeAccountData.Country = country.CodeTwo
 	}
+
 	accountResponse, customerResponse, e := s.stripeAccountService.Create(stripeAccountData)
 	if e != nil {
 		return nil, e
 	}
-	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
-	if e != nil {
-		return nil, e
+
+	if userError := s.createUser(ctx, userEntity, form, accountResponse, customerResponse); userError != nil {
+		return nil, userError
 	}
-	userEntity.Password = string(passwordHash)
-	userEntity.Login = form.Login
-	userEntity.Name = form.Name
-	userEntity.Inn = form.Inn
-	userEntity.AccountProviderID = accountResponse.ID
-	userEntity.CustomerProviderID = customerResponse.ID
-	if e = s.userRepository.Create(userEntity); e != nil {
-		return nil, e
-	}
-	if e = s.userRolesRepository.AddUserToRole(context.Background(), userEntity.ID, entities.UserRoleID); e != nil {
-		return nil, e
-	}
+
 	return userEntity, nil
 }
 
-func (s *User) SignIn(form *forms.SignIn) (*entities.User, error) {
-	userEntity, e := s.userRepository.GetUser(form.Login)
+func (s *User) SignIn(ctx context.Context, form *forms.SignIn) (*userDto.UserRole, error) {
+	userEntity, e := s.userRepository.GetUserWithRoles(ctx, form.Login)
 	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
 	if e != nil {
 		return nil, e
@@ -93,7 +88,7 @@ func (s *User) SignIn(form *forms.SignIn) (*entities.User, error) {
 	if userEntity == nil {
 		return nil, unAuthError
 	}
-	hashPasswordBytes := []byte(userEntity.Password)
+	hashPasswordBytes := []byte(userEntity.User.Password)
 	sourcePasswordBytes := []byte(form.Password)
 	if e = bcrypt.CompareHashAndPassword(hashPasswordBytes, sourcePasswordBytes); e != nil {
 		return nil, unAuthError
@@ -102,36 +97,58 @@ func (s *User) SignIn(form *forms.SignIn) (*entities.User, error) {
 	return userEntity, nil
 }
 
-func (s *User) checkUserDataWithCountryResponse(form *forms.SignUp) (*entites.Country, error) {
-	userExist, e := s.userRepository.UserExist(form.Login)
+func (s *User) checkUserDataExistence(ctx context.Context, login string, inn uint64) error {
+	userExist, e := s.userRepository.UserByInnOrLoginExist(ctx, login, inn)
 	if e != nil {
-		return nil, e
+		return e
 	}
 	if userExist {
-		return nil, status.Error(codes.AlreadyExists, errorlists.UserEmailAlreadyExist)
+		return userErrors.UserAlreadyExistErr
 	}
-	userInnExist, e := s.userRepository.UserByInnExist(form.Inn)
+	userRemoteExist, e := s.userRemoteServices.CheckRemoteUser(inn)
 	if e != nil {
-		return nil, e
-	}
-	if userInnExist {
-		return nil, status.Error(codes.AlreadyExists, errorlists.UserInnAlreadyExist)
-	}
-	userRemoteExist, e := s.userRemoteServices.CheckRemoteUser(form.Inn)
-	if e != nil {
-		return nil, e
+		return e
 	}
 	if !userRemoteExist {
-		return nil, status.Error(codes.NotFound, errorlists.UserNotFoundOnRemote)
+		return userErrors.RemoteInnNotFoundErr
 	}
-	if form.Country != "" {
+
+	return nil
+}
+
+func (s *User) checkCountry(ctx context.Context, countryCode string) (*entites.Country, error) {
+	if countryCode != "" {
 		var countryError error
 		var country *entites.Country
-		country, countryError = s.countryRepository.GetByCodeTwo(context.Background(), form.Country)
+		country, countryError = s.countryRepository.GetByCodeTwo(ctx, countryCode)
 		if countryError != nil {
 			return nil, countryError
 		}
 		return country, nil
 	}
 	return nil, nil
+}
+
+func (s *User) createUser(
+	ctx context.Context,
+	userEntity *entities.User,
+	form *forms.SignUp,
+	accountResponse *stripe.Account,
+	customerResponse *stripe.Customer,
+) error {
+	passwordHash, e := bcrypt.GenerateFromPassword([]byte(form.Password), bcrypt.DefaultCost)
+	if e != nil {
+		return e
+	}
+	userEntity.Password = string(passwordHash)
+	userEntity.Login = form.Login
+	userEntity.Name = form.Name
+	userEntity.Inn = form.Inn
+	userEntity.AccountProviderID = accountResponse.ID
+	userEntity.CustomerProviderID = customerResponse.ID
+	if e = s.userRepository.Create(ctx, userEntity); e != nil {
+		return e
+	}
+
+	return s.userRolesRepository.AddUserToRole(context.Background(), userEntity.ID, entities.UserRoleID)
 }

@@ -1,34 +1,32 @@
 package db
 
 import (
-	"github.com/jmoiron/sqlx"
-	"go-user-microservice/internal/pkg/errors"
+	"context"
+	"database/sql"
 )
 
 type TransactionHandlerDB struct {
-	dbConn *sqlx.DB
+	dbConn *sql.DB
 }
 
-func NewTransactionHandler(dbConn *sqlx.DB) *TransactionHandlerDB {
+func NewTransactionHandler(dbConn *sql.DB) *TransactionHandlerDB {
 	return &TransactionHandlerDB{
 		dbConn: dbConn,
 	}
 }
 
-func (t *TransactionHandlerDB) Create() *sqlx.Tx {
-	return t.dbConn.MustBegin()
+func (t *TransactionHandlerDB) Create(ctx context.Context, options *sql.TxOptions) (context.Context, *sql.Tx, error) {
+	tx, e := t.dbConn.BeginTx(ctx, options)
+	if e != nil {
+		return ctx, nil, e
+	}
+	return context.WithValue(ctx, CurrentTransaction, tx), tx, nil
 }
 
-func (t *TransactionHandlerDB) Commit(tx *sqlx.Tx) error {
-	if e := tx.Commit(); e != nil {
-		return errors.DatabaseError(e)
-	}
-	return nil
+func (t *TransactionHandlerDB) Commit(tx *sql.Tx) error {
+	return tx.Commit()
 }
 
-func (t *TransactionHandlerDB) Rollback(tx *sqlx.Tx) error {
-	if e := tx.Rollback(); e != nil {
-		return errors.DatabaseError(e)
-	}
-	return nil
+func (t *TransactionHandlerDB) Rollback(tx *sql.Tx) error {
+	return tx.Rollback()
 }

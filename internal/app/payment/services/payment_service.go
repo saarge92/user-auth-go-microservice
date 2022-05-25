@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 	cardDomain "go-user-microservice/internal/app/card/domain"
 	"go-user-microservice/internal/app/payment/domain"
@@ -23,7 +22,6 @@ type PaymentService struct {
 	cardRepository           cardDomain.CardRepository
 	walletRepository         walletDomain.WalletRepository
 	stripeChargeService      stripe.ChargeService
-	coreDB                   *sqlx.DB
 }
 
 func NewPaymentService(
@@ -31,14 +29,12 @@ func NewPaymentService(
 	walletRepository walletDomain.WalletRepository,
 	cardRepository cardDomain.CardRepository,
 	stripeChargeService stripe.ChargeService,
-	coreDB *sqlx.DB,
 ) *PaymentService {
 	return &PaymentService{
 		operationStoryRepository: operationStoryRepository,
 		walletRepository:         walletRepository,
 		cardRepository:           cardRepository,
 		stripeChargeService:      stripeChargeService,
-		coreDB:                   coreDB,
 	}
 }
 

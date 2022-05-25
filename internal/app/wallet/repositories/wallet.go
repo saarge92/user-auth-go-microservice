@@ -3,11 +3,15 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"github.com/Knetic/go-namedParameterQuery"
+	"github.com/blockloop/scan"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/wallet/dto"
 	"go-user-microservice/internal/app/wallet/entities"
+	walletErrors "go-user-microservice/internal/app/wallet/errors"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/errorlists"
 	customErrors "go-user-microservice/internal/pkg/errors"
@@ -16,30 +20,38 @@ import (
 )
 
 type WalletRepository struct {
-	db *sqlx.DB
+	databaseInstance database.Database
 }
 
-func NewWalletRepository(db *sqlx.DB) *WalletRepository {
+func NewWalletRepository(databaseInstance database.Database) *WalletRepository {
 	return &WalletRepository{
-		db: db,
+		databaseInstance: databaseInstance,
 	}
 }
 
 func (r *WalletRepository) Create(ctx context.Context, wallet *entities.Wallet) error {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	wallet.UpdatedAt = time.Now()
 	wallet.CreatedAt = time.Now()
 	wallet.ExternalID = uuid.New().String()
 	query := `INSERT INTO wallets(
                     currency_id, user_id, balance, 
                     external_id, is_default, created_at, updated_at)
-				VALUES (:currency_id, :user_id, :balance,
-				       :external_id, :is_default, :created_at, :updated_at)`
-	var result sql.Result
-	var dbError error
+				VALUES (:currencyId, :userId, :balance,
+				       :externalId, :isDefault, :createdAt, :updatedAt)`
 
-	result, dbError = dbConn.NamedExec(query, wallet)
+	queryNamed := namedParameterQuery.NewNamedParameterQuery(query)
+	insertParams := map[string]interface{}{
+		"currencyId": wallet.CurrencyID,
+		"userId":     wallet.UserID,
+		"balance":    wallet.Balance,
+		"externalId": wallet.ExternalID,
+		"isDefault":  wallet.IsDefault,
+		"createdAt":  wallet.CreatedAt,
+		"updatedAt":  wallet.UpdatedAt,
+	}
+	queryNamed.SetValuesFromMap(insertParams)
+	result, dbError := r.databaseInstance.ExecContext(ctx, queryNamed.GetParsedQuery(), queryNamed.GetParsedParameters()...)
+
 	if dbError != nil {
 		return dbError
 	}
@@ -49,18 +61,17 @@ func (r *WalletRepository) Create(ctx context.Context, wallet *entities.Wallet) 
 }
 
 func (r *WalletRepository) Exist(ctx context.Context, userID uint64, currencyID uint32) (bool, error) {
-	query := `SELECT * FROM wallets WHERE user_id = ? AND currency_id = ?`
-	wallet := &entities.Wallet{}
+	query := `SELECT COUNT(*) >  FROM wallets WHERE user_id = ? AND currency_id = ?`
+	var exist bool
 
-	dbConn := db.GetDBConnection(ctx, r.db)
-
-	if dbError := dbConn.Get(wallet, query, userID, currencyID); dbError != nil {
-		if dbError == sql.ErrNoRows {
+	if e := r.databaseInstance.QueryRowContext(ctx, query, userID, currencyID).Scan(&exist); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
 			return false, nil
 		}
-		return false, dbError
+		return false, customErrors.DatabaseError(e)
 	}
-	return true, nil
+
+	return exist, nil
 }
 
 func (r *WalletRepository) ByUserAndDefault(
@@ -68,32 +79,39 @@ func (r *WalletRepository) ByUserAndDefault(
 	userID uint64,
 	isDefault bool,
 ) (*entities.Wallet, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	query := `SELECT * FROM wallets WHERE user_id = ? AND is_default = ?`
 	wallet := &entities.Wallet{}
 
-	if dbError := dbConn.Get(wallet, query, userID, isDefault); dbError != nil {
-		if dbError == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, customErrors.DatabaseError(dbError)
+	walletRows, walletError := r.databaseInstance.QueryContext(ctx, query, userID, isDefault)
+	if walletError != nil {
+		return nil, customErrors.DatabaseError(walletError)
 	}
+
+	if e := scan.Row(wallet, walletRows); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, walletErrors.WalletNotFoundErr
+		}
+		return nil, customErrors.DatabaseError(e)
+	}
+
 	return wallet, nil
 }
 
 func (r *WalletRepository) UpdateStatusByUserID(ctx context.Context, userID uint64, isDefault bool) error {
 	query := `UPDATE wallets SET is_default = ? WHERE user_id = ?`
-	dbConn := db.GetDBConnection(ctx, r.db)
 
-	if _, dbError := dbConn.Exec(query, isDefault, userID); dbError != nil {
-		return dbError
+	result, dbError := r.databaseInstance.ExecContext(ctx, query, isDefault, userID)
+	if dbError != nil {
+		return customErrors.DatabaseError(dbError)
 	}
+	if countAffected, _ := result.LastInsertId(); countAffected == 0 {
+		return walletErrors.WalletNotFoundErr
+	}
+
 	return nil
 }
 
 func (r *WalletRepository) ListByUserID(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
 	query := `SELECT 
 				wallets.id "wallet.id",
        			wallets.external_id "wallet.external_id",
@@ -106,12 +124,18 @@ func (r *WalletRepository) ListByUserID(ctx context.Context, userID uint64) ([]d
 			`
 	var walletsCurrencies []dto.WalletCurrencyDto
 
-	if dbError := dbConn.Select(walletsCurrencies, query, userID); dbError != nil {
-		if dbError == sql.ErrNoRows {
+	walletRows, walletError := r.databaseInstance.QueryContext(ctx, query, userID)
+	if walletError != nil {
+		return nil, customErrors.DatabaseError(walletError)
+	}
+
+	if e := scan.Rows(walletsCurrencies, walletRows); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, dbError
+		return nil, customErrors.DatabaseError(e)
 	}
+
 	return walletsCurrencies, nil
 }
 
@@ -120,7 +144,6 @@ func (r *WalletRepository) OneByExternalIDAndUserID(
 	externalID string,
 	userID uint64,
 ) (*dto.WalletCurrencyDto, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
 	query := `SELECT 
 				wallets.id "wallet.id",
        			wallets.external_id "wallet.external_id",
@@ -133,25 +156,29 @@ func (r *WalletRepository) OneByExternalIDAndUserID(
 			`
 	walletWithCurrencyDto := new(dto.WalletCurrencyDto)
 
-	if dbError := dbConn.Get(walletWithCurrencyDto, query, userID, externalID); dbError != nil {
-		if dbError == sql.ErrNoRows {
-			return nil, customErrors.CustomDatabaseError(codes.NotFound, errorlists.WalletNotFound)
+	walletRow, walletError := r.databaseInstance.QueryContext(ctx, query, userID, externalID)
+	if walletError != nil {
+		return nil, customErrors.DatabaseError(walletError)
+	}
+
+	if e := scan.Row(walletWithCurrencyDto, walletRow); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, walletErrors.WalletNotFoundErr
 		}
-		return nil, customErrors.DatabaseError(dbError)
+		return nil, customErrors.DatabaseError(e)
 	}
 
 	return walletWithCurrencyDto, nil
 }
 
 func (r *WalletRepository) IncreaseBalanceByID(ctx context.Context, id uint64, amount decimal.Decimal) error {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	updatedAt := time.Now()
 	query := `UPDATE wallets SET balance = balance + ?,
 				updated_at = ? WHERE id = ?`
+
 	var dbError error
 	var result sql.Result
-	result, dbError = dbConn.Exec(query, amount, updatedAt, id)
+	result, dbError = r.databaseInstance.ExecContext(ctx, query, amount, updatedAt, id)
 
 	if dbError != nil {
 		return customErrors.DatabaseError(dbError)

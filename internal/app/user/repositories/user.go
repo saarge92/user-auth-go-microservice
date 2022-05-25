@@ -1,23 +1,29 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
-	"github.com/jmoiron/sqlx"
+	"errors"
+	"github.com/blockloop/scan"
+	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
+	"go-user-microservice/internal/pkg/database"
+	"go-user-microservice/internal/pkg/errorlists"
 	sharedErrors "go-user-microservice/internal/pkg/errors"
 	"go-user-microservice/internal/pkg/repositories"
+	"google.golang.org/grpc/codes"
 	"time"
 )
 
 type UserRepository struct {
-	db *sqlx.DB
+	databaseConnection database.Database
 }
 
-func NewUserRepository(db *sqlx.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewUserRepository(db database.Database) *UserRepository {
+	return &UserRepository{databaseConnection: db}
 }
 
-func (r *UserRepository) Create(user *entities.User) error {
+func (r *UserRepository) Create(ctx context.Context, user *entities.User) error {
 	now := time.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now
@@ -25,7 +31,7 @@ func (r *UserRepository) Create(user *entities.User) error {
     								customer_provider_id, created_at, updated_at)
 				VALUES (:name, :login, :inn, :password, :account_provider_id,
 				        	:customer_provider_id, :created_at, :updated_at)`
-	result, e := r.db.NamedExec(query, user)
+	result, e := r.databaseConnection.ExecContext(ctx, query, user)
 	if e != nil {
 		return e
 	}
@@ -33,64 +39,66 @@ func (r *UserRepository) Create(user *entities.User) error {
 	return nil
 }
 
-func (r *UserRepository) Update(user *entities.User) error {
-	now := time.Now()
-	user.UpdatedAt = now
-	query := `UPDATE users SET
-				login = :login, password = :password, name = :name, inn = :inn,
-				created_at = :created_at, updated_at = :updated_at, is_banned = :is_banned`
-	_, e := r.db.NamedExec(query, user)
-	if e != nil {
-		return e
-	}
-	return nil
-}
-
-func (r *UserRepository) UserExist(login string) (bool, error) {
+func (r *UserRepository) UserExist(ctx context.Context, login string) (bool, error) {
 	query := `SELECT * from users where users.login = ?`
 	var user = &entities.User{}
-	e := r.db.Get(user, query, login)
+	result, e := r.databaseConnection.QueryContext(ctx, query, login)
 	if e != nil {
-		if e == sql.ErrNoRows {
+		return false, sharedErrors.DatabaseError(e)
+	}
+
+	if e = scan.Row(user, result); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
 			return false, nil
 		}
 		return false, sharedErrors.DatabaseError(e)
 	}
+
 	return true, nil
 }
 
-func (r *UserRepository) GetUser(login string) (*entities.User, error) {
-	query := `SELECT * FROM users WHERE users.login = ?`
-	var user = &entities.User{}
-	if e := r.db.Get(user, query, login); e != nil {
-		if e == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, sharedErrors.DatabaseError(e)
+func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*dto.UserRole, error) {
+	queryUserSelect := `SELECT * FROM users where login = ?`
+	var user entities.User
+	userRow, userError := r.databaseConnection.QueryContext(ctx, queryUserSelect, login)
+	if userError != nil {
+		return nil, sharedErrors.DatabaseError(userError)
 	}
-	return user, nil
+	if e := scan.Row(user, userRow); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, sharedErrors.CustomDatabaseError(codes.NotFound, errorlists.UserNotFound)
+		}
+		return nil, sharedErrors.DatabaseError(userError)
+	}
+
+	queryRolesSelect := `SELECT * FROM roles INNER JOIN user_roles
+							ON user_roles.role_id = roles.id AND user_roles.user_id = ?`
+	var roles []entities.Role
+	roleRows, roleError := r.databaseConnection.QueryContext(ctx, queryRolesSelect, user.ID)
+	if roleError != nil {
+		return nil, sharedErrors.DatabaseError(roleError)
+	}
+	if e := scan.Rows(roles, roleRows); e != nil {
+		if !errors.Is(e, sql.ErrNoRows) {
+			return nil, sharedErrors.DatabaseError(e)
+		}
+	}
+	return &dto.UserRole{
+		User:  user,
+		Roles: roles,
+	}, nil
 }
 
-func (r *UserRepository) UserByInnExist(inn uint64) (bool, error) {
-	query := `SELECT * FROM users WHERE users.inn = ?`
-	user := &entities.User{}
-	if e := r.db.Get(user, query, inn); e != nil {
-		if e == sql.ErrNoRows {
+func (r *UserRepository) UserByInnOrLoginExist(ctx context.Context, login string, inn uint64) (bool, error) {
+	query := `SELECT COUNT(*) > 0 FROM users WHERE login = ? OR inn = ?`
+	var exist bool
+
+	if e := r.databaseConnection.QueryRowContext(ctx, query, login, inn).Scan(&exist); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
 			return false, nil
 		}
 		return false, sharedErrors.DatabaseError(e)
 	}
-	return true, nil
-}
 
-func (r *UserRepository) UserByID(id uint64) (*entities.User, error) {
-	query := `SELECT * FROM users WHERE users.id = ?`
-	user := &entities.User{}
-	if e := r.db.Get(user, query, id); e != nil {
-		if e == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, sharedErrors.DatabaseError(e)
-	}
-	return user, nil
+	return exist, nil
 }

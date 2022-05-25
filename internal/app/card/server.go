@@ -31,13 +31,17 @@ func (s *GrpcServerCard) CreateCard(
 	request *core.CreateCardRequest,
 ) (response *core.CreateCardResponse, e error) {
 	cardForm := s.cardFormBuilder.CreateCreateForm(request)
-	if e := cardForm.Validate(); e != nil {
-		return nil, e
+	if e = cardForm.Validate(); e != nil {
+		return
 	}
 
-	ctx, transactionFunc := db.MakeConnectionContext(ctx, s.transactionHandler)
+	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
+	if e != nil {
+		return
+	}
+
 	defer func() {
-		e = transactionFunc(e)
+		e = db.HandleTransaction(tx, e)
 	}()
 
 	cardInfo, e := s.cardService.Create(ctx, cardForm)

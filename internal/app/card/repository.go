@@ -3,51 +3,68 @@ package card
 import (
 	"context"
 	"database/sql"
-	"github.com/jmoiron/sqlx"
+	"errors"
+	"github.com/Knetic/go-namedParameterQuery"
+	"github.com/blockloop/scan"
 	"go-user-microservice/internal/app/card/entities"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/db"
-	"go-user-microservice/internal/pkg/errorlists"
-	"go-user-microservice/internal/pkg/errors"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"time"
 )
 
 type RepositoryCard struct {
-	db *sqlx.DB
+	databaseInstance database.Database
 }
 
-func NewRepositoryCard(db *sqlx.DB) *RepositoryCard {
-	return &RepositoryCard{db: db}
+func NewRepositoryCard(databaseInstance database.Database) *RepositoryCard {
+	return &RepositoryCard{databaseInstance: databaseInstance}
 }
 
 func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error {
-	dbConn := db.GetDBConnection(ctx, r.db)
 	now := time.Now()
 	card.CreatedAt = now
 	card.UpdatedAt = now
 	query := `INSERT INTO cards (
                 user_id, is_default, number, external_provider_id, external_id,
                 expire_month, expire_year, created_at, updated_at)
-				VALUES (:user_id, :is_default, :number, :external_provider_id, :external_id,
-				     	:expire_month, :expire_year, :created_at, :updated_at)`
+				VALUES (:userId, :isDefault, :number, :externalProviderId, :externalId,
+				     	:expireMonth, :expireYear, :createdAt, :updatedAt)`
 
-	var result sql.Result
-	var dbError error
-	result, dbError = dbConn.NamedExec(query, card)
+	queryNamed := namedParameterQuery.NewNamedParameterQuery(query)
+	insertParams := map[string]interface{}{
+		"userId":             card.UserID,
+		"isDefault":          card.IsDefault,
+		"number":             card.Number,
+		"externalProviderId": card.ExternalProviderID,
+		"externalId":         card.ExternalID,
+		"expireMonth":        card.ExpireMonth,
+		"expireYear":         card.ExpireYear,
+		"cratedAt":           card.CreatedAt,
+		"updatedAt":          card.UpdatedAt,
+	}
+	queryNamed.SetValuesFromMap(insertParams)
+	result, dbError := r.databaseInstance.ExecContext(ctx, queryNamed.GetParsedQuery(), queryNamed.GetParsedParameters()...)
 	if dbError != nil {
 		return dbError
 	}
+
 	card.ID = uint64(db.LastInsertID(result))
 	return nil
 }
 
 func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]entities.Card, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	query := `SELECT * FROM cards WHERE user_id = ?`
 	var cards []entities.Card
-	if e := dbConn.Select(&cards, query, userID); e != nil {
+
+	cardRows, cardError := r.databaseInstance.QueryContext(ctx, query, userID)
+	if cardError != nil {
+		return nil, cardError
+	}
+
+	if e := scan.Rows(cards, cardRows); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, e
 	}
 
@@ -59,16 +76,18 @@ func (r *RepositoryCard) OneByCardAndUserID(
 	externalID string,
 	userID uint64,
 ) (*entities.Card, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	query := `SELECT * FROM cards WHERE external_id = ? AND user_id = ?`
 	card := new(entities.Card)
 
-	if e := dbConn.Get(card, query, externalID, userID); e != nil {
-		if e == sql.ErrNoRows {
-			return nil, status.Error(codes.NotFound, errorlists.CardNotFound)
+	cardRow, cardError := r.databaseInstance.QueryContext(ctx, query, externalID, userID)
+	if cardError != nil {
+		return nil, cardError
+	}
+
+	if e := scan.Row(card, cardRow); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, CardNotFoundErr
 		}
-		return nil, errors.DatabaseError(e)
 	}
 
 	return card, nil

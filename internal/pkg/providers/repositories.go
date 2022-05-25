@@ -25,15 +25,16 @@ type RepositoryProvider struct {
 }
 
 func NewRepositoryProvider(dbConnectionProvider providers.DatabaseConnectionProvider) *RepositoryProvider {
-	mainDBConnection := dbConnectionProvider.GetCoreConnection()
+	mainDBWrapper := dbConnectionProvider.GetCoreConnection()
+
 	return &RepositoryProvider{
-		userRepository:           repositories.NewUserRepository(mainDBConnection),
-		currencyRepository:       sharedRepositories.NewCurrencyRepository(mainDBConnection),
-		walletRepository:         walletRepositories.NewWalletRepository(mainDBConnection),
-		countryRepository:        sharedRepositories.NewCountryRepository(mainDBConnection),
-		cardRepository:           card.NewRepositoryCard(mainDBConnection),
-		operationStoryRepository: paymentRepositories.NewOperationStoryRepository(mainDBConnection),
-		roleRepository:           repositories.NewRoleRepository(mainDBConnection),
+		userRepository:           repositories.NewUserRepository(mainDBWrapper),
+		currencyRepository:       sharedRepositories.NewCurrencyRepository(mainDBWrapper),
+		walletRepository:         walletRepositories.NewWalletRepository(mainDBWrapper),
+		countryRepository:        sharedRepositories.NewCountryRepository(mainDBWrapper),
+		cardRepository:           card.NewRepositoryCard(mainDBWrapper),
+		operationStoryRepository: paymentRepositories.NewOperationStoryRepository(mainDBWrapper),
+		roleRepository:           repositories.NewRoleRepository(mainDBWrapper),
 	}
 }
 

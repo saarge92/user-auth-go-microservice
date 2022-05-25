@@ -29,7 +29,7 @@ func (s *UserAuthContextService) VerifyUserFromRequest(ctx context.Context) (con
 		if len(tokenInfo) == 0 {
 			return nil, authError
 		}
-		userData, e := s.jwtService.VerifyTokenAndReturnUser(tokenInfo[0])
+		userData, e := s.jwtService.VerifyTokenAndReturnUser(ctx, tokenInfo[0])
 		if e != nil {
 			return nil, e
 		}

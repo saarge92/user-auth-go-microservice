@@ -3,35 +3,39 @@ package repositories
 import (
 	"context"
 	"database/sql"
-	"github.com/jmoiron/sqlx"
-	"go-user-microservice/internal/pkg/db"
+	"errors"
+	"github.com/blockloop/scan"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/entites"
 	"go-user-microservice/internal/pkg/errorlists"
-	"go-user-microservice/internal/pkg/errors"
-	"google.golang.org/grpc/codes"
+	sharedErrors "go-user-microservice/internal/pkg/errors"
 )
 
 type CountryRepository struct {
-	db *sqlx.DB
+	databaseInstance database.Database
 }
 
-func NewCountryRepository(db *sqlx.DB) *CountryRepository {
+func NewCountryRepository(databaseInstance database.Database) *CountryRepository {
 	return &CountryRepository{
-		db: db,
+		databaseInstance: databaseInstance,
 	}
 }
 
 func (r *CountryRepository) GetByCodeTwo(ctx context.Context, code string) (*entites.Country, error) {
-	dbConn := db.GetDBConnection(ctx, r.db)
-
 	query := `SELECT * from countries WHERE code_2 = ?`
 	country := &entites.Country{}
 
-	if dbError := dbConn.Get(country, query, code); dbError != nil {
-		if dbError == sql.ErrNoRows {
-			return nil, errors.CustomDatabaseError(codes.NotFound, errorlists.CountryNotFound)
-		}
-		return nil, errors.DatabaseError(dbError)
+	countryRow, countryError := r.databaseInstance.QueryContext(ctx, query, code)
+	if countryError != nil {
+		return nil, sharedErrors.DatabaseError(countryError)
 	}
+
+	if e := scan.Row(country, countryRow); e != nil {
+		if errors.Is(e, sql.ErrNoRows) {
+			return nil, errorlists.CountryNotFoundErr
+		}
+		return nil, sharedErrors.DatabaseError(e)
+	}
+
 	return country, nil
 }

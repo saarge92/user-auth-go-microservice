@@ -27,6 +27,7 @@ func NewGrpcServerProvider(
 	)
 	userGrpcServer := user.NewUserGrpcServer(
 		serviceProvider.AuthService(),
+		transactionHandler,
 	)
 	cardGrpcServer := card.NewGrpcServerCard(
 		&forms.CardFormBuilder{},

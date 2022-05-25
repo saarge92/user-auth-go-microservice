@@ -5,7 +5,6 @@ const (
 	RemoteServerBadAuthorization = "remote server bad request"
 	UserNotFound                 = "user not found"
 	TokenInvalid                 = "token is invalid"
-	UserEmailAlreadyExist        = "user already exist"
 	UserInnAlreadyExist          = "user inn already exists"
 	NoInnDataRemote              = "inn data not found"
 	CurrencyNotFound             = "currency not found"

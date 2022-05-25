@@ -80,6 +80,6 @@ func CreateTestServer(
 		if e := mainConnection.Close(); e != nil {
 			log.Error(e)
 		}
-		log.Infof("Connection closed: %s", mainConnection.DriverName())
+		log.Infof("Connection closed: %s", mainConnection.Driver())
 	}
 }

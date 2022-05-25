@@ -29,9 +29,12 @@ func (s *GrpcServerPayment) Deposit(
 	ctx context.Context,
 	request *core.DepositRequest,
 ) (response *core.DepositResponse, e error) {
-	ctx, handleFunc := db.MakeConnectionContext(ctx, s.transactionHandler)
+	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
+	if e != nil {
+		return nil, e
+	}
 	defer func() {
-		e = handleFunc(e)
+		e = db.HandleTransaction(tx, e)
 	}()
 
 	depositInfo := &form.Deposit{DepositRequest: request}

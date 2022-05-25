@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/entities"
@@ -22,20 +21,17 @@ type WalletService struct {
 	walletRepository   walletDomain.WalletRepository
 	userRepository     domain.UserRepository
 	currencyRepository repositoryInterface.CurrencyRepository
-	coreDB             *sqlx.DB
 }
 
 func NewWalletService(
 	walletRepository walletDomain.WalletRepository,
 	userRepository domain.UserRepository,
 	currencyRepository repositoryInterface.CurrencyRepository,
-	coreDB *sqlx.DB,
 ) *WalletService {
 	return &WalletService{
 		walletRepository:   walletRepository,
 		userRepository:     userRepository,
 		currencyRepository: currencyRepository,
-		coreDB:             coreDB,
 	}
 }
 

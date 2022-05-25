@@ -1,7 +1,11 @@
 package providers
 
-import "github.com/jmoiron/sqlx"
+import (
+	"database/sql"
+	"go-user-microservice/internal/pkg/database"
+)
 
 type DatabaseConnectionProvider interface {
-	GetCoreConnection() *sqlx.DB
+	GetCoreConnection() *sql.DB
+	GetCoreDatabaseWrapper() database.Database
 }

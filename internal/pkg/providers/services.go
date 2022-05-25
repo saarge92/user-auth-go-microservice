@@ -57,7 +57,6 @@ func NewServiceProvider(
 		repositoryProvider.WalletRepository(),
 		repositoryProvider.UserRepository(),
 		repositoryProvider.CurrencyRepository(),
-		dbConnectionProvider.GetCoreConnection(),
 	)
 	userAuthContextService := userServices.NewUserAuthContextService(jwtService)
 	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), stripeServiceProvider.Card())
@@ -66,7 +65,6 @@ func NewServiceProvider(
 		repositoryProvider.WalletRepository(),
 		repositoryProvider.CardRepository(),
 		stripeServiceProvider.Charge(),
-		dbConnectionProvider.GetCoreConnection(),
 	)
 	return &ServiceProvider{
 		accountStripeService:   stripeServiceProvider.Account(),

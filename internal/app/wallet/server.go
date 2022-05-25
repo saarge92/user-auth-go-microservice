@@ -33,9 +33,9 @@ func (s *GrpcWalletServer) CreateWallet(
 		return nil, e
 	}
 
-	ctx, handleFunc := db.MakeConnectionContext(ctx, s.transactionHandler)
+	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
 	defer func() {
-		e = handleFunc(e)
+		e = db.HandleTransaction(tx, e)
 	}()
 
 	walletEntity, e := s.walletService.Create(ctx, walletCreateForm)

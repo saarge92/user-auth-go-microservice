@@ -3,8 +3,8 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	config2 "go-user-microservice/internal/pkg/config"
-	errorlists2 "go-user-microservice/internal/pkg/errorlists"
+	sharedConfig "go-user-microservice/internal/pkg/config"
+	sharedErrors "go-user-microservice/internal/pkg/errorlists"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io/ioutil"
@@ -13,11 +13,11 @@ import (
 )
 
 type RemoteUser struct {
-	config     *config2.Config
+	config     *sharedConfig.Config
 	httpClient *http.Client
 }
 
-func NewRemoteUserService(config *config2.Config) *RemoteUser {
+func NewRemoteUserService(config *sharedConfig.Config) *RemoteUser {
 	return &RemoteUser{
 		config:     config,
 		httpClient: &http.Client{},
@@ -64,7 +64,7 @@ func (s *RemoteUser) CheckRemoteUser(inn uint64) (r bool, e error) {
 		return false, nil
 	}
 	if response.StatusCode == http.StatusBadRequest {
-		errorResponse := status.Error(codes.PermissionDenied, errorlists2.RemoteServerBadAuthorization)
+		errorResponse := status.Error(codes.PermissionDenied, sharedErrors.RemoteServerBadAuthorization)
 		return false, errorResponse
 	}
 	responseBody, e := ioutil.ReadAll(response.Body)
@@ -76,7 +76,7 @@ func (s *RemoteUser) CheckRemoteUser(inn uint64) (r bool, e error) {
 		return false, e
 	}
 	if isVerified := s.verifyResponse(responseMap); !isVerified {
-		return false, status.Error(codes.NotFound, errorlists2.NoInnDataRemote)
+		return false, status.Error(codes.NotFound, sharedErrors.NoInnDataRemote)
 	}
 	return true, nil
 }
