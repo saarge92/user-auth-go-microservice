@@ -7,6 +7,7 @@ import (
 	"github.com/Knetic/go-namedParameterQuery"
 	"github.com/blockloop/scan"
 	"go-user-microservice/internal/app/card/entities"
+	errors2 "go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/db"
 	"time"
@@ -39,7 +40,7 @@ func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error 
 		"externalId":         card.ExternalID,
 		"expireMonth":        card.ExpireMonth,
 		"expireYear":         card.ExpireYear,
-		"cratedAt":           card.CreatedAt,
+		"createdAt":          card.CreatedAt,
 		"updatedAt":          card.UpdatedAt,
 	}
 	queryNamed.SetValuesFromMap(insertParams)
@@ -61,7 +62,7 @@ func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]ent
 		return nil, cardError
 	}
 
-	if e := scan.Rows(cards, cardRows); e != nil {
+	if e := scan.Rows(&cards, cardRows); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
 			return nil, nil
 		}
@@ -86,9 +87,22 @@ func (r *RepositoryCard) OneByCardAndUserID(
 
 	if e := scan.Row(card, cardRow); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
-			return nil, CardNotFoundErr
+			return nil, errors2.ErrCardNotFound
 		}
 	}
 
 	return card, nil
+}
+
+func (r *RepositoryCard) ExistByCardNumber(ctx context.Context, cardNumber string) (bool, error) {
+	query := "SELECT COUNT(*) > 0 FROM cards WHERE number = ?"
+	var exist bool
+	if e := r.databaseInstance.QueryRowContext(ctx, query, cardNumber).Scan(&exist); e != nil {
+		if !errors.Is(e, sql.ErrNoRows) {
+			return false, e
+		}
+		return false, nil
+	}
+
+	return exist, nil
 }

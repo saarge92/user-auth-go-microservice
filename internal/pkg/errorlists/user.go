@@ -15,6 +15,5 @@ const (
 	ConvertError                 = "convert error for %s"
 	MustBeMore                   = "%s should be more %d"
 	MustBeLess                   = "%s should be less %d"
-	CardNotFound                 = "card not found"
 	WalletNotFound               = "wallet not found"
 )
