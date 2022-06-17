@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/Knetic/go-namedParameterQuery"
 	"github.com/blockloop/scan"
 	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
@@ -29,9 +30,21 @@ func (r *UserRepository) Create(ctx context.Context, user *entities.User) error 
 	user.UpdatedAt = now
 	query := `INSERT INTO users (name, login, inn, password, account_provider_id,
     								customer_provider_id, created_at, updated_at)
-				VALUES (:name, :login, :inn, :password, :account_provider_id,
-				        	:customer_provider_id, :created_at, :updated_at)`
-	result, e := r.databaseConnection.ExecContext(ctx, query, user)
+				VALUES (:name, :login, :inn, :password, :accountProviderId,
+				        	:customerProviderId, :createdAt, :updatedAt)`
+	queryNamed := namedParameterQuery.NewNamedParameterQuery(query)
+	insertParams := map[string]interface{}{
+		"name":               user.Name,
+		"login":              user.Login,
+		"inn":                user.Inn,
+		"password":           user.Password,
+		"accountProviderId":  user.AccountProviderID,
+		"customerProviderId": user.CustomerProviderID,
+		"createdAt":          user.CreatedAt,
+		"updatedAt":          user.UpdatedAt,
+	}
+	queryNamed.SetValuesFromMap(insertParams)
+	result, e := r.databaseConnection.ExecContext(ctx, queryNamed.GetParsedQuery(), queryNamed.GetParsedParameters()...)
 	if e != nil {
 		return e
 	}
@@ -59,7 +72,7 @@ func (r *UserRepository) UserExist(ctx context.Context, login string) (bool, err
 
 func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*dto.UserRole, error) {
 	queryUserSelect := `SELECT * FROM users where login = ?`
-	var user entities.User
+	user := new(entities.User)
 	userRow, userError := r.databaseConnection.QueryContext(ctx, queryUserSelect, login)
 	if userError != nil {
 		return nil, sharedErrors.DatabaseError(userError)
@@ -78,13 +91,13 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 	if roleError != nil {
 		return nil, sharedErrors.DatabaseError(roleError)
 	}
-	if e := scan.Rows(roles, roleRows); e != nil {
+	if e := scan.Rows(&roles, roleRows); e != nil {
 		if !errors.Is(e, sql.ErrNoRows) {
 			return nil, sharedErrors.DatabaseError(e)
 		}
 	}
 	return &dto.UserRole{
-		User:  user,
+		User:  *user,
 		Roles: roles,
 	}, nil
 }

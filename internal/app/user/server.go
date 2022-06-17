@@ -30,12 +30,12 @@ func (s *GrpcUserServer) Signup(
 	request *core.SignUpMessage,
 ) (signupResponse *core.SignUpResponse, e error) {
 	formRequest := &forms.SignUp{SignUpMessage: request}
-	if e := formRequest.Validate(); e != nil {
+	if e = formRequest.Validate(); e != nil {
 		return nil, e
 	}
 	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
 	if e != nil {
-		return nil, e
+		return
 	}
 	defer func() {
 		e = db.HandleTransaction(tx, e)
