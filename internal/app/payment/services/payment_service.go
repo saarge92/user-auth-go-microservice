@@ -45,16 +45,16 @@ func (s *PaymentService) Deposit(
 ) (operationStory *entities.OperationStory, e error) {
 	defer close(syncChannel)
 
-	user, e := grpc.GetUserFromContext(ctx)
+	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, e
 	}
 
-	card, e := s.cardRepository.OneByCardAndUserID(ctx, depositInfo.CardExternalId, user.ID)
+	card, e := s.cardRepository.OneByCardAndUserID(ctx, depositInfo.CardExternalId, userRoleDto.User.ID)
 	if e != nil {
 		return nil, e
 	}
-	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(ctx, depositInfo.WalletExternalId, user.ID)
+	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(ctx, depositInfo.WalletExternalId, userRoleDto.User.ID)
 	if e != nil {
 		return nil, e
 	}
@@ -66,7 +66,7 @@ func (s *PaymentService) Deposit(
 		Amount:     amount,
 		Currency:   walletWithCurrencyDto.Currency.Code,
 		CardID:     card.ExternalProviderID,
-		CustomerID: user.CustomerProviderID,
+		CustomerID: userRoleDto.User.CustomerProviderID,
 	}
 	chargeResponse, e := s.stripeChargeService.CardCharge(cardChargeDto)
 	if e != nil {
@@ -76,7 +76,7 @@ func (s *PaymentService) Deposit(
 	balanceAfter := walletWithCurrencyDto.Balance.Add(amount)
 	operationStory = &entities.OperationStory{
 		Amount:             amount,
-		UserID:             user.ID,
+		UserID:             userRoleDto.User.ID,
 		OperationTypeID:    operationType,
 		CardID:             card.ID,
 		BalanceBefore:      walletWithCurrencyDto.Balance,
@@ -93,14 +93,14 @@ func (s *PaymentService) List(
 	ctx context.Context,
 	request *form.ListPayment,
 ) (response []paymentDto.OperationStory, count int64, e error) {
-	user, e := grpc.GetUserFromContext(ctx)
+	user, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, 0, e
 	}
 
 	operationType := transformers.FromGRPCOperationType(request.OperationType)
 	paymentFilter := &filter.OperationStoryFilter{
-		UserID:        user.ID,
+		UserID:        user.User.ID,
 		OperationType: operationType,
 		Pagination: sharedFilter.Pagination{
 			Page:    request.Pagination.Page,

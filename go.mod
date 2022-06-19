@@ -4,9 +4,9 @@ go 1.16
 
 require (
 	github.com/DATA-DOG/go-txdb v0.1.4
-	github.com/Knetic/go-namedParameterQuery v0.0.0-20150709205813-b7327e472dfd // indirect
+	github.com/Knetic/go-namedParameterQuery v0.0.0-20150709205813-b7327e472dfd
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/blockloop/scan v1.3.0 // indirect
+	github.com/blockloop/scan v1.3.0
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
