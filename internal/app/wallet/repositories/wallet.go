@@ -61,7 +61,7 @@ func (r *WalletRepository) Create(ctx context.Context, wallet *entities.Wallet) 
 }
 
 func (r *WalletRepository) Exist(ctx context.Context, userID uint64, currencyID uint32) (bool, error) {
-	query := `SELECT COUNT(*) >  FROM wallets WHERE user_id = ? AND currency_id = ?`
+	query := `SELECT COUNT(*) > 0 FROM wallets WHERE user_id = ? AND currency_id = ?`
 	var exist bool
 
 	if e := r.databaseInstance.QueryRowContext(ctx, query, userID, currencyID).Scan(&exist); e != nil {
@@ -74,15 +74,14 @@ func (r *WalletRepository) Exist(ctx context.Context, userID uint64, currencyID 
 	return exist, nil
 }
 
-func (r *WalletRepository) ByUserAndDefault(
+func (r *WalletRepository) DefaultWalletByUser(
 	ctx context.Context,
 	userID uint64,
-	isDefault bool,
 ) (*entities.Wallet, error) {
 	query := `SELECT * FROM wallets WHERE user_id = ? AND is_default = ?`
 	wallet := &entities.Wallet{}
 
-	walletRows, walletError := r.databaseInstance.QueryContext(ctx, query, userID, isDefault)
+	walletRows, walletError := r.databaseInstance.QueryContext(ctx, query, userID, true)
 	if walletError != nil {
 		return nil, customErrors.DatabaseError(walletError)
 	}
@@ -97,7 +96,7 @@ func (r *WalletRepository) ByUserAndDefault(
 	return wallet, nil
 }
 
-func (r *WalletRepository) UpdateStatusByUserID(ctx context.Context, userID uint64, isDefault bool) error {
+func (r *WalletRepository) SetAsDefaultForUserWallet(ctx context.Context, userID uint64, isDefault bool) error {
 	query := `UPDATE wallets SET is_default = ? WHERE user_id = ?`
 
 	result, dbError := r.databaseInstance.ExecContext(ctx, query, isDefault, userID)

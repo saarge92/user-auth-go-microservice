@@ -99,7 +99,7 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 			return nil, sharedErrors.DatabaseError(e)
 		}
 	}
-	
+
 	return &dto.UserRole{
 		User:  *user,
 		Roles: roles,

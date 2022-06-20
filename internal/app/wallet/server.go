@@ -33,18 +33,17 @@ func (s *GrpcWalletServer) CreateWallet(
 		return nil, e
 	}
 
-	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
-	defer func() {
-		e = db.HandleTransaction(tx, e)
-	}()
+	typedTransactionHandler := db.NewTypedTransaction[*core.CreateWalletResponse](s.transactionHandler)
 
-	walletEntity, e := s.walletService.Create(ctx, walletCreateForm)
-	if e != nil {
-		return nil, e
-	}
-	return &core.CreateWalletResponse{
-		ExternalId: walletEntity.ExternalID,
-	}, nil
+	return typedTransactionHandler.WithCtx(ctx, func(ctx context.Context) (*core.CreateWalletResponse, error) {
+		walletEntity, e := s.walletService.Create(ctx, walletCreateForm)
+		if e != nil {
+			return nil, e
+		}
+		return &core.CreateWalletResponse{
+			ExternalId: walletEntity.ExternalID,
+		}, nil
+	})
 }
 
 func (s *GrpcWalletServer) MyWallets(
