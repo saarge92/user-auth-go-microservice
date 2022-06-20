@@ -9,5 +9,5 @@ import (
 
 type WalletService interface {
 	Create(ctx context.Context, form *forms.WalletCreateForm) (*entities.Wallet, error)
-	Wallets(ctx context.Context) ([]dto.WalletCurrencyDto, error)
+	MyWallets(ctx context.Context) ([]dto.WalletCurrencyDto, error)
 }

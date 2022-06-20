@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/DATA-DOG/go-txdb v0.1.4
 	github.com/Knetic/go-namedParameterQuery v0.0.0-20150709205813-b7327e472dfd
-	github.com/blockloop/scan v1.3.0
+	github.com/blockloop/scan v1.3.1-0.20210531141646-16d5f0a94700
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible

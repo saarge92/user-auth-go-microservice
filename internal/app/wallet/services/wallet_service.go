@@ -5,12 +5,10 @@ import (
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/user/domain"
 	userDto "go-user-microservice/internal/app/user/dto"
-	"go-user-microservice/internal/app/user/entities"
 	walletDomain "go-user-microservice/internal/app/wallet/domain"
 	"go-user-microservice/internal/app/wallet/dto"
 	walletEntities "go-user-microservice/internal/app/wallet/entities"
 	"go-user-microservice/internal/app/wallet/forms"
-	"go-user-microservice/internal/pkg/dictionary"
 	repositoryInterface "go-user-microservice/internal/pkg/domain/repositories"
 	sharedEntities "go-user-microservice/internal/pkg/entites"
 	"go-user-microservice/internal/pkg/errorlists"
@@ -57,13 +55,14 @@ func (s *WalletService) Create(
 	return s.initWallet(ctx, currency.ID, userData.ID, form.IsDefault)
 }
 
-func (s *WalletService) Wallets(ctx context.Context) ([]dto.WalletCurrencyDto, error) {
-	var user *entities.User
-	var ok bool
-	if user, ok = ctx.Value(dictionary.User).(*entities.User); !ok {
-		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
+func (s *WalletService) MyWallets(ctx context.Context) ([]dto.WalletCurrencyDto, error) {
+	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+	if e != nil {
+		return nil, e
 	}
-	wallets, e := s.walletRepository.ListByUserID(ctx, user.ID)
+
+	userData := userRoleDto.User
+	wallets, e := s.walletRepository.ListByUserID(ctx, userData.ID)
 	if e != nil {
 		return nil, e
 	}

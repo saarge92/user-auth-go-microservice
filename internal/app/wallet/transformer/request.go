@@ -8,11 +8,12 @@ import (
 func WalletsDtoToGrpc(walletsDto []dto.WalletCurrencyDto) *core.WalletsResponse {
 	walletsResponse := make([]*core.Wallet, 0, len(walletsDto))
 	for _, walletDto := range walletsDto {
+		walletInstance := walletDto.Wallet
 		walletResponseElement := &core.Wallet{
-			ExternalId: walletDto.ExternalID,
-			Currency:   walletDto.Code,
-			Balance:    walletDto.Balance.String(),
-			IsDefault:  walletDto.IsDefault,
+			ExternalId: walletInstance.ExternalID,
+			Currency:   walletDto.Currency.Code,
+			Balance:    walletInstance.Balance.String(),
+			IsDefault:  walletInstance.IsDefault,
 		}
 		walletsResponse = append(walletsResponse, walletResponseElement)
 	}

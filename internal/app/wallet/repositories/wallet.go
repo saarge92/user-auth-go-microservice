@@ -128,7 +128,7 @@ func (r *WalletRepository) ListByUserID(ctx context.Context, userID uint64) ([]d
 		return nil, customErrors.DatabaseError(walletError)
 	}
 
-	if e := scan.Rows(walletsCurrencies, walletRows); e != nil {
+	if e := scan.Rows(&walletsCurrencies, walletRows); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
 			return nil, nil
 		}

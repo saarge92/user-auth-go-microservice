@@ -50,7 +50,7 @@ func (s *GrpcWalletServer) MyWallets(
 	ctx context.Context,
 	_ *core.MyWalletsRequest,
 ) (*core.WalletsResponse, error) {
-	wallets, e := s.walletService.Wallets(ctx)
+	wallets, e := s.walletService.MyWallets(ctx)
 	if e != nil {
 		return nil, e
 	}

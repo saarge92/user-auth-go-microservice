@@ -73,13 +73,14 @@ func (s *PaymentService) Deposit(
 		return nil, e
 	}
 	operationType := entities.DepositOperationType
-	balanceAfter := walletWithCurrencyDto.Balance.Add(amount)
+	walletInstance := walletWithCurrencyDto.Wallet
+	balanceAfter := walletInstance.Balance.Add(amount)
 	operationStory = &entities.OperationStory{
 		Amount:             amount,
 		UserID:             userRoleDto.User.ID,
 		OperationTypeID:    operationType,
 		CardID:             card.ID,
-		BalanceBefore:      walletWithCurrencyDto.Balance,
+		BalanceBefore:      walletInstance.Balance,
 		BalanceAfter:       balanceAfter,
 		ExternalProviderID: chargeResponse.ID,
 	}
