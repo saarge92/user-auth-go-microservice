@@ -25,18 +25,30 @@ func NewAuthService(
 func (s *Auth) SignUp(
 	ctx context.Context,
 	formRequest *forms.SignUp,
-	signUpResponseChannel chan<- interface{},
 ) (*entities.User, string, error) {
-	userEntity, e := s.UserService.SignUp(ctx, formRequest)
-	defer close(signUpResponseChannel)
+	chanResponse := make(chan struct{})
+	var userEntity *entities.User
+	var e error
+	var token string
+
+	go func() {
+		defer func() { chanResponse <- struct{}{} }()
+		userEntity, e = s.UserService.SignUp(ctx, formRequest)
+		if e != nil {
+			return
+		}
+
+		token, e = s.jwtService.CreateToken(userEntity.Login)
+		if e != nil {
+			return
+		}
+	}()
+	<-chanResponse
+
 	if e != nil {
 		return nil, "", e
 	}
 
-	token, e := s.jwtService.CreateToken(userEntity.Login)
-	if e != nil {
-		return nil, "", e
-	}
 	return userEntity, token, nil
 }
 

@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"go-user-microservice/internal/app/user/dto"
-	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/internal/pkg/db"
@@ -33,29 +32,19 @@ func (s *GrpcUserServer) Signup(
 	if e = formRequest.Validate(); e != nil {
 		return nil, e
 	}
-	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
-	if e != nil {
-		return
-	}
-	defer func() {
-		e = db.HandleTransaction(tx, e)
-	}()
 
-	channelResponse := make(chan interface{})
-	var userResponse *entities.User
-	var tokenResponse string
-	var errorResponse error
-	go func() {
-		userResponse, tokenResponse, errorResponse = s.authService.SignUp(ctx, formRequest, channelResponse)
-	}()
-	<-channelResponse
-	if errorResponse != nil {
-		return nil, errorResponse
-	}
-	return &core.SignUpResponse{
-		Id:    userResponse.ID,
-		Token: tokenResponse,
-	}, nil
+	transactionHandler := db.NewTypedTransaction[*core.SignUpResponse](s.transactionHandler)
+
+	return transactionHandler.WithCtx(ctx, func(ctx context.Context) (*core.SignUpResponse, error) {
+		userResponse, tokenResponse, errorResponse := s.authService.SignUp(ctx, formRequest)
+		if errorResponse != nil {
+			return nil, errorResponse
+		}
+		return &core.SignUpResponse{
+			Id:    userResponse.ID,
+			Token: tokenResponse,
+		}, nil
+	})
 }
 
 func (s *GrpcUserServer) VerifyToken(
