@@ -55,9 +55,7 @@ func (s *Auth) SignUp(
 func (s *Auth) SignIn(
 	ctx context.Context,
 	formRequest *forms.SignIn,
-	signInResponseChannel chan<- interface{},
 ) (*dto.UserRole, string, error) {
-	defer close(signInResponseChannel)
 	userEntity, e := s.UserService.SignIn(ctx, formRequest)
 	if e != nil {
 		return nil, "", e

@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/internal/pkg/db"
@@ -65,20 +64,14 @@ func (s *GrpcUserServer) VerifyToken(
 }
 
 func (s *GrpcUserServer) SignIn(
-	_ context.Context,
+	ctx context.Context,
 	request *core.SignInMessage,
 ) (*core.SignInResponse, error) {
 	formRequest := &forms.SignIn{SignInMessage: request}
-	signInChan := make(chan interface{})
-	var signInError error
-	var userResponse *dto.UserRole
-	var token string
-	go func() {
-		userResponse, token, signInError = s.authService.SignIn(context.Background(), formRequest, signInChan)
-	}()
-	<-signInChan
+	userResponse, token, signInError := s.authService.SignIn(ctx, formRequest)
 	if signInError != nil {
 		return nil, signInError
 	}
+
 	return FromUserResponseToGRPC(userResponse, token), nil
 }

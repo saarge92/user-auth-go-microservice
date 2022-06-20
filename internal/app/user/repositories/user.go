@@ -77,6 +77,7 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 	if userError != nil {
 		return nil, sharedErrors.DatabaseError(userError)
 	}
+
 	if e := scan.Row(user, userRow); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
 			return nil, sharedErrors.CustomDatabaseError(codes.NotFound, errorlists.UserNotFound)
@@ -88,14 +89,17 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 							ON user_roles.role_id = roles.id AND user_roles.user_id = ?`
 	var roles []entities.Role
 	roleRows, roleError := r.databaseConnection.QueryContext(ctx, queryRolesSelect, user.ID)
+
 	if roleError != nil {
 		return nil, sharedErrors.DatabaseError(roleError)
 	}
+
 	if e := scan.Rows(&roles, roleRows); e != nil {
 		if !errors.Is(e, sql.ErrNoRows) {
 			return nil, sharedErrors.DatabaseError(e)
 		}
 	}
+	
 	return &dto.UserRole{
 		User:  *user,
 		Roles: roles,
