@@ -10,15 +10,13 @@ import (
 	userErrors "go-user-microservice/internal/app/user/errors"
 	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/repositories"
+	"go-user-microservice/internal/app/user/request"
 	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
 	userDomain "go-user-microservice/internal/pkg/domain/services"
 	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/entites"
-	"go-user-microservice/internal/pkg/errorlists"
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type User struct {
@@ -81,17 +79,16 @@ func (s *User) SignUp(ctx context.Context, form *forms.SignUp) (*entities.User, 
 
 func (s *User) SignIn(ctx context.Context, form *forms.SignIn) (*userDto.UserRole, error) {
 	userEntity, e := s.userRepository.GetUserWithRoles(ctx, form.Login)
-	unAuthError := status.Error(codes.Unauthenticated, errorlists.SignInFail)
 	if e != nil {
 		return nil, e
 	}
 	if userEntity == nil {
-		return nil, unAuthError
+		return nil, userErrors.ErrSignInFail
 	}
 	hashPasswordBytes := []byte(userEntity.User.Password)
 	sourcePasswordBytes := []byte(form.Password)
 	if e = bcrypt.CompareHashAndPassword(hashPasswordBytes, sourcePasswordBytes); e != nil {
-		return nil, unAuthError
+		return nil, userErrors.ErrSignInFail
 	}
 
 	return userEntity, nil
@@ -103,14 +100,15 @@ func (s *User) checkUserDataExistence(ctx context.Context, login string, inn uin
 		return e
 	}
 	if userExist {
-		return userErrors.UserAlreadyExistErr
+		return userErrors.ErrUserAlreadyExists
 	}
-	userRemoteExist, e := s.userRemoteServices.CheckRemoteUser(inn)
+	innRequest := request.InnRequest{Inn: inn}
+	userRemoteExist, e := s.userRemoteServices.CheckRemoteUser(ctx, innRequest)
 	if e != nil {
 		return e
 	}
 	if !userRemoteExist {
-		return userErrors.RemoteInnNotFoundErr
+		return userErrors.ErrRemoteInnNotFound
 	}
 
 	return nil

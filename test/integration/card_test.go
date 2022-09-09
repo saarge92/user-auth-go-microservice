@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	userDto "go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/pkg/protobuf/core"
@@ -22,7 +23,7 @@ func TestCardAdd(t *testing.T) {
 	cardServer := serverTest.CardGrpcServer()
 
 	t.Run("Add Card For User", func(t *testing.T) {
-		user := &entities.User{ID: test.UserIDForRealUser}
+		user := &userDto.UserRole{User: entities.User{ID: test.UserIDForRealUser}}
 		ctx := context.WithValue(context.Background(), dictionary.User, user)
 		request := &core.CreateCardRequest{
 			CardNumber:  test.CardNumber,

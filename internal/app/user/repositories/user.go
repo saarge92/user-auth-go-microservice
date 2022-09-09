@@ -8,11 +8,10 @@ import (
 	"github.com/blockloop/scan"
 	"go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/app/user/entities"
+	userErrors "go-user-microservice/internal/app/user/errors"
 	"go-user-microservice/internal/pkg/database"
-	"go-user-microservice/internal/pkg/errorlists"
 	sharedErrors "go-user-microservice/internal/pkg/errors"
 	"go-user-microservice/internal/pkg/repositories"
-	"google.golang.org/grpc/codes"
 	"time"
 )
 
@@ -71,7 +70,7 @@ func (r *UserRepository) UserExist(ctx context.Context, login string) (bool, err
 }
 
 func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*dto.UserRole, error) {
-	queryUserSelect := `SELECT * FROM users where login = ?`
+	queryUserSelect := `SELECT * FROM users WHERE login = ?`
 	user := new(entities.User)
 	userRow, userError := r.databaseConnection.QueryContext(ctx, queryUserSelect, login)
 	if userError != nil {
@@ -80,7 +79,7 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 
 	if e := scan.Row(user, userRow); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
-			return nil, sharedErrors.CustomDatabaseError(codes.NotFound, errorlists.UserNotFound)
+			return nil, userErrors.ErrUserNotFound
 		}
 		return nil, sharedErrors.DatabaseError(userError)
 	}
@@ -95,9 +94,7 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 	}
 
 	if e := scan.Rows(&roles, roleRows); e != nil {
-		if !errors.Is(e, sql.ErrNoRows) {
-			return nil, sharedErrors.DatabaseError(e)
-		}
+		return nil, sharedErrors.DatabaseError(e)
 	}
 
 	return &dto.UserRole{

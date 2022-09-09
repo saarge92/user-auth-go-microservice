@@ -26,24 +26,15 @@ func (s *Auth) SignUp(
 	ctx context.Context,
 	formRequest *forms.SignUp,
 ) (*entities.User, string, error) {
-	chanResponse := make(chan struct{})
-	var userEntity *entities.User
-	var e error
-	var token string
+	userEntity, e := s.UserService.SignUp(ctx, formRequest)
+	if e != nil {
+		return nil, "", e
+	}
 
-	go func() {
-		defer func() { chanResponse <- struct{}{} }()
-		userEntity, e = s.UserService.SignUp(ctx, formRequest)
-		if e != nil {
-			return
-		}
-
-		token, e = s.jwtService.CreateToken(userEntity.Login)
-		if e != nil {
-			return
-		}
-	}()
-	<-chanResponse
+	token, e := s.jwtService.CreateToken(userEntity.Login)
+	if e != nil {
+		return nil, "", e
+	}
 
 	if e != nil {
 		return nil, "", e

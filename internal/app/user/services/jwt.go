@@ -74,9 +74,6 @@ func (s *JwtService) checkClaims(ctx context.Context, claims *dto.UserPayLoad) (
 	if e != nil {
 		return nil, e
 	}
-	if user == nil {
-		return nil, tokenInvalidError
-	}
 
 	now := time.Now()
 	if claims.ExpiresAt < now.Unix() {
