@@ -3,13 +3,11 @@ package services
 import (
 	"context"
 	"github.com/shopspring/decimal"
-	"go-user-microservice/internal/app/user/domain"
 	userDto "go-user-microservice/internal/app/user/dto"
-	walletDomain "go-user-microservice/internal/app/wallet/domain"
+	"go-user-microservice/internal/app/wallet/domain"
 	"go-user-microservice/internal/app/wallet/dto"
 	walletEntities "go-user-microservice/internal/app/wallet/entities"
 	"go-user-microservice/internal/app/wallet/forms"
-	repositoryInterface "go-user-microservice/internal/pkg/domain/repositories"
 	sharedEntities "go-user-microservice/internal/pkg/entites"
 	"go-user-microservice/internal/pkg/errorlists"
 	"go-user-microservice/internal/pkg/grpc"
@@ -18,27 +16,21 @@ import (
 )
 
 type WalletService struct {
-	walletRepository   walletDomain.WalletRepository
-	userRepository     domain.UserRepository
-	currencyRepository repositoryInterface.CurrencyRepository
+	walletRepository   domain.WalletRepository
+	currencyRepository domain.CurrencyRepository
 }
 
 func NewWalletService(
-	walletRepository walletDomain.WalletRepository,
-	userRepository domain.UserRepository,
-	currencyRepository repositoryInterface.CurrencyRepository,
+	walletRepository domain.WalletRepository,
+	currencyRepository domain.CurrencyRepository,
 ) *WalletService {
 	return &WalletService{
 		walletRepository:   walletRepository,
-		userRepository:     userRepository,
 		currencyRepository: currencyRepository,
 	}
 }
 
-func (s *WalletService) Create(
-	ctx context.Context,
-	form *forms.WalletCreateForm,
-) (wallet *walletEntities.Wallet, e error) {
+func (s *WalletService) Create(ctx context.Context, form *forms.WalletCreateForm) (wallet *walletEntities.Wallet, e error) {
 	userRoleDto, currency, e := s.checkCreateWalletData(ctx, form)
 	if e != nil {
 		return nil, e
@@ -61,8 +53,7 @@ func (s *WalletService) MyWallets(ctx context.Context) ([]dto.WalletCurrencyDto,
 		return nil, e
 	}
 
-	userData := userRoleDto.User
-	wallets, e := s.walletRepository.ListByUserID(ctx, userData.ID)
+	wallets, e := s.walletRepository.ListByUserID(ctx, userRoleDto.User.ID)
 	if e != nil {
 		return nil, e
 	}

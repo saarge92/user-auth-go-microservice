@@ -9,22 +9,20 @@ import (
 	"go-user-microservice/internal/app/user/repositories"
 	"go-user-microservice/internal/app/wallet/domain"
 	walletRepositories "go-user-microservice/internal/app/wallet/repositories"
-	"go-user-microservice/internal/pkg/domain/providers"
-	repositoryInterfaces "go-user-microservice/internal/pkg/domain/repositories"
 	sharedRepositories "go-user-microservice/internal/pkg/repositories"
 )
 
 type RepositoryProvider struct {
-	userRepository           userDomain.UserRepository
-	currencyRepository       repositoryInterfaces.CurrencyRepository
-	walletRepository         domain.WalletRepository
-	countryRepository        repositoryInterfaces.CountryRepository
-	cardRepository           cardDomain.CardRepository
+	userRepository           *repositories.UserRepository
+	currencyRepository       *sharedRepositories.CurrencyRepository
+	walletRepository         *walletRepositories.WalletRepository
+	countryRepository        *sharedRepositories.CountryRepository
+	cardRepository           *card.RepositoryCard
 	operationStoryRepository paymentDomain.OperationStoryRepository
 	roleRepository           *repositories.Role
 }
 
-func NewRepositoryProvider(dbConnectionProvider providers.DatabaseConnectionProvider) *RepositoryProvider {
+func NewRepositoryProvider(dbConnectionProvider *DatabaseConnectionProvider) *RepositoryProvider {
 	mainDBWrapper := dbConnectionProvider.GetCoreConnection()
 
 	return &RepositoryProvider{
@@ -42,7 +40,7 @@ func (p *RepositoryProvider) UserRepository() userDomain.UserRepository {
 	return p.userRepository
 }
 
-func (p *RepositoryProvider) CurrencyRepository() repositoryInterfaces.CurrencyRepository {
+func (p *RepositoryProvider) CurrencyRepository() *sharedRepositories.CurrencyRepository {
 	return p.currencyRepository
 }
 
@@ -50,7 +48,7 @@ func (p *RepositoryProvider) WalletRepository() domain.WalletRepository {
 	return p.walletRepository
 }
 
-func (p *RepositoryProvider) CountryRepository() repositoryInterfaces.CountryRepository {
+func (p *RepositoryProvider) CountryRepository() *sharedRepositories.CountryRepository {
 	return p.countryRepository
 }
 

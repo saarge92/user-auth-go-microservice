@@ -1,14 +1,13 @@
 package providers
 
 import (
-	"go-user-microservice/internal/pkg/domain/services/stripe"
 	stripeServices "go-user-microservice/internal/pkg/services/stripe"
 )
 
 type StripeServiceProvider struct {
-	accountService stripe.AccountStripeService
-	cardService    stripe.CardStripeService
-	chargeService  stripe.ChargeService
+	accountService *stripeServices.AccountStripeService
+	cardService    *stripeServices.CardStripeService
+	chargeService  *stripeServices.ChargeStripeService
 }
 
 func NewStripeServiceProvider(
@@ -24,14 +23,14 @@ func NewStripeServiceProvider(
 	}
 }
 
-func (p *StripeServiceProvider) Account() stripe.AccountStripeService {
+func (p *StripeServiceProvider) Account() *stripeServices.AccountStripeService {
 	return p.accountService
 }
 
-func (p *StripeServiceProvider) Card() stripe.CardStripeService {
+func (p *StripeServiceProvider) Card() *stripeServices.CardStripeService {
 	return p.cardService
 }
 
-func (p *StripeServiceProvider) Charge() stripe.ChargeService {
+func (p *StripeServiceProvider) Charge() *stripeServices.ChargeStripeService {
 	return p.chargeService
 }

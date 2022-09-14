@@ -2,47 +2,36 @@ package providers
 
 import (
 	cardServices "go-user-microservice/internal/app/card/services"
-	"go-user-microservice/internal/app/payment/domain"
-	"go-user-microservice/internal/app/payment/services"
+	paymentServices "go-user-microservice/internal/app/payment/services"
 	userServices "go-user-microservice/internal/app/user/services"
 	walletServices "go-user-microservice/internal/app/wallet/services"
 	"go-user-microservice/internal/pkg/config"
-	"go-user-microservice/internal/pkg/domain/providers"
-	userDomain "go-user-microservice/internal/pkg/domain/services"
-	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
+	"go-user-microservice/internal/pkg/services/stripe"
 )
 
 type ServiceProvider struct {
-	accountStripeService   stripeDomain.AccountStripeService
-	cardStripeService      stripeDomain.CardStripeService
-	userRemoteService      userDomain.RemoteUserService
+	accountStripeService   *stripe.AccountStripeService
+	cardStripeService      *stripe.CardStripeService
+	userRemoteService      *userServices.RemoteUser
 	userService            *userServices.User
 	jwtAuthService         *userServices.JwtService
 	authService            *userServices.Auth
 	userAuthContextService *userServices.UserAuthContextService
 	walletService          *walletServices.WalletService
 	cardService            *cardServices.ServiceCard
-	paymentService         domain.PaymentService
+	paymentService         *paymentServices.Payment
 }
 
 func NewServiceProvider(
 	config *config.Config,
-	repositoryProvider providers.RepositoryProvider,
-	dbConnectionProvider providers.DatabaseConnectionProvider,
-	stripeServiceProvider providers.StripeServiceProvider,
-	userRemoteServiceDep userDomain.RemoteUserService,
+	repositoryProvider *RepositoryProvider,
+	stripeServiceProvider *StripeServiceProvider,
 ) *ServiceProvider {
-	// user
-	var remoteUserService userDomain.RemoteUserService
-	if userRemoteServiceDep != nil {
-		remoteUserService = userRemoteServiceDep
-	} else {
-		remoteUserService = userServices.NewRemoteUserService(config)
-	}
+	userRemoteService := userServices.NewRemoteUserService(config)
 	userService := userServices.NewUserService(
 		repositoryProvider.UserRepository(),
 		repositoryProvider.CountryRepository(),
-		remoteUserService,
+		userRemoteService,
 		stripeServiceProvider.Account(),
 		repositoryProvider.RoleRepository(),
 	)
@@ -55,12 +44,11 @@ func NewServiceProvider(
 	// wallet
 	walletService := walletServices.NewWalletService(
 		repositoryProvider.WalletRepository(),
-		repositoryProvider.UserRepository(),
 		repositoryProvider.CurrencyRepository(),
 	)
 	userAuthContextService := userServices.NewUserAuthContextService(jwtService)
 	cardService := cardServices.NewServiceCard(repositoryProvider.CardRepository(), stripeServiceProvider.Card())
-	paymentService := services.NewPaymentService(
+	paymentService := paymentServices.NewPaymentService(
 		repositoryProvider.OperationStory(),
 		repositoryProvider.WalletRepository(),
 		repositoryProvider.CardRepository(),
@@ -69,7 +57,7 @@ func NewServiceProvider(
 	return &ServiceProvider{
 		accountStripeService:   stripeServiceProvider.Account(),
 		cardStripeService:      stripeServiceProvider.Card(),
-		userRemoteService:      remoteUserService,
+		userRemoteService:      userRemoteService,
 		userService:            userService,
 		jwtAuthService:         jwtService,
 		authService:            authService,
@@ -88,7 +76,7 @@ func (p *ServiceProvider) JwtService() *userServices.JwtService {
 	return p.jwtAuthService
 }
 
-func (p *ServiceProvider) RemoteUserService() userDomain.RemoteUserService {
+func (p *ServiceProvider) RemoteUserService() *userServices.RemoteUser {
 	return p.userRemoteService
 }
 
@@ -96,15 +84,15 @@ func (p *ServiceProvider) UserService() *userServices.User {
 	return p.userService
 }
 
-func (p *ServiceProvider) WalletService() userDomain.WalletService {
+func (p *ServiceProvider) WalletService() *walletServices.WalletService {
 	return p.walletService
 }
 
-func (p *ServiceProvider) StripeAccountService() stripeDomain.AccountStripeService {
+func (p *ServiceProvider) StripeAccountService() *stripe.AccountStripeService {
 	return p.accountStripeService
 }
 
-func (p *ServiceProvider) StripeCardService() stripeDomain.CardStripeService {
+func (p *ServiceProvider) StripeCardService() *stripe.CardStripeService {
 	return p.cardStripeService
 }
 
@@ -116,6 +104,6 @@ func (p *ServiceProvider) CardService() *cardServices.ServiceCard {
 	return p.cardService
 }
 
-func (p *ServiceProvider) PaymentService() domain.PaymentService {
+func (p *ServiceProvider) PaymentService() *paymentServices.Payment {
 	return p.paymentService
 }

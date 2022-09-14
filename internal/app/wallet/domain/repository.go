@@ -5,6 +5,7 @@ import (
 	"github.com/shopspring/decimal"
 	"go-user-microservice/internal/app/wallet/dto"
 	"go-user-microservice/internal/app/wallet/entities"
+	"go-user-microservice/internal/pkg/entites"
 )
 
 type WalletRepository interface {
@@ -15,4 +16,8 @@ type WalletRepository interface {
 	ListByUserID(ctx context.Context, userID uint64) ([]dto.WalletCurrencyDto, error)
 	OneByExternalIDAndUserID(ctx context.Context, externalID string, userID uint64) (*dto.WalletCurrencyDto, error)
 	IncreaseBalanceByID(ctx context.Context, id uint64, amount decimal.Decimal) error
+}
+
+type CurrencyRepository interface {
+	GetByCode(ctx context.Context, code string) (*entites.Currency, error)
 }

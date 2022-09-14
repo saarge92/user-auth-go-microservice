@@ -19,7 +19,7 @@ func NewChargeStripeService(
 	}
 }
 
-func (s *ChargeStripeService) CardCharge(cardInfo *dto.StripeCardCustomerChargeCreate) (*stripe.Charge, error) {
+func (s *ChargeStripeService) CardCharge(cardInfo dto.StripeCardCustomerChargeCreate) (*stripe.Charge, error) {
 	amount := cardInfo.Amount.Mul(decimal.NewFromInt(100)).IntPart()
 	cardChargeParams := &stripe.ChargeParams{
 		Amount:      stripe.Int64(amount),

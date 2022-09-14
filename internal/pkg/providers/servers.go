@@ -7,7 +7,6 @@ import (
 	"go-user-microservice/internal/app/user"
 	"go-user-microservice/internal/app/wallet"
 	"go-user-microservice/internal/pkg/db"
-	"go-user-microservice/internal/pkg/domain/providers"
 )
 
 type GrpcServerProvider struct {
@@ -18,7 +17,7 @@ type GrpcServerProvider struct {
 }
 
 func NewGrpcServerProvider(
-	serviceProvider providers.ServiceProvider,
+	serviceProvider *ServiceProvider,
 	transactionHandler *db.TransactionHandlerDB,
 ) *GrpcServerProvider {
 	walletGrpcServer := wallet.NewWalletGrpcServer(

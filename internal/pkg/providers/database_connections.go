@@ -12,9 +12,7 @@ type DatabaseConnectionProvider struct {
 	coreDatabase   database.Database
 }
 
-func NewDatabaseConnectionProvider(
-	config *config.Config,
-) *DatabaseConnectionProvider {
+func NewDatabaseConnectionProvider(config *config.Config) *DatabaseConnectionProvider {
 	coreConn, e := sql.Open(config.DatabaseDriver, config.CoreDatabaseURL)
 	if e != nil {
 		log.Fatal(e)

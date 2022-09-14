@@ -28,6 +28,28 @@ func NewRemoteUserService(config *sharedConfig.Config) *RemoteUser {
 	}
 }
 
+func (s *RemoteUser) CheckRemoteUser(ctx context.Context, request request.InnRequest) (bool, error) {
+	token := "Token " + s.config.AuthUserRemoteKey
+	responseMap, e := doRequest(ctx, s.httpClient, http.MethodPost, s.config.RemoteUserURL, token, request)
+	if e != nil {
+		return false, e
+	}
+	if isVerified := s.verifyResponse(responseMap); !isVerified {
+		return false, status.Error(codes.NotFound, sharedErrors.NoInnDataRemote)
+	}
+	return true, nil
+}
+
+func (s *RemoteUser) verifyResponse(responseMap map[string]interface{}) bool {
+	if _, ok := responseMap["suggestions"]; !ok {
+		return false
+	}
+	if sizeResponse := len(responseMap["suggestions"].([]interface{})); sizeResponse == 0 {
+		return false
+	}
+	return true
+}
+
 func prepareRequest(ctx context.Context, method string, serviceURL string, token string, request domain.RequestParams) (*http.Request, error) {
 	var body []byte
 	if method == http.MethodPost {
@@ -85,26 +107,4 @@ func doRequest[T domain.RequestParams](
 	}
 
 	return responseMap, nil
-}
-
-func (s *RemoteUser) CheckRemoteUser(ctx context.Context, request request.InnRequest) (bool, error) {
-	token := "Token " + s.config.AuthUserRemoteKey
-	responseMap, e := doRequest(ctx, s.httpClient, http.MethodPost, s.config.RemoteUserURL, token, request)
-	if e != nil {
-		return false, e
-	}
-	if isVerified := s.verifyResponse(responseMap); !isVerified {
-		return false, status.Error(codes.NotFound, sharedErrors.NoInnDataRemote)
-	}
-	return true, nil
-}
-
-func (s *RemoteUser) verifyResponse(responseMap map[string]interface{}) bool {
-	if _, ok := responseMap["suggestions"]; !ok {
-		return false
-	}
-	if sizeResponse := len(responseMap["suggestions"].([]interface{})); sizeResponse == 0 {
-		return false
-	}
-	return true
 }

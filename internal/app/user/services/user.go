@@ -9,11 +9,7 @@ import (
 	"go-user-microservice/internal/app/user/entities"
 	userErrors "go-user-microservice/internal/app/user/errors"
 	"go-user-microservice/internal/app/user/forms"
-	"go-user-microservice/internal/app/user/repositories"
 	"go-user-microservice/internal/app/user/request"
-	sharedRepoInterfaces "go-user-microservice/internal/pkg/domain/repositories"
-	userDomain "go-user-microservice/internal/pkg/domain/services"
-	stripeDomain "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/entites"
 	"golang.org/x/crypto/bcrypt"
@@ -21,18 +17,18 @@ import (
 
 type User struct {
 	userRepository       domain.UserRepository
-	countryRepository    sharedRepoInterfaces.CountryRepository
-	userRemoteServices   userDomain.RemoteUserService
-	stripeAccountService stripeDomain.AccountStripeService
-	userRolesRepository  *repositories.Role
+	countryRepository    domain.CountryRepository
+	userRemoteServices   domain.UserRemoteService
+	stripeAccountService domain.StripeAccountService
+	userRolesRepository  domain.RoleRepository
 }
 
 func NewUserService(
 	userRepository domain.UserRepository,
-	countryRepository sharedRepoInterfaces.CountryRepository,
-	userRemoteService userDomain.RemoteUserService,
-	stripeAccountService stripeDomain.AccountStripeService,
-	userRolesRepository *repositories.Role,
+	countryRepository domain.CountryRepository,
+	userRemoteService domain.UserRemoteService,
+	stripeAccountService domain.StripeAccountService,
+	userRolesRepository domain.RoleRepository,
 ) *User {
 	return &User{
 		userRepository:       userRepository,

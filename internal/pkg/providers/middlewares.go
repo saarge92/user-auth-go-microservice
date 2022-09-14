@@ -4,7 +4,6 @@ import (
 	"go-user-microservice/internal/app/card"
 	"go-user-microservice/internal/app/payment"
 	"go-user-microservice/internal/app/wallet"
-	"go-user-microservice/internal/pkg/domain/providers"
 )
 
 type GrpcMiddlewareProvider struct {
@@ -14,7 +13,7 @@ type GrpcMiddlewareProvider struct {
 }
 
 func NewGrpcMiddlewareProvider(
-	serviceProvider providers.ServiceProvider,
+	serviceProvider *ServiceProvider,
 ) *GrpcMiddlewareProvider {
 	walletGrpcMiddleware := wallet.NewWalletGrpcServerMiddleware(serviceProvider.UserAuthContextService())
 	cardGrpcMiddleware := card.NewGrpcCardMiddleware(serviceProvider.UserAuthContextService())

@@ -3,14 +3,12 @@ package services
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/stripe/stripe-go/v72"
 	"go-user-microservice/internal/app/card/domain"
 	cardEntities "go-user-microservice/internal/app/card/entities"
 	"go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/app/card/forms"
 	userDto "go-user-microservice/internal/app/user/dto"
 	"go-user-microservice/internal/pkg/dictionary"
-	stripeServices "go-user-microservice/internal/pkg/domain/services/stripe"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/errorlists"
 	"go-user-microservice/internal/pkg/grpc"
@@ -20,12 +18,12 @@ import (
 
 type ServiceCard struct {
 	cardRepository    domain.CardRepository
-	cardStripeService stripeServices.CardStripeService
+	cardStripeService domain.StripeCardService
 }
 
 func NewServiceCard(
 	cardRepository domain.CardRepository,
-	cardStripeService stripeServices.CardStripeService,
+	cardStripeService domain.StripeCardService,
 ) *ServiceCard {
 	return &ServiceCard{
 		cardRepository:    cardRepository,
@@ -43,7 +41,7 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*
 		return nil, e
 	}
 
-	cardStripeDto := &dto.StripeCardCreate{
+	cardStripeDto := dto.StripeCardCreate{
 		Number:             cardForm.CardNumber,
 		ExpireMonth:        uint8(cardForm.ExpireMonth),
 		ExpireYear:         cardForm.ExpireYear,
@@ -51,13 +49,7 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*
 		AccountProviderID:  userRoleDto.User.AccountProviderID,
 		CustomerProviderID: userRoleDto.User.CustomerProviderID,
 	}
-	var cardStripe *stripe.Card
-	var cardError error
-	cardChannelSync := make(chan interface{})
-	go func() {
-		cardStripe, cardError = s.cardStripeService.CreateCard(cardStripeDto, cardChannelSync)
-	}()
-	<-cardChannelSync
+	cardStripe, cardError := s.cardStripeService.CreateCard(cardStripeDto)
 	if cardError != nil {
 		return nil, cardError
 	}

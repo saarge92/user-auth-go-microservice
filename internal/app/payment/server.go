@@ -3,7 +3,6 @@ package payment
 import (
 	"context"
 	"go-user-microservice/internal/app/payment/domain"
-	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/form"
 	"go-user-microservice/internal/app/wallet/transformer"
 	"go-user-microservice/internal/pkg/db"
@@ -25,10 +24,7 @@ func NewGrpcPaymentServer(
 	}
 }
 
-func (s *GrpcServerPayment) Deposit(
-	ctx context.Context,
-	request *core.DepositRequest,
-) (response *core.DepositResponse, e error) {
+func (s *GrpcServerPayment) Deposit(ctx context.Context, request *core.DepositRequest) (response *core.DepositResponse, e error) {
 	ctx, tx, e := s.transactionHandler.Create(ctx, nil)
 	if e != nil {
 		return nil, e
@@ -37,13 +33,8 @@ func (s *GrpcServerPayment) Deposit(
 		e = db.HandleTransaction(tx, e)
 	}()
 
-	depositInfo := &form.Deposit{DepositRequest: request}
-	var operationStory *entities.OperationStory
-	syncChannel := make(chan interface{})
-	go func() {
-		operationStory, e = s.paymentService.Deposit(ctx, depositInfo, syncChannel)
-	}()
-	<-syncChannel
+	depositInfo := form.Deposit{DepositRequest: request}
+	operationStory, e := s.paymentService.Deposit(ctx, depositInfo)
 
 	if e != nil {
 		return nil, e

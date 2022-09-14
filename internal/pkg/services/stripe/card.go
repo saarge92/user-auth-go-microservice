@@ -17,11 +17,7 @@ func NewCardStripeService(stripeClient *client.API) *CardStripeService {
 	}
 }
 
-func (s *CardStripeService) CreateCard(
-	cardData *dto.StripeCardCreate,
-	syncChannel chan interface{},
-) (*stripe.Card, error) {
-	defer close(syncChannel)
+func (s *CardStripeService) CreateCard(cardData dto.StripeCardCreate) (*stripe.Card, error) {
 	expireMonth := strconv.Itoa(int(cardData.ExpireMonth))
 	expireYear := strconv.Itoa(int(cardData.ExpireYear))
 	cvc := strconv.Itoa(int(cardData.CVC))

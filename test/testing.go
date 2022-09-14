@@ -1,17 +1,11 @@
 package test
 
 import (
-	"fmt"
-	"github.com/DATA-DOG/go-txdb"
+	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	log "github.com/sirupsen/logrus"
 	"go-user-microservice/internal/pkg/config"
-	"go-user-microservice/internal/pkg/db"
-	"go-user-microservice/internal/pkg/domain/providers"
-	appProvider "go-user-microservice/internal/pkg/providers"
-	testProviders "go-user-microservice/test/mocks/providers"
-	"go-user-microservice/test/mocks/services"
+	"go-user-microservice/internal/pkg/database"
 	"os"
 	"path"
 	"runtime"
@@ -36,50 +30,25 @@ const (
 	USDCurrencyID                  = 2
 )
 
-var connectionCount = 0
-
-func CreateTestServer(
-	stripeServiceProvider providers.StripeServiceProvider,
-) (*appProvider.GrpcServerProvider, func()) {
+func LoadTestEnv() error {
+	// Setting root directory for tests as project root
+	// For more details read this topic https://brandur.org/fragments/testing-go-project-root
 	_, filename, _, _ := runtime.Caller(0)
 	dir := path.Join(path.Dir(filename), "..")
 	err := os.Chdir(dir)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if err = godotenv.Load(".env.test"); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
+}
 
+func InitConnectionsWithCloseFunc() (*sql.DB, func()) {
 	appConfig := config.NewConfig()
+	dbConn, txDBCloseFunc := database.TestDBConnection(appConfig.CoreDatabaseURL)
 
-	connectionName := fmt.Sprintf(DatabaseName+"_%d", connectionCount)
-	txdb.Register(connectionName, "mysql", appConfig.CoreDatabaseURL)
-	connectionCount++
-	appConfig.DatabaseDriver = connectionName
-	dbConnProvider := appProvider.NewDatabaseConnectionProvider(appConfig)
-	mainConnection := dbConnProvider.GetCoreConnection()
-	mainConnection.SetMaxIdleConns(1)
-	repositoryProvider := appProvider.NewRepositoryProvider(dbConnProvider)
-	if stripeServiceProvider == nil {
-		stripeServiceProvider = &testProviders.TestStripeServiceProvider{}
-	}
-	serviceProvider := appProvider.NewServiceProvider(
-		appConfig,
-		repositoryProvider,
-		dbConnProvider,
-		stripeServiceProvider,
-		&services.UserRemoteMock{},
-	)
-
-	transactionHandler := db.NewTransactionHandler(dbConnProvider.GetCoreConnection())
-	grpcServerProvider := appProvider.NewGrpcServerProvider(serviceProvider, transactionHandler)
-
-	return grpcServerProvider, func() {
-		if e := mainConnection.Close(); e != nil {
-			log.Error(e)
-		}
-		log.Infof("Connection closed: %s", mainConnection.Driver())
-	}
+	return dbConn, txDBCloseFunc
 }
