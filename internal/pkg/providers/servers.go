@@ -2,11 +2,10 @@ package providers
 
 import (
 	"go-user-microservice/internal/app/card"
-	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/payment"
 	"go-user-microservice/internal/app/user"
 	"go-user-microservice/internal/app/wallet"
-	"go-user-microservice/internal/pkg/db"
+	"go-user-microservice/internal/pkg/database"
 )
 
 type GrpcServerProvider struct {
@@ -18,7 +17,7 @@ type GrpcServerProvider struct {
 
 func NewGrpcServerProvider(
 	serviceProvider *ServiceProvider,
-	transactionHandler *db.TransactionHandlerDB,
+	transactionHandler *database.TransactionHandlerDB,
 ) *GrpcServerProvider {
 	walletGrpcServer := wallet.NewWalletGrpcServer(
 		serviceProvider.WalletService(),
@@ -29,7 +28,6 @@ func NewGrpcServerProvider(
 		transactionHandler,
 	)
 	cardGrpcServer := card.NewGrpcServerCard(
-		&forms.CardFormBuilder{},
 		serviceProvider.CardService(),
 		transactionHandler,
 	)

@@ -12,7 +12,7 @@ import (
 	"go-user-microservice/internal/app/user"
 	"go-user-microservice/internal/app/wallet"
 	"go-user-microservice/internal/pkg/config"
-	"go-user-microservice/internal/pkg/db"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/providers"
 	"go-user-microservice/pkg/protobuf/core"
 	"go-user-microservice/scripts"
@@ -29,7 +29,6 @@ type Server struct {
 	walletGrpcServer       *wallet.GrpcWalletServer
 	cardGrpcServer         *card.GrpcServerCard
 	paymentGrpcServer      *payment.GrpcServerPayment
-	serviceProvider        *providers.ServiceProvider
 	grpcMiddlewareProvider *providers.GrpcMiddlewareProvider
 }
 
@@ -63,8 +62,8 @@ func (s *Server) initApp() {
 		repositoryProvider,
 		stripeServiceProvider,
 	)
-	transactionHandler := db.NewTransactionHandler(dbConnectionProvider.GetCoreConnection())
-	s.serviceProvider = serviceProvider
+	transactionHandler := database.NewTransactionHandler(dbConnectionProvider.GetCoreConnection())
+
 	grpcServerProvider := providers.NewGrpcServerProvider(serviceProvider, transactionHandler)
 
 	s.userGrpcServer = grpcServerProvider.UserGrpcServer()

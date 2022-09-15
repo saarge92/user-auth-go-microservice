@@ -11,7 +11,6 @@ import (
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/filter"
 	"go-user-microservice/internal/pkg/database"
-	"go-user-microservice/internal/pkg/db"
 	"strings"
 	"time"
 )
@@ -61,7 +60,7 @@ func (r *OperationStoryRepository) Create(ctx context.Context, operationStory *e
 		return dbError
 	}
 
-	operationStory.ID = uint64(db.LastInsertID(result))
+	operationStory.ID = uint64(database.LastInsertID(result))
 
 	return nil
 }
@@ -88,7 +87,7 @@ func (r *OperationStoryRepository) List(
 		queryCount += " WHERE " + strings.Join(conditions, " AND ")
 	}
 
-	query = db.AddPagination(query, queryFilter.Pagination)
+	query = database.AddPagination(query, queryFilter.Pagination)
 
 	queryNamed := namedParameterQuery.NewNamedParameterQuery(query)
 	queryNamed.SetValuesFromMap(params)

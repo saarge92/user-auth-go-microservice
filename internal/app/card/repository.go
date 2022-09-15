@@ -7,9 +7,8 @@ import (
 	"github.com/Knetic/go-namedParameterQuery"
 	"github.com/blockloop/scan"
 	"go-user-microservice/internal/app/card/entities"
-	errors2 "go-user-microservice/internal/app/card/errors"
+	cardErrors "go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/pkg/database"
-	"go-user-microservice/internal/pkg/db"
 	"time"
 )
 
@@ -21,10 +20,10 @@ func NewRepositoryCard(databaseInstance database.Database) *RepositoryCard {
 	return &RepositoryCard{databaseInstance: databaseInstance}
 }
 
-func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error {
+func (r *RepositoryCard) Create(ctx context.Context, cardEntity *entities.Card) error {
 	now := time.Now()
-	card.CreatedAt = now
-	card.UpdatedAt = now
+	cardEntity.CreatedAt = now
+	cardEntity.UpdatedAt = now
 	query := `INSERT INTO cards (
                 user_id, is_default, number, external_provider_id, external_id,
                 expire_month, expire_year, created_at, updated_at)
@@ -33,15 +32,15 @@ func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error 
 
 	queryNamed := namedParameterQuery.NewNamedParameterQuery(query)
 	insertParams := map[string]interface{}{
-		"userId":             card.UserID,
-		"isDefault":          card.IsDefault,
-		"number":             card.Number,
-		"externalProviderId": card.ExternalProviderID,
-		"externalId":         card.ExternalID,
-		"expireMonth":        card.ExpireMonth,
-		"expireYear":         card.ExpireYear,
-		"createdAt":          card.CreatedAt,
-		"updatedAt":          card.UpdatedAt,
+		"userId":             cardEntity.UserID,
+		"isDefault":          cardEntity.IsDefault,
+		"number":             cardEntity.Number,
+		"externalProviderId": cardEntity.ExternalProviderID,
+		"externalId":         cardEntity.ExternalID,
+		"expireMonth":        cardEntity.ExpireMonth,
+		"expireYear":         cardEntity.ExpireYear,
+		"createdAt":          cardEntity.CreatedAt,
+		"updatedAt":          cardEntity.UpdatedAt,
 	}
 	queryNamed.SetValuesFromMap(insertParams)
 	result, dbError := r.databaseInstance.ExecContext(ctx, queryNamed.GetParsedQuery(), queryNamed.GetParsedParameters()...)
@@ -49,7 +48,7 @@ func (r *RepositoryCard) Create(ctx context.Context, card *entities.Card) error 
 		return dbError
 	}
 
-	card.ID = uint64(db.LastInsertID(result))
+	cardEntity.ID = uint64(database.LastInsertID(result))
 	return nil
 }
 
@@ -72,11 +71,7 @@ func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]ent
 	return cards, nil
 }
 
-func (r *RepositoryCard) OneByCardAndUserID(
-	ctx context.Context,
-	externalID string,
-	userID uint64,
-) (*entities.Card, error) {
+func (r *RepositoryCard) OneByCardAndUserID(ctx context.Context, externalID string, userID uint64) (*entities.Card, error) {
 	query := `SELECT * FROM cards WHERE external_id = ? AND user_id = ?`
 	card := new(entities.Card)
 
@@ -87,7 +82,7 @@ func (r *RepositoryCard) OneByCardAndUserID(
 
 	if e := scan.Row(card, cardRow); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
-			return nil, errors2.ErrCardNotFound
+			return nil, cardErrors.ErrCardNotFound
 		}
 	}
 

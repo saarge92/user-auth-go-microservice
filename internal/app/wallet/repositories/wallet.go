@@ -12,7 +12,6 @@ import (
 	"go-user-microservice/internal/app/wallet/entities"
 	walletErrors "go-user-microservice/internal/app/wallet/errors"
 	"go-user-microservice/internal/pkg/database"
-	"go-user-microservice/internal/pkg/db"
 	"go-user-microservice/internal/pkg/errorlists"
 	customErrors "go-user-microservice/internal/pkg/errors"
 	"google.golang.org/grpc/codes"
@@ -56,7 +55,7 @@ func (r *WalletRepository) Create(ctx context.Context, wallet *entities.Wallet) 
 		return dbError
 	}
 
-	wallet.ID = uint64(db.LastInsertID(result))
+	wallet.ID = uint64(database.LastInsertID(result))
 	return nil
 }
 

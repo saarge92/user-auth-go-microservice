@@ -1,19 +1,14 @@
-package services
+package card
 
 import (
 	"context"
 	"github.com/google/uuid"
 	"go-user-microservice/internal/app/card/domain"
-	cardEntities "go-user-microservice/internal/app/card/entities"
+	"go-user-microservice/internal/app/card/entities"
 	"go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/app/card/forms"
-	userDto "go-user-microservice/internal/app/user/dto"
-	"go-user-microservice/internal/pkg/dictionary"
 	"go-user-microservice/internal/pkg/dto"
-	"go-user-microservice/internal/pkg/errorlists"
 	"go-user-microservice/internal/pkg/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type ServiceCard struct {
@@ -21,17 +16,14 @@ type ServiceCard struct {
 	cardStripeService domain.StripeCardService
 }
 
-func NewServiceCard(
-	cardRepository domain.CardRepository,
-	cardStripeService domain.StripeCardService,
-) *ServiceCard {
+func NewServiceCard(cardRepository domain.CardRepository, cardStripeService domain.StripeCardService) *ServiceCard {
 	return &ServiceCard{
 		cardRepository:    cardRepository,
 		cardStripeService: cardStripeService,
 	}
 }
 
-func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*cardEntities.Card, error) {
+func (s *ServiceCard) Create(ctx context.Context, cardForm forms.CreateCard) (*entities.Card, error) {
 	if cardErr := s.checkCardNumberExist(ctx, cardForm.CardNumber); cardErr != nil {
 		return nil, cardErr
 	}
@@ -57,15 +49,12 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm *forms.CreateCard) (*
 	return s.initCardRecord(ctx, cardForm, userRoleDto.User.ID, cardStripe.ID)
 }
 
-func (s *ServiceCard) MyCards(
-	ctx context.Context,
-) ([]cardEntities.Card, error) {
-	var user *userDto.UserRole
-	var ok bool
-	if user, ok = ctx.Value(dictionary.User).(*userDto.UserRole); !ok {
-		return nil, status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
+func (s *ServiceCard) MyCards(ctx context.Context) ([]entities.Card, error) {
+	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+	if e != nil {
+		return nil, e
 	}
-	cards, e := s.cardRepository.ListByCardID(ctx, user.User.ID)
+	cards, e := s.cardRepository.ListByCardID(ctx, userRoleDto.User.ID)
 	if e != nil {
 		return nil, e
 	}
@@ -84,8 +73,8 @@ func (s *ServiceCard) checkCardNumberExist(ctx context.Context, cardNumber strin
 	return nil
 }
 
-func (s *ServiceCard) initCardRecord(ctx context.Context, cardForm *forms.CreateCard, userID uint64, providerID string) (*cardEntities.Card, error) {
-	cardEntity := &cardEntities.Card{}
+func (s *ServiceCard) initCardRecord(ctx context.Context, cardForm forms.CreateCard, userID uint64, providerID string) (*entities.Card, error) {
+	cardEntity := &entities.Card{}
 	cardEntity.Number = cardForm.CardNumber
 	cardEntity.ExpireMonth = cardForm.ExpireMonth
 	cardEntity.ExpireYear = cardForm.ExpireYear

@@ -6,7 +6,7 @@ import (
 	"go-user-microservice/internal/pkg/errorlists"
 )
 
-func validateExpireMonth() validation.RuleFunc {
+func ValidateExpireMonth() validation.RuleFunc {
 	return func(value interface{}) error {
 		if month, ok := value.(uint32); ok {
 			if month == 0 {

@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	NotFoundCard = "card not found"
+	notFoundCard = "card not found"
 )
 
 var (
-	ErrCardNotFound = status.Error(codes.NotFound, NotFoundCard)
+	ErrCardNotFound = status.Error(codes.NotFound, notFoundCard)
 )

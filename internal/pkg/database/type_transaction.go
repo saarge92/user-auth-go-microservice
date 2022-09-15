@@ -1,6 +1,8 @@
-package db
+package database
 
-import "context"
+import (
+	"context"
+)
 
 type TypeTransactionHandler[T any] struct {
 	handler *TransactionHandlerDB

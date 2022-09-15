@@ -60,10 +60,7 @@ func (s *WalletService) MyWallets(ctx context.Context) ([]dto.WalletCurrencyDto,
 	return wallets, nil
 }
 
-func (s *WalletService) checkCreateWalletData(
-	ctx context.Context,
-	form *forms.WalletCreateForm,
-) (*userDto.UserRole, *sharedEntities.Currency, error) {
+func (s *WalletService) checkCreateWalletData(ctx context.Context, form *forms.WalletCreateForm) (*userDto.UserRole, *sharedEntities.Currency, error) {
 	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, nil, e

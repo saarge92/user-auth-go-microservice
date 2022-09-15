@@ -5,18 +5,18 @@ import (
 	"go-user-microservice/internal/app/payment/domain"
 	"go-user-microservice/internal/app/payment/form"
 	"go-user-microservice/internal/app/wallet/transformer"
-	"go-user-microservice/internal/pkg/db"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcServerPayment struct {
 	paymentService     domain.PaymentService
-	transactionHandler *db.TransactionHandlerDB
+	transactionHandler *database.TransactionHandlerDB
 }
 
 func NewGrpcPaymentServer(
 	paymentService domain.PaymentService,
-	transactionHandler *db.TransactionHandlerDB,
+	transactionHandler *database.TransactionHandlerDB,
 ) *GrpcServerPayment {
 	return &GrpcServerPayment{
 		paymentService:     paymentService,
@@ -30,7 +30,7 @@ func (s *GrpcServerPayment) Deposit(ctx context.Context, request *core.DepositRe
 		return nil, e
 	}
 	defer func() {
-		e = db.HandleTransaction(tx, e)
+		e = database.HandleTransaction(tx, e)
 	}()
 
 	depositInfo := form.Deposit{DepositRequest: request}

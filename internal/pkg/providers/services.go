@@ -1,7 +1,7 @@
 package providers
 
 import (
-	cardServices "go-user-microservice/internal/app/card/services"
+	cardServices "go-user-microservice/internal/app/card"
 	paymentServices "go-user-microservice/internal/app/payment/services"
 	userServices "go-user-microservice/internal/app/user/services"
 	walletServices "go-user-microservice/internal/app/wallet/services"

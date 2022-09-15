@@ -51,7 +51,7 @@ linters-settings:
     # minimal occurrences count to trigger, 3 by default
     min-occurrences: 5
   lll:
-    line-length: 150
+    line-length: 170
 
 issues:
   exclude-rules:

@@ -3,7 +3,7 @@ package domain
 import (
 	"context"
 	"github.com/shopspring/decimal"
-	cardEntities "go-user-microservice/internal/app/card/entities"
+	entities2 "go-user-microservice/internal/app/card/entities"
 	"go-user-microservice/internal/app/payment/dto"
 	"go-user-microservice/internal/app/payment/entities"
 	"go-user-microservice/internal/app/payment/filter"
@@ -16,7 +16,7 @@ type OperationStoryRepository interface {
 }
 
 type CardRepository interface {
-	OneByCardAndUserID(ctx context.Context, externalID string, userID uint64) (*cardEntities.Card, error)
+	OneByCardAndUserID(ctx context.Context, externalID string, userID uint64) (*entities2.Card, error)
 }
 
 type WalletRepository interface {

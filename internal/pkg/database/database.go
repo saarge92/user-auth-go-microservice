@@ -33,7 +33,7 @@ func (d *database) PrepareContext(ctx context.Context, query string) (*sql.Stmt,
 
 func getDatabaseConnection(ctx context.Context, dbConnection *sql.DB) Database {
 	var returnDatabase Database
-	currentTransaction, ok := ctx.Value(TransactionKey).(*sql.Tx)
+	currentTransaction, ok := ctx.Value(CurrentTransaction).(*sql.Tx)
 	if ok {
 		returnDatabase = currentTransaction
 	} else {

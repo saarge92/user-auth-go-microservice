@@ -5,18 +5,18 @@ import (
 	"go-user-microservice/internal/app/wallet/forms"
 	"go-user-microservice/internal/app/wallet/services"
 	"go-user-microservice/internal/app/wallet/transformer"
-	"go-user-microservice/internal/pkg/db"
+	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/pkg/protobuf/core"
 )
 
 type GrpcWalletServer struct {
 	walletService      *services.WalletService
-	transactionHandler *db.TransactionHandlerDB
+	transactionHandler *database.TransactionHandlerDB
 }
 
 func NewWalletGrpcServer(
 	walletService *services.WalletService,
-	transactionHandler *db.TransactionHandlerDB,
+	transactionHandler *database.TransactionHandlerDB,
 ) *GrpcWalletServer {
 	return &GrpcWalletServer{
 		walletService:      walletService,
@@ -30,7 +30,7 @@ func (s *GrpcWalletServer) CreateWallet(ctx context.Context, message *core.Creat
 		return nil, e
 	}
 
-	typedTransactionHandler := db.NewTypedTransaction[*core.CreateWalletResponse](s.transactionHandler)
+	typedTransactionHandler := database.NewTypedTransaction[*core.CreateWalletResponse](s.transactionHandler)
 
 	return typedTransactionHandler.WithCtx(ctx, func(ctx context.Context) (*core.CreateWalletResponse, error) {
 		walletEntity, e := s.walletService.Create(ctx, walletCreateForm)
