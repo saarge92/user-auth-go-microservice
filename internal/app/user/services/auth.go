@@ -12,20 +12,14 @@ type Auth struct {
 	jwtService  *JwtService
 }
 
-func NewAuthService(
-	userService *User,
-	jwtService *JwtService,
-) *Auth {
+func NewAuthService(userService *User, jwtService *JwtService) *Auth {
 	return &Auth{
 		UserService: userService,
 		jwtService:  jwtService,
 	}
 }
 
-func (s *Auth) SignUp(
-	ctx context.Context,
-	formRequest *forms.SignUp,
-) (*entities.User, string, error) {
+func (s *Auth) SignUp(ctx context.Context, formRequest *forms.SignUp) (*entities.User, string, error) {
 	userEntity, e := s.UserService.SignUp(ctx, formRequest)
 	if e != nil {
 		return nil, "", e
@@ -43,10 +37,7 @@ func (s *Auth) SignUp(
 	return userEntity, token, nil
 }
 
-func (s *Auth) SignIn(
-	ctx context.Context,
-	formRequest *forms.SignIn,
-) (*dto.UserRole, string, error) {
+func (s *Auth) SignIn(ctx context.Context, formRequest *forms.SignIn) (*dto.UserRole, string, error) {
 	userEntity, e := s.UserService.SignIn(ctx, formRequest)
 	if e != nil {
 		return nil, "", e

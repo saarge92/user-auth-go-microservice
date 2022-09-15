@@ -16,3 +16,7 @@ CREATE TABLE IF NOT EXISTS user_roles
     CONSTRAINT fk_user_roles_role_id FOREIGN KEY (role_id) REFERENCES roles (id),
     CONSTRAINT unique_user_role_ids UNIQUE (user_id, role_id)
 );
+
+INSERT INTO user_roles
+SET user_id = 1,
+    role_id = 1;
