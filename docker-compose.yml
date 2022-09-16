@@ -4,7 +4,7 @@ services:
     container_name: user_database
     image: percona/percona-server:latest
     ports:
-      - 3311:3306
+      - "3311:3306"
     environment:
       - MYSQL_DATABASE=user-platform
       - MYSQL_USER=user
@@ -12,19 +12,5 @@ services:
       - MYSQL_ROOT_PASSWORD=terrible
     volumes:
       - mysql-user-database:/var/lib/mysql
-
-  database-test:
-    container_name: user_database_test
-    image: percona/percona-server:latest
-    ports:
-      - 3312:3306
-    environment:
-      - MYSQL_DATABASE=user-test
-      - MYSQL_USER=test
-      - MYSQL_PASSWORD=test
-      - MYSQL_ROOT_PASSWORD=terrible
-    volumes:
-      - mysql-user-database-test:/var/lib/mysql
 volumes:
   mysql-user-database:
-  mysql-user-database-test:

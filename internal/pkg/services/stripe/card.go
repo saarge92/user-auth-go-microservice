@@ -29,7 +29,6 @@ func (s *CardStripeService) CreateCard(cardData dto.StripeCardCreate) (*stripe.C
 			ExpYear:  stripe.String(expireYear),
 			CVC:      stripe.String(cvc),
 			Currency: stripe.String("USD"),
-			Customer: stripe.String(cardData.CustomerProviderID),
 		},
 	}
 	token, e := s.stripeClient.Tokens.New(tokenParams)
@@ -37,8 +36,8 @@ func (s *CardStripeService) CreateCard(cardData dto.StripeCardCreate) (*stripe.C
 		return nil, e
 	}
 	cardParams := &stripe.CardParams{
-		Token:    stripe.String(token.ID),
-		Customer: stripe.String(cardData.CustomerProviderID),
+		Token:   stripe.String(token.ID),
+		Account: stripe.String(cardData.AccountProviderID),
 	}
 	cardStripe, e := s.stripeClient.Cards.New(cardParams)
 	if e != nil {

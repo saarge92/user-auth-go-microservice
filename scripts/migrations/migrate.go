@@ -1,4 +1,4 @@
-package scripts
+package migrations
 
 import (
 	"database/sql"
@@ -33,7 +33,9 @@ func Migrate(configSetting *config.Config) {
 		log.Fatal(e)
 	}
 
-	migration.Up()
+	if e := migration.Up(); e != nil {
+		log.Println(e)
+	}
 	migration.Close()
 }
 
@@ -42,5 +44,5 @@ func getScriptDirectory() string {
 	if e != nil {
 		panic(e)
 	}
-	return d + "/scripts/migrations/"
+	return d + "/scripts/migrations/sql/"
 }

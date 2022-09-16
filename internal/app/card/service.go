@@ -34,12 +34,11 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm forms.CreateCard) (*e
 	}
 
 	cardStripeDto := dto.StripeCardCreate{
-		Number:             cardForm.CardNumber,
-		ExpireMonth:        uint8(cardForm.ExpireMonth),
-		ExpireYear:         cardForm.ExpireYear,
-		CVC:                cardForm.Cvc,
-		AccountProviderID:  userRoleDto.User.AccountProviderID,
-		CustomerProviderID: userRoleDto.User.CustomerProviderID,
+		Number:            cardForm.CardNumber,
+		ExpireMonth:       uint8(cardForm.ExpireMonth),
+		ExpireYear:        cardForm.ExpireYear,
+		CVC:               cardForm.Cvc,
+		AccountProviderID: userRoleDto.User.AccountProviderID,
 	}
 	cardStripe, cardError := s.cardStripeService.CreateCard(cardStripeDto)
 	if cardError != nil {

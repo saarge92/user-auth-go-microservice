@@ -9,4 +9,4 @@ CREATE TABLE countries
 
 INSERT INTO countries (id, code_2, code_3, currency_code, phone_code)
 VALUES (1, 'US', 'USA', 'USD', 1),
-       (2, 'RU', 'RUS', 'RUB', 7)
+       (2, 'RU', 'RUS', 'RUB', 7);

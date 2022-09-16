@@ -6,7 +6,6 @@ require (
 	github.com/DATA-DOG/go-txdb v0.1.4
 	github.com/Knetic/go-namedParameterQuery v0.0.0-20150709205813-b7327e472dfd
 	github.com/blockloop/scan v1.3.1-0.20210531141646-16d5f0a94700
-	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0
@@ -32,6 +31,7 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.2.0 // indirect
 	go.uber.org/atomic v1.6.0 // indirect
 	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e // indirect
 	golang.org/x/sys v0.0.0-20211013075003-97ac67df715c // indirect

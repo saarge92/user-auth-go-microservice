@@ -15,7 +15,7 @@ import (
 	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/providers"
 	"go-user-microservice/pkg/protobuf/core"
-	"go-user-microservice/scripts"
+	"go-user-microservice/scripts/migrations"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -52,7 +52,7 @@ func (s *Server) InitConfig() error {
 func (s *Server) initApp() {
 	appConfig := config.NewConfig()
 	s.mainConfig = appConfig
-	scripts.Migrate(appConfig)
+	migrations.Migrate(appConfig)
 	dbConnectionProvider := providers.NewDatabaseConnectionProvider(appConfig)
 	repositoryProvider := providers.NewRepositoryProvider(dbConnectionProvider)
 	stripeClientProvider := providers.NewClientStripeProvider(appConfig)

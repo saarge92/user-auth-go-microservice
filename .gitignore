@@ -3,3 +3,4 @@ pkg/protobuf
 mysql-user-database
 mysql-user-database-test
 .env.test
+internal/app/card/mocks
