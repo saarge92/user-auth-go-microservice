@@ -1,7 +1,7 @@
 package request
 
 type InnRequest struct {
-	Inn uint64 `json:"query"`
+	Inn string `json:"query"`
 }
 
 func (r InnRequest) RequestURI() string {

@@ -10,7 +10,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"regexp"
-	"strconv"
 )
 
 type SignUp struct {
@@ -45,8 +44,7 @@ func (f *SignUp) Validate() error {
 			&f.Inn,
 			validation.Required,
 			validation.By(func(value interface{}) error {
-				intValue := value.(uint64)
-				stringValue := strconv.Itoa(int(intValue))
+				stringValue := value.(string)
 				e := validation.Validate(stringValue, validation.Match(regexp.MustCompile(innPattern)))
 				if e != nil {
 					return status.Error(codes.InvalidArgument, sliceErrorMessages[innPattern])

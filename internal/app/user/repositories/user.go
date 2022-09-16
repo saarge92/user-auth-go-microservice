@@ -24,7 +24,7 @@ func NewUserRepository(db database.Database) *UserRepository {
 }
 
 func (r *UserRepository) Create(ctx context.Context, user *entities.User) error {
-	now := time.Now()
+	now := time.Now().Unix()
 	user.CreatedAt = now
 	user.UpdatedAt = now
 	query := `INSERT INTO users (name, login, inn, password, account_provider_id,
@@ -103,7 +103,7 @@ func (r *UserRepository) GetUserWithRoles(ctx context.Context, login string) (*d
 	}, nil
 }
 
-func (r *UserRepository) UserByInnOrLoginExist(ctx context.Context, login string, inn uint64) (bool, error) {
+func (r *UserRepository) UserByInnOrLoginExist(ctx context.Context, login string, inn string) (bool, error) {
 	query := `SELECT COUNT(*) > 0 FROM users WHERE login = ? OR inn = ?`
 	var exist bool
 

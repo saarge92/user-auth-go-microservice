@@ -2,7 +2,6 @@ package entities
 
 import (
 	"database/sql"
-	"time"
 )
 
 const (
@@ -12,12 +11,12 @@ const (
 type User struct {
 	ID                 uint64        `db:"id"`
 	Login              string        `db:"login"`
-	Inn                uint64        `db:"inn"`
+	Inn                string        `db:"inn"`
 	Name               string        `db:"name"`
 	Password           string        `db:"password"`
-	CreatedAt          time.Time     `db:"created_at"`
-	UpdatedAt          time.Time     `db:"updated_at"`
-	DeletedAt          sql.NullTime  `db:"deleted_at"`
+	CreatedAt          int64         `db:"created_at"`
+	UpdatedAt          int64         `db:"updated_at"`
+	DeletedAt          sql.NullInt64 `db:"deleted_at"`
 	IsBanned           bool          `db:"is_banned"`
 	CountryID          sql.NullInt64 `db:"country_id"`
 	AccountProviderID  string        `db:"account_provider_id"`

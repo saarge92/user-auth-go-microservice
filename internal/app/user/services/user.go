@@ -90,7 +90,7 @@ func (s *User) SignIn(ctx context.Context, form *forms.SignIn) (*userDto.UserRol
 	return userEntity, nil
 }
 
-func (s *User) checkUserDataExistence(ctx context.Context, login string, inn uint64) error {
+func (s *User) checkUserDataExistence(ctx context.Context, login string, inn string) error {
 	userExist, e := s.userRepository.UserByInnOrLoginExist(ctx, login, inn)
 	if e != nil {
 		return e
