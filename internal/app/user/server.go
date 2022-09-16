@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"github.com/samber/lo"
+	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/user/forms"
 	"go-user-microservice/internal/app/user/services"
 	"go-user-microservice/internal/pkg/database"
@@ -43,16 +45,19 @@ func (s *GrpcUserServer) Signup(ctx context.Context, request *core.SignUpMessage
 	})
 }
 
-func (s *GrpcUserServer) VerifyToken(_ context.Context, request *core.VerifyMessage) (*core.VerifyMessageResponse, error) {
-	userEntity, e := s.authService.VerifyAndReturnPayloadToken(context.Background(), request.Token)
+func (s *GrpcUserServer) VerifyToken(ctx context.Context, request *core.VerifyMessage) (*core.VerifyMessageResponse, error) {
+	userRoleDto, e := s.authService.VerifyAndReturnPayloadToken(ctx, request.Token)
 	if e != nil {
 		return nil, e
 	}
+	roles := lo.Map(userRoleDto.Roles, func(role entities.Role, _ int) string {
+		return role.Name
+	})
 	return &core.VerifyMessageResponse{
 		User: &core.UserMessageResponse{
-			Login: userEntity.User.Login,
-			Id:    userEntity.User.ID,
-			Roles: nil,
+			Login: userRoleDto.User.Login,
+			Id:    userRoleDto.User.ID,
+			Roles: roles,
 		},
 	}, nil
 }
@@ -64,5 +69,5 @@ func (s *GrpcUserServer) SignIn(ctx context.Context, request *core.SignInMessage
 		return nil, signInError
 	}
 
-	return FromUserResponseToGRPC(userResponse, token), nil
+	return fromUserResponseToGRPC(userResponse, token), nil
 }

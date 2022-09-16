@@ -19,22 +19,33 @@ func NewUserAuthContextService(jwtService *JwtService) *UserAuthContextService {
 	}
 }
 
-func (s *UserAuthContextService) VerifyUserFromRequest(ctx context.Context) (context.Context, error) {
-	authError := status.Error(codes.Unauthenticated, errorlists.UserUnAuthenticated)
+func (s *UserAuthContextService) VerifyRetrieveNewUserContext(ctx context.Context) (context.Context, error) {
+	tokenInfo, e := s.retrieveTokenFromContext(ctx)
+	if e != nil {
+		return nil, e
+	}
+	userData, e := s.jwtService.VerifyTokenAndReturnUserRoleData(ctx, tokenInfo)
+	if e != nil {
+		return nil, e
+	}
+	if len(userData.Roles) == 0 {
+		return nil, status.Error(codes.PermissionDenied, "User has no roles")
+	}
+	newCtx := context.WithValue(ctx, dictionary.CurrentUser, userData.User)
+	return newCtx, nil
+}
+
+func (s *UserAuthContextService) retrieveTokenFromContext(ctx context.Context) (string, error) {
+	authError := errorlists.ErrUserUnAuthenticated
 	if headers, ok := metadata.FromIncomingContext(ctx); ok {
 		var tokenInfo []string
 		if tokenInfo, ok = headers["token"]; !ok {
-			return nil, authError
+			return "", authError
 		}
 		if len(tokenInfo) == 0 {
-			return nil, authError
+			return "", authError
 		}
-		userData, e := s.jwtService.VerifyTokenAndReturnUser(ctx, tokenInfo[0])
-		if e != nil {
-			return nil, e
-		}
-		newCtx := context.WithValue(ctx, dictionary.User, userData)
-		return newCtx, nil
+		return tokenInfo[0], nil
 	}
-	return nil, authError
+	return "", authError
 }

@@ -1,9 +1,6 @@
 package test
 
-import (
-	userDto "go-user-microservice/internal/app/user/dto"
-	"go-user-microservice/internal/app/user/entities"
-)
+import "go-user-microservice/internal/app/user/entities"
 
 const (
 	CardNumberForCreate          = "5555555555554444"
@@ -12,10 +9,10 @@ const (
 	UserCustomerID               = "customer-uuid"
 )
 
-var UserRoleData = &userDto.UserRole{
-	User: entities.User{
+var (
+	CurrentUser = &entities.User{
 		ID:                 UserID,
 		AccountProviderID:  UserAccountProviderID,
 		CustomerProviderID: UserCustomerID,
-	},
-}
+	}
+)

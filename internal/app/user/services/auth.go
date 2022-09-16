@@ -50,5 +50,5 @@ func (s *Auth) SignIn(ctx context.Context, formRequest *forms.SignIn) (*dto.User
 }
 
 func (s *Auth) VerifyAndReturnPayloadToken(ctx context.Context, token string) (*dto.UserRole, error) {
-	return s.jwtService.VerifyTokenAndReturnUser(ctx, token)
+	return s.jwtService.VerifyTokenAndReturnUserRoleData(ctx, token)
 }

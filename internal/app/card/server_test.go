@@ -26,7 +26,7 @@ func TestServiceCard_Create(t *testing.T) {
 	serverInstance := testData.server
 	stripeServiceCard := testData.stripeServiceCard
 
-	ctx := context.WithValue(context.Background(), dictionary.User, test.UserRoleData)
+	ctx := context.WithValue(context.Background(), dictionary.CurrentUser, test.CurrentUser)
 
 	createCard := &core.CreateCardRequest{
 		CardNumber:  test.CardNumberForCreate,
@@ -41,7 +41,7 @@ func TestServiceCard_Create(t *testing.T) {
 		ExpireMonth:       uint8(createCard.ExpireMonth),
 		ExpireYear:        createCard.ExpireYear,
 		CVC:               createCard.Cvc,
-		AccountProviderID: test.UserRoleData.User.AccountProviderID,
+		AccountProviderID: test.CurrentUser.AccountProviderID,
 	}
 	cardResponseExpected := &stripe.Card{
 		ID: uuid.New().String(),

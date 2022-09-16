@@ -36,7 +36,7 @@ func (m *GrpcWalletMiddleware) WalletsRequestsAuthenticated(
 			requestReflectType := reflect.TypeOf(request)
 			messageReflectType := reflect.TypeOf(messageType)
 			if requestReflectType == messageReflectType {
-				newContext, e := m.authContextService.VerifyUserFromRequest(ctx)
+				newContext, e := m.authContextService.VerifyRetrieveNewUserContext(ctx)
 				if e != nil {
 					return nil, e
 				}

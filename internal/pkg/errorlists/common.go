@@ -6,6 +6,7 @@ import (
 )
 
 var (
-	CurrencyNotFoundErr = status.Error(codes.NotFound, CurrencyNotFound)
-	CountryNotFoundErr  = status.Error(codes.NotFound, CountryNotFound)
+	ErrCurrencyNotFound    = status.Error(codes.NotFound, CurrencyNotFound)
+	ErrCountryNotFound     = status.Error(codes.NotFound, CountryNotFound)
+	ErrUserUnAuthenticated = status.Error(codes.Unauthenticated, UserUnAuthenticated)
 )

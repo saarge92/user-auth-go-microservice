@@ -35,7 +35,7 @@ func (m *GrpcCardMiddleware) CardsRequestAuthenticated(
 			requestReflectType := reflect.TypeOf(request)
 			messageReflectType := reflect.TypeOf(messageType)
 			if requestReflectType == messageReflectType {
-				newContext, e := m.authUserContextService.VerifyUserFromRequest(ctx)
+				newContext, e := m.authUserContextService.VerifyRetrieveNewUserContext(ctx)
 				if e != nil {
 					return nil, e
 				}

@@ -28,7 +28,7 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm forms.CreateCard) (*e
 		return nil, cardErr
 	}
 
-	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+	userData, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, e
 	}
@@ -38,22 +38,22 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm forms.CreateCard) (*e
 		ExpireMonth:       uint8(cardForm.ExpireMonth),
 		ExpireYear:        cardForm.ExpireYear,
 		CVC:               cardForm.Cvc,
-		AccountProviderID: userRoleDto.User.AccountProviderID,
+		AccountProviderID: userData.AccountProviderID,
 	}
 	cardStripe, cardError := s.cardStripeService.CreateCard(cardStripeDto)
 	if cardError != nil {
 		return nil, cardError
 	}
 
-	return s.initCardRecord(ctx, cardForm, userRoleDto.User.ID, cardStripe.ID)
+	return s.initCardRecord(ctx, cardForm, userData.ID, cardStripe.ID)
 }
 
 func (s *ServiceCard) MyCards(ctx context.Context) ([]entities.Card, error) {
-	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+	userData, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, e
 	}
-	cards, e := s.cardRepository.ListByCardID(ctx, userRoleDto.User.ID)
+	cards, e := s.cardRepository.ListByCardID(ctx, userData.ID)
 	if e != nil {
 		return nil, e
 	}

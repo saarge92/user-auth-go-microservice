@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"github.com/shopspring/decimal"
-	userDto "go-user-microservice/internal/app/user/dto"
+	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/app/wallet/domain"
 	"go-user-microservice/internal/app/wallet/dto"
 	walletEntities "go-user-microservice/internal/app/wallet/entities"
@@ -31,12 +31,10 @@ func NewWalletService(
 }
 
 func (s *WalletService) Create(ctx context.Context, form *forms.WalletCreateForm) (wallet *walletEntities.Wallet, e error) {
-	userRoleDto, currency, e := s.checkCreateWalletData(ctx, form)
+	userData, currency, e := s.checkCreateWalletData(ctx, form)
 	if e != nil {
 		return nil, e
 	}
-
-	userData := userRoleDto.User
 
 	if form.IsDefault {
 		if resetWalletErr := s.resetDefaultWallet(ctx, userData.ID); resetWalletErr != nil {
@@ -48,20 +46,20 @@ func (s *WalletService) Create(ctx context.Context, form *forms.WalletCreateForm
 }
 
 func (s *WalletService) MyWallets(ctx context.Context) ([]dto.WalletCurrencyDto, error) {
-	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+	userData, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, e
 	}
 
-	wallets, e := s.walletRepository.ListByUserID(ctx, userRoleDto.User.ID)
+	wallets, e := s.walletRepository.ListByUserID(ctx, userData.ID)
 	if e != nil {
 		return nil, e
 	}
 	return wallets, nil
 }
 
-func (s *WalletService) checkCreateWalletData(ctx context.Context, form *forms.WalletCreateForm) (*userDto.UserRole, *sharedEntities.Currency, error) {
-	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+func (s *WalletService) checkCreateWalletData(ctx context.Context, form *forms.WalletCreateForm) (*entities.User, *sharedEntities.Currency, error) {
+	userData, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, nil, e
 	}
@@ -73,7 +71,7 @@ func (s *WalletService) checkCreateWalletData(ctx context.Context, form *forms.W
 	if currency == nil {
 		return nil, nil, status.Error(codes.NotFound, errorlists.CurrencyNotFound)
 	}
-	walletUserExist, e := s.walletRepository.Exist(ctx, userRoleDto.User.ID, currency.ID)
+	walletUserExist, e := s.walletRepository.Exist(ctx, userData.ID, currency.ID)
 	if e != nil {
 		return nil, nil, e
 	}
@@ -81,7 +79,7 @@ func (s *WalletService) checkCreateWalletData(ctx context.Context, form *forms.W
 		return nil, nil, status.Error(codes.AlreadyExists, errorlists.UserWalletAlreadyExist)
 	}
 
-	return userRoleDto, currency, nil
+	return userData, currency, nil
 }
 
 func (s *WalletService) resetDefaultWallet(ctx context.Context, userID uint64) error {

@@ -36,16 +36,16 @@ func NewPaymentService(
 }
 
 func (s *Payment) Deposit(ctx context.Context, depositInfo form.Deposit) (operationStory *entities.OperationStory, e error) {
-	userRoleDto, e := grpc.GetUserWithRolesFromContext(ctx)
+	userData, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, e
 	}
 
-	card, e := s.cardRepository.OneByCardAndUserID(ctx, depositInfo.CardExternalId, userRoleDto.User.ID)
+	card, e := s.cardRepository.OneByCardAndUserID(ctx, depositInfo.CardExternalId, userData.ID)
 	if e != nil {
 		return nil, e
 	}
-	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(ctx, depositInfo.WalletExternalId, userRoleDto.User.ID)
+	walletWithCurrencyDto, e := s.walletRepository.OneByExternalIDAndUserID(ctx, depositInfo.WalletExternalId, userData.ID)
 	if e != nil {
 		return nil, e
 	}
@@ -57,7 +57,7 @@ func (s *Payment) Deposit(ctx context.Context, depositInfo form.Deposit) (operat
 		Amount:     amount,
 		Currency:   walletWithCurrencyDto.Currency.Code,
 		CardID:     card.ExternalProviderID,
-		CustomerID: userRoleDto.User.CustomerProviderID,
+		CustomerID: userData.CustomerProviderID,
 	}
 	chargeResponse, e := s.stripeChargeService.CardCharge(cardChargeDto)
 	if e != nil {
@@ -68,7 +68,7 @@ func (s *Payment) Deposit(ctx context.Context, depositInfo form.Deposit) (operat
 	balanceAfter := walletInstance.Balance.Add(amount)
 	operationStory = &entities.OperationStory{
 		Amount:             amount,
-		UserID:             userRoleDto.User.ID,
+		UserID:             userData.ID,
 		OperationTypeID:    operationType,
 		CardID:             card.ID,
 		BalanceBefore:      walletInstance.Balance,
@@ -89,7 +89,7 @@ func (s *Payment) List(ctx context.Context, request *form.ListPayment) (response
 
 	operationType := transformers.FromGRPCOperationType(request.OperationType)
 	paymentFilter := &filter.OperationStoryFilter{
-		UserID:        user.User.ID,
+		UserID:        user.ID,
 		OperationType: operationType,
 		Pagination: sharedFilter.Pagination{
 			Page:    request.Pagination.Page,

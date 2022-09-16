@@ -32,7 +32,7 @@ func (r *CountryRepository) GetByCodeTwo(ctx context.Context, code string) (*ent
 
 	if e := scan.Row(country, countryRow); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
-			return nil, errorlists.CountryNotFoundErr
+			return nil, errorlists.ErrCountryNotFound
 		}
 		return nil, sharedErrors.DatabaseError(e)
 	}

@@ -34,8 +34,8 @@ func TestServiceCard_Create_MyCards(t *testing.T) {
 	serviceCard := testStructData.serviceCard
 	stripeBackend := testStructData.stripeBackend
 
-	userRoleDTO := test.UserRoleData
-	ctx := context.WithValue(context.Background(), dictionary.User, userRoleDTO)
+	currentUser := test.CurrentUser
+	ctx := context.WithValue(context.Background(), dictionary.CurrentUser, currentUser)
 
 	t.Run("Create should be success", func(t *testing.T) {
 		createCard := forms.CreateCard{CreateCardRequest: &core.CreateCardRequest{
@@ -51,7 +51,7 @@ func TestServiceCard_Create_MyCards(t *testing.T) {
 		cvc := strconv.Itoa(int(createCard.Cvc))
 		tokenParamsExpected := &stripe.TokenParams{
 			Card: &stripe.CardParams{
-				Account:  stripe.String(userRoleDTO.User.AccountProviderID),
+				Account:  stripe.String(currentUser.AccountProviderID),
 				Number:   stripe.String(createCard.CardNumber),
 				ExpMonth: stripe.String(expireMonth),
 				ExpYear:  stripe.String(expireYear),
@@ -80,9 +80,9 @@ func TestServiceCard_Create_MyCards(t *testing.T) {
 		cards, e := serviceCard.MyCards(ctx)
 		require.NoError(t, e)
 		foundUserCards := lo.Filter(cards, func(cardElement cardEntities.Card, _ int) bool {
-			return cardElement.UserID == userRoleDTO.User.ID
+			return cardElement.UserID == currentUser.ID
 		})
-		require.True(t, len(foundUserCards) > 0, "User cards not found")
+		require.True(t, len(foundUserCards) > 0, "CurrentUser cards not found")
 	})
 }
 

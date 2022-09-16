@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	sharedRepoInterfaces "go-user-microservice/internal/app/user/domain"
 	"go-user-microservice/internal/app/user/dto"
+	userErrors "go-user-microservice/internal/app/user/errors"
 	"go-user-microservice/internal/pkg/config"
 	"go-user-microservice/internal/pkg/errorlists"
 	"google.golang.org/grpc/codes"
@@ -48,7 +49,7 @@ func (s *JwtService) CreateToken(userName string) (string, error) {
 	return stringToken, nil
 }
 
-func (s *JwtService) VerifyTokenAndReturnUser(ctx context.Context, token string) (*dto.UserRole, error) {
+func (s *JwtService) VerifyTokenAndReturnUserRoleData(ctx context.Context, token string) (*dto.UserRole, error) {
 	jwtToken, e := jwt.ParseWithClaims(token, &dto.UserPayLoad{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -69,9 +70,11 @@ func (s *JwtService) VerifyTokenAndReturnUser(ctx context.Context, token string)
 
 func (s *JwtService) checkClaims(ctx context.Context, claims *dto.UserPayLoad) (*dto.UserRole, error) {
 	tokenInvalidError := status.Error(codes.InvalidArgument, errorlists.TokenInvalid)
-	login := claims.UserName
-	user, e := s.userRepository.GetUserWithRoles(ctx, login)
+	user, e := s.userRepository.GetUserWithRoles(ctx, claims.UserName)
 	if e != nil {
+		if errors.Is(e, userErrors.ErrUserNotFound) {
+			return nil, tokenInvalidError
+		}
 		return nil, e
 	}
 

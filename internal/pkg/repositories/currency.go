@@ -30,7 +30,7 @@ func (r *CurrencyRepository) GetByCode(ctx context.Context, code string) (*entit
 
 	if e := scan.Row(currency, currencyRow); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
-			return nil, errorlists.CurrencyNotFoundErr
+			return nil, errorlists.ErrCurrencyNotFound
 		}
 		return nil, customErrors.DatabaseError(e)
 	}
