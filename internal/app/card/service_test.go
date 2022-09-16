@@ -13,8 +13,6 @@ import (
 	cardEntities "go-user-microservice/internal/app/card/entities"
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/app/card/mocks"
-	userDto "go-user-microservice/internal/app/user/dto"
-	"go-user-microservice/internal/app/user/entities"
 	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/dictionary"
 	stripeServices "go-user-microservice/internal/pkg/services/stripe"
@@ -36,13 +34,7 @@ func TestServiceCard_Create_MyCards(t *testing.T) {
 	serviceCard := testStructData.serviceCard
 	stripeBackend := testStructData.stripeBackend
 
-	userRoleDTO := &userDto.UserRole{
-		User: entities.User{
-			ID:                 test.UserID,
-			AccountProviderID:  test.UserAccountProviderID,
-			CustomerProviderID: test.UserCustomerID,
-		},
-	}
+	userRoleDTO := test.UserRoleData
 	ctx := context.WithValue(context.Background(), dictionary.User, userRoleDTO)
 
 	t.Run("Create should be success", func(t *testing.T) {
