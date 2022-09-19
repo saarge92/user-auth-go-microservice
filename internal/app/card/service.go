@@ -9,6 +9,7 @@ import (
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/pkg/dto"
 	"go-user-microservice/internal/pkg/grpc"
+	"time"
 )
 
 type ServiceCard struct {
@@ -74,6 +75,7 @@ func (s *ServiceCard) checkCardNumberExist(ctx context.Context, cardNumber strin
 
 func (s *ServiceCard) initCardRecord(ctx context.Context, cardForm forms.CreateCard, userID uint64, providerID string) (*entities.Card, error) {
 	cardEntity := &entities.Card{}
+	now := time.Now().Unix()
 	cardEntity.Number = cardForm.CardNumber
 	cardEntity.ExpireMonth = cardForm.ExpireMonth
 	cardEntity.ExpireYear = cardForm.ExpireYear
@@ -81,6 +83,8 @@ func (s *ServiceCard) initCardRecord(ctx context.Context, cardForm forms.CreateC
 	cardEntity.UserID = userID
 	cardEntity.ExternalID = uuid.New().String()
 	cardEntity.ExternalProviderID = providerID
+	cardEntity.CreatedAt = now
+	cardEntity.UpdatedAt = now
 	if e := s.cardRepository.Create(ctx, cardEntity); e != nil {
 		return nil, e
 	}

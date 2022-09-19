@@ -8,9 +8,9 @@ CREATE TABLE cards
     user_id              BIGINT UNSIGNED          NOT NULL,
     external_provider_id VARCHAR(255)             NOT NULL,
     is_default           BOOLEAN                       DEFAULT FALSE,
-    created_at           TIMESTAMP                NOT NULL,
-    updated_at           TIMESTAMP                NOT NULL,
-    deleted_at           TIMESTAMP                NULL DEFAULT NULL,
+    created_at           INT UNSIGNED             NOT NULL,
+    updated_at           INT UNSIGNED             NOT NULL,
+    deleted_at           INT UNSIGNED             NULL DEFAULT NULL,
     CONSTRAINT `card_user_id_fk` FOREIGN KEY (user_id) REFERENCES users (id)
         ON DELETE NO ACTION
         ON UPDATE CASCADE,

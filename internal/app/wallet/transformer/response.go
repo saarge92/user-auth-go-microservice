@@ -28,7 +28,7 @@ func FromOperationStoriesDtoToGRPCResponse(
 			CardInfo: &core.ListResponse_CardInfo{
 				ExternalId: card.ExternalID,
 				Number:     card.Number,
-				CreatedAt:  card.CreatedAt.Unix(),
+				CreatedAt:  card.CreatedAt,
 				IsDefault:  card.IsDefault,
 			},
 		}

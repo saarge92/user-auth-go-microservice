@@ -9,7 +9,6 @@ import (
 	"go-user-microservice/internal/app/card/entities"
 	cardErrors "go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/pkg/database"
-	"time"
 )
 
 type RepositoryCard struct {
@@ -21,9 +20,6 @@ func NewRepositoryCard(databaseInstance database.Database) *RepositoryCard {
 }
 
 func (r *RepositoryCard) Create(ctx context.Context, cardEntity *entities.Card) error {
-	now := time.Now()
-	cardEntity.CreatedAt = now
-	cardEntity.UpdatedAt = now
 	query := `INSERT INTO cards (
                 user_id, is_default, number, external_provider_id, external_id,
                 expire_month, expire_year, created_at, updated_at)
