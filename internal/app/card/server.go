@@ -2,6 +2,7 @@ package card
 
 import (
 	"context"
+	"github.com/golang/protobuf/ptypes/empty"
 	"go-user-microservice/internal/app/card/forms"
 	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/pkg/protobuf/core"
@@ -36,7 +37,7 @@ func (s *GrpcServerCard) CreateCard(ctx context.Context, request *core.CreateCar
 	})
 }
 
-func (s *GrpcServerCard) MyCards(ctx context.Context, _ *core.MyCardsRequest) (*core.MyCardsResponse, error) {
+func (s *GrpcServerCard) MyCards(ctx context.Context, _ *empty.Empty) (*core.MyCardsResponse, error) {
 	cards, e := s.cardService.MyCards(ctx)
 	if e != nil {
 		return nil, e

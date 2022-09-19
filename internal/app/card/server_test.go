@@ -3,6 +3,7 @@ package card
 import (
 	"context"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stripe/stripe-go/v72"
@@ -21,36 +22,45 @@ type serverTestStruct struct {
 	stripeServiceCard *mocks.StripeCardService
 }
 
-func TestServiceCard_Create(t *testing.T) {
+func TestServiceCard_Create_List(t *testing.T) {
 	testData := getServerTestStruct(t)
 	serverInstance := testData.server
 	stripeServiceCard := testData.stripeServiceCard
 
-	ctx := context.WithValue(context.Background(), dictionary.CurrentUser, test.CurrentUser)
+	currentUser := test.CurrentUser
+	ctx := context.WithValue(context.Background(), dictionary.CurrentUser, currentUser)
 
-	createCard := &core.CreateCardRequest{
-		CardNumber:  test.CardNumberForCreate,
-		ExpireMonth: 03,
-		ExpireYear:  uint32(time.Now().Year() + 2),
-		Cvc:         333,
-		IsDefault:   true,
-	}
+	t.Run("Create should be success", func(t *testing.T) {
+		createCard := &core.CreateCardRequest{
+			CardNumber:  test.CardNumberForCreate,
+			ExpireMonth: 03,
+			ExpireYear:  uint32(time.Now().Year() + 2),
+			Cvc:         333,
+			IsDefault:   true,
+		}
 
-	cardParameterExpected := dto.StripeCardCreate{
-		Number:            createCard.CardNumber,
-		ExpireMonth:       uint8(createCard.ExpireMonth),
-		ExpireYear:        createCard.ExpireYear,
-		CVC:               createCard.Cvc,
-		AccountProviderID: test.CurrentUser.AccountProviderID,
-	}
-	cardResponseExpected := &stripe.Card{
-		ID: uuid.New().String(),
-	}
-	stripeServiceCard.EXPECT().CreateCard(cardParameterExpected).Return(cardResponseExpected, nil)
+		cardParameterExpected := dto.StripeCardCreate{
+			Number:            createCard.CardNumber,
+			ExpireMonth:       uint8(createCard.ExpireMonth),
+			ExpireYear:        createCard.ExpireYear,
+			CVC:               createCard.Cvc,
+			AccountProviderID: currentUser.AccountProviderID,
+		}
+		cardResponseExpected := &stripe.Card{
+			ID: uuid.New().String(),
+		}
+		stripeServiceCard.EXPECT().CreateCard(cardParameterExpected).Return(cardResponseExpected, nil)
 
-	cardResponse, e := serverInstance.CreateCard(ctx, createCard)
-	require.NoError(t, e)
-	require.NoError(t, is.UUID.Validate(cardResponse.ExternalId), "card's external_id is not uuid")
+		cardResponse, e := serverInstance.CreateCard(ctx, createCard)
+		require.NoError(t, e)
+		require.NoError(t, is.UUID.Validate(cardResponse.ExternalId), "card's external_id is not uuid")
+	})
+
+	t.Run("MyCards should be success", func(t *testing.T) {
+		cards, e := serverInstance.MyCards(ctx, &empty.Empty{})
+		require.NoError(t, e)
+		require.True(t, len(cards.Cards) > 0, "Cards list is empty")
+	})
 }
 
 func getServerTestStruct(t *testing.T) serverTestStruct {
