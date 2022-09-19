@@ -59,7 +59,7 @@ func (r *RepositoryCard) ListByCardID(ctx context.Context, userID uint64) ([]ent
 
 	if e := scan.Rows(&cards, cardRows); e != nil {
 		if errors.Is(e, sql.ErrNoRows) {
-			return nil, nil
+			return make([]entities.Card, 0), nil
 		}
 		return nil, e
 	}
@@ -80,6 +80,7 @@ func (r *RepositoryCard) OneByCardAndUserID(ctx context.Context, externalID stri
 		if errors.Is(e, sql.ErrNoRows) {
 			return nil, cardErrors.ErrCardNotFound
 		}
+		return nil, e
 	}
 
 	return card, nil

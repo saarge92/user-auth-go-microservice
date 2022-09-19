@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go-user-microservice/internal/app/card/entities"
+	cardErrors "go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/test"
 	"testing"
@@ -26,6 +27,26 @@ func TestRepositoryCard_Create(t *testing.T) {
 
 	e := repositoryCard.Create(ctx, cardEntity)
 	require.NoError(t, e)
+}
+
+func TestRepositoryCard_ListByCardID(t *testing.T) {
+	repositoryCard := getRepositoryTest(t)
+	_, e := repositoryCard.ListByCardID(context.Background(), test.UserID)
+	require.NoError(t, e)
+}
+
+func TestRepositoryCard_OneByCardAndUserID(t *testing.T) {
+	repositoryCard := getRepositoryTest(t)
+	_, notFoundError := repositoryCard.OneByCardAndUserID(context.Background(), uuid.New().String(), test.UserID)
+	require.Error(t, notFoundError)
+	require.ErrorIs(t, notFoundError, cardErrors.ErrCardNotFound)
+}
+
+func TestRepositoryCard_ExistByCardNumber(t *testing.T) {
+	repositoryCard := getRepositoryTest(t)
+	notExist, e := repositoryCard.ExistByCardNumber(context.Background(), test.CardNumberForCreate)
+	require.NoError(t, e)
+	require.False(t, notExist)
 }
 
 func getRepositoryTest(t *testing.T) *RepositoryCard {

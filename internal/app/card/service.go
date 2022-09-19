@@ -17,6 +17,12 @@ type ServiceCard struct {
 	cardStripeService domain.StripeCardService
 }
 
+type cardInitParam struct {
+	userID     uint64
+	providerID string
+	cardForm   forms.CreateCard
+}
+
 func NewServiceCard(cardRepository domain.CardRepository, cardStripeService domain.StripeCardService) *ServiceCard {
 	return &ServiceCard{
 		cardRepository:    cardRepository,
@@ -25,13 +31,13 @@ func NewServiceCard(cardRepository domain.CardRepository, cardStripeService doma
 }
 
 func (s *ServiceCard) Create(ctx context.Context, cardForm forms.CreateCard) (*entities.Card, error) {
-	if cardErr := s.checkCardNumberExist(ctx, cardForm.CardNumber); cardErr != nil {
-		return nil, cardErr
-	}
-
 	userData, e := grpc.GetUserWithRolesFromContext(ctx)
 	if e != nil {
 		return nil, e
+	}
+
+	if cardErr := s.checkCardNumberExist(ctx, cardForm.CardNumber); cardErr != nil {
+		return nil, cardErr
 	}
 
 	cardStripeDto := dto.StripeCardCreate{
@@ -46,7 +52,13 @@ func (s *ServiceCard) Create(ctx context.Context, cardForm forms.CreateCard) (*e
 		return nil, cardError
 	}
 
-	return s.initCardRecord(ctx, cardForm, userData.ID, cardStripe.ID)
+	initCardParam := cardInitParam{
+		cardForm:   cardForm,
+		userID:     userData.ID,
+		providerID: cardStripe.ID,
+	}
+
+	return s.initCardRecord(ctx, initCardParam)
 }
 
 func (s *ServiceCard) MyCards(ctx context.Context) ([]entities.Card, error) {
@@ -67,22 +79,23 @@ func (s *ServiceCard) checkCardNumberExist(ctx context.Context, cardNumber strin
 		return cardErr
 	}
 	if cardExist {
-		return errors.ErrCardNotFound
+		return errors.ErrCardAlreadyExist
 	}
 
 	return nil
 }
 
-func (s *ServiceCard) initCardRecord(ctx context.Context, cardForm forms.CreateCard, userID uint64, providerID string) (*entities.Card, error) {
+func (s *ServiceCard) initCardRecord(ctx context.Context, initCardParam cardInitParam) (*entities.Card, error) {
 	cardEntity := &entities.Card{}
 	now := time.Now().Unix()
+	cardForm := initCardParam.cardForm
 	cardEntity.Number = cardForm.CardNumber
 	cardEntity.ExpireMonth = cardForm.ExpireMonth
 	cardEntity.ExpireYear = cardForm.ExpireYear
 	cardEntity.IsDefault = cardForm.IsDefault
-	cardEntity.UserID = userID
+	cardEntity.UserID = initCardParam.userID
 	cardEntity.ExternalID = uuid.New().String()
-	cardEntity.ExternalProviderID = providerID
+	cardEntity.ExternalProviderID = initCardParam.providerID
 	cardEntity.CreatedAt = now
 	cardEntity.UpdatedAt = now
 	if e := s.cardRepository.Create(ctx, cardEntity); e != nil {

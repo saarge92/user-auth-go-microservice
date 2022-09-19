@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stripe/stripe-go/v72"
+	cardErrors "go-user-microservice/internal/app/card/errors"
 	"go-user-microservice/internal/app/card/mocks"
 	"go-user-microservice/internal/pkg/database"
 	"go-user-microservice/internal/pkg/dictionary"
@@ -60,6 +61,19 @@ func TestServiceCard_Create_List(t *testing.T) {
 		cards, e := serverInstance.MyCards(ctx, &empty.Empty{})
 		require.NoError(t, e)
 		require.True(t, len(cards.Cards) > 0, "Cards list is empty")
+	})
+
+	t.Run("CreateCard should return already exist", func(t *testing.T) {
+		createCard := &core.CreateCardRequest{
+			CardNumber:  test.CardNumberForCreate,
+			ExpireMonth: 03,
+			ExpireYear:  uint32(time.Now().Year() + 2),
+			Cvc:         333,
+			IsDefault:   true,
+		}
+
+		_, e := serverInstance.CreateCard(ctx, createCard)
+		require.ErrorIs(t, e, cardErrors.ErrCardAlreadyExist)
 	})
 }
 
